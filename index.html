@@ -226,7 +226,7 @@ function loadCfg() {
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {} }
 function configured() { return !!(cfg.url && cfg.secret); }
 function presets() { return (DATA && DATA.presets && DATA.presets.length) ? DATA.presets : DEFAULT_PRESETS; }
-function pairsPerDozen() { return (DATA && DATA.settings) ? num(DATA.settings.pairsPerDozen, 12) : 12; }
+function pairsPerDozen() { return (DATA && DATA.settings) ? num(DATA.settings.pairsPerDozen, 10) : 10; }
 function settings() {
   return (DATA && DATA.settings) || { factoryName: 'ورشة آل هاشم', address: 'منشية ناصر، القاهرة، مصر', phone1: '01275440919', phone2: '01034837061', note1: '', note2: '', note3: '', threshold: 20 };
 }
@@ -980,7 +980,7 @@ function screenSettings() {
     '<label for="setN2">ملاحظة الفاتورة 2</label><input type="text" id="setN2" value="' + esc(st.note2) + '">' +
     '<label for="setN3">ملاحظة الفاتورة 3</label><input type="text" id="setN3" value="' + esc(st.note3) + '">' +
     '<label for="setTh">حد تنبيه المخزون (زوج)</label><input type="number" id="setTh" inputmode="numeric" min="0" step="1" value="' + esc(st.threshold) + '">' +
-    '<div class="hint">الدستة = 12 زوج (ثابتة ومش بتتغيّر).</div>' +
+    '<div class="hint">الدستة = 10 أزواج (ثابتة ومش بتتغيّر).</div>' +
     '<button class="btn btn-pri btn-block" style="margin-top:14px" onclick="App.saveFactorySettings()">حفظ بيانات المصنع</button></div>';
   h += '<div class="card"><h2>الكميات السريعة (دستة)</h2><div class="chips">' + presets().map(function (p) { return '<span class="chip">' + fmtDoz(p) + '</span>'; }).join('') + '</div>' +
     '<p class="muted small">الكميات دي جاية من تبويب الإعدادات في الشيت (العمود D). لو عايز تزود كمية، زودها هناك وهتظهر هنا.</p></div>';
