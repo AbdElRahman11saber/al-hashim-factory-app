@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E293B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>مخزن ورشة آل هاشم</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--dark:#1E293B;--dark2:#334155;--bg:#F1F5F9;--card:#fff;--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--green:#059669;--green-d:#047857;--red:#DC2626;--amber:#D97706;--blue:#2563EB;--indigo:#4F46E5;--radius:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.55;padding-bottom:86px}
+h1,h2,h3{margin:0}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:var(--blue)}
+/* ===== Header ===== */
+header{position:sticky;top:0;z-index:40;background:var(--dark);color:#fff;padding:10px 14px 9px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.hd-row{display:flex;align-items:center;gap:10px}
+.hd-title{flex:1;min-width:0}
+.hd-title h1{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-sub{font-size:12px;color:#CBD5E1;display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;background:#94A3B8;display:inline-block;flex:none}
+.dot.on{background:#34D399}.dot.off{background:#F87171}
+.icon-btn{background:var(--dark2);color:#fff;border:0;border-radius:10px;width:44px;height:44px;font-size:21px;line-height:1;flex:none}
+.icon-btn:active{opacity:.75}
+/* ===== Layout ===== */
+main{max-width:720px;margin:0 auto;padding:14px 12px 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.card h2{font-size:17px;margin-bottom:8px}
+.muted{color:var(--muted);font-size:13.5px}
+.small{font-size:13px}
+.row{display:flex;gap:8px;align-items:center}
+.row.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 10px;text-align:center}
+.stat .v{font-size:21px;font-weight:800;line-height:1.3}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.stat.warn .v{color:var(--amber)}.stat.bad .v{color:var(--red)}.stat.good .v{color:var(--green)}
+.section-title{font-size:16px;font-weight:800;margin:18px 2px 8px}
+/* ===== Buttons ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:15.5px;min-height:48px}
+.btn-pri{background:var(--green);color:#fff}.btn-pri:active{background:var(--green-d)}
+.btn-dark{background:var(--dark);color:#fff}
+.btn-ghost{background:#E2E8F0;color:var(--ink)}
+.btn-danger{background:#FEE2E2;color:var(--red)}
+.btn-danger-solid{background:var(--red);color:#fff}
+.btn-block{width:100%}
+.btn-sm{padding:8px 12px;min-height:40px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.55}
+.fab{position:fixed;left:16px;bottom:96px;z-index:35;background:var(--green);color:#fff;border:0;border-radius:999px;padding:13px 20px;font-weight:800;font-size:16px;box-shadow:0 6px 18px rgba(5,150,105,.45)}
+/* ===== Forms ===== */
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 5px}
+label:first-child{margin-top:0}
+input[type=text],input[type=number],input[type=tel],input[type=date],input[type=url],input[type=password],select,textarea{width:100%;border:1.5px solid #CBD5E1;border-radius:11px;padding:11px 12px;background:#fff;color:var(--ink);min-height:48px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--green);outline-offset:0;border-color:var(--green)}
+input[readonly]{background:#F8FAFC;color:var(--muted)}
+textarea{resize:vertical;min-height:64px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0}
+.chip{border:1.5px solid #CBD5E1;background:#fff;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;min-height:40px}
+.chip.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+.chip.warn.on{background:var(--amber);border-color:var(--amber)}
+/* ===== Lists ===== */
+.item-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;margin-bottom:10px}
+.item-card:active{background:#F8FAFC}
+.item-name{font-weight:800;font-size:16.5px}
+.badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.b-green{background:#D1FAE5;color:#065F46}.b-amber{background:#FEF3C7;color:#92400E}.b-red{background:#FEE2E2;color:#991B1B}
+.b-blue{background:#DBEAFE;color:#1E40AF}.b-indigo{background:#E0E7FF;color:#3730A3}.b-slate{background:#E2E8F0;color:#334155}
+.badge-lg{font-size:13.5px;padding:5px 12px}
+.empty{text-align:center;padding:34px 16px;color:var(--muted)}
+.empty .big{font-size:40px;margin-bottom:6px}
+.toolbar{display:flex;gap:8px;margin-bottom:10px}
+.toolbar input{flex:1}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{flex:1;border:1.5px solid #CBD5E1;background:#fff;border-radius:11px;padding:10px 4px;font-weight:700;font-size:14px;min-height:44px}
+.tab.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+table.mini{width:100%;border-collapse:collapse;font-size:14px}
+table.mini th,table.mini td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
+table.mini th{color:var(--muted);font-size:12.5px}
+/* ===== Bottom nav ===== */
+nav{position:fixed;right:0;left:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);display:flex;box-shadow:0 -2px 10px rgba(0,0,0,.06);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:11px 2px 9px;font-size:13.5px;font-weight:700;color:var(--muted);min-height:60px}
+nav button.on{color:var(--green)}
+nav button .ic{display:block;font-size:20px;line-height:1.2}
+/* ===== Modal / toast / loading ===== */
+#modalWrap{position:fixed;inset:0;z-index:60;display:none;background:rgba(15,23,42,.55);align-items:flex-end;justify-content:center}
+#modalWrap.open{display:flex}
+#modal{background:#fff;width:100%;max-width:720px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:18px 16px 26px}
+#modal h2{font-size:18px;margin-bottom:4px}
+.modal-actions{display:flex;gap:8px;margin-top:18px}
+.modal-actions .btn{flex:1}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:70;background:var(--dark);color:#fff;border-radius:12px;padding:12px 18px;font-weight:700;font-size:14.5px;max-width:92vw;text-align:center;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#toast.err{background:var(--red)}
+#loading{position:fixed;inset:0;z-index:80;background:rgba(241,245,249,.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;text-align:center;padding:20px}
+#loading.open{display:flex}
+.spin{width:46px;height:46px;border:5px solid #CBD5E1;border-top-color:var(--green);border-radius:50%;animation:sp 0.9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.banner{background:#FEF3C7;border:1px solid #FCD34D;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:14.5px}
+.banner.err{background:#FEE2E2;border-color:#FCA5A5}
+.stepbar{display:flex;gap:6px;margin-bottom:14px}
+.step{flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--muted);padding:9px 2px;border-radius:10px;background:#E2E8F0}
+.step.on{background:var(--dark);color:#fff}
+.line-row{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:#F8FAFC}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.kv:last-child{border-bottom:0}
+.kv b{white-space:nowrap}
+/* ===== Invoice ===== */
+.invoice{background:#fff;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden}
+.inv-title{background:var(--dark);color:#fff;text-align:center;font-size:21px;font-weight:800;padding:13px 8px;letter-spacing:1px}
+.inv-company{background:var(--dark);color:#E2E8F0;text-align:center;font-size:13px;padding:0 10px 11px}
+.inv-meta{display:flex;gap:0;background:#F8FAFC;border-bottom:1px solid var(--line)}
+.inv-meta>div{flex:1;padding:10px 12px;font-size:14px}
+.inv-meta .lbl{color:var(--muted);font-size:12.5px}
+.inv-warn{background:#FEF2F2;color:#B91C1C;font-weight:700;text-align:center;padding:9px;font-size:14px}
+.inv-table{width:100%;border-collapse:collapse;font-size:14.5px}
+.inv-table th{background:var(--dark2);color:#fff;padding:9px 6px;font-size:13.5px}
+.inv-table td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:center}
+.inv-table td.nm{text-align:right}
+.inv-table tr.alt td{background:#F1F5F9}
+.inv-totals{padding:12px 14px}
+.inv-totals .kv{font-size:15.5px}
+.inv-grand{background:var(--dark);color:#fff;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;font-weight:800;font-size:17px;margin:8px 0}
+.inv-notes{font-size:13px;color:var(--muted);padding:0 14px 6px}
+.inv-foot{text-align:center;color:#94A3B8;font-size:12px;padding:10px;border-top:1px solid var(--line)}
+@media print{
+  header,nav,.fab,#toast,#loading,#modalWrap,.no-print{display:none!important}
+  body{background:#fff;padding-bottom:0}
+  main{padding:0;max-width:none}
+  .invoice{border:0;border-radius:0}
+  .inv-screen-wrap{padding:0!important}
+}
+@media (min-width:560px){.grid3{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd-row">
+    <div class="hd-title">
+      <h1 id="factoryTitle">ورشة آل هاشم</h1>
+      <div class="hd-sub"><span class="dot" id="netDot"></span><span id="lastUpdate">مش متصل بعد</span></div>
+    </div>
+    <button class="icon-btn" id="btnRefresh" title="تحديث" aria-label="تحديث">⟳</button>
+    <button class="icon-btn" id="btnSettings" title="الإعدادات" aria-label="الإعدادات">⚙</button>
+  </div>
+</header>
+<main id="app"></main>
+<nav id="bottomNav">
+  <button data-nav="home"><span class="ic">⌂</span>الرئيسية</button>
+  <button data-nav="items"><span class="ic">▤</span>الأصناف</button>
+  <button data-nav="merchants"><span class="ic">◈</span>التجار</button>
+  <button data-nav="orders"><span class="ic">▦</span>الأوردرات</button>
+  <button data-nav="disb"><span class="ic">✓</span>الصرف</button>
+</nav>
+<div id="modalWrap"><div id="modal" role="dialog" aria-modal="true"></div></div>
+<div id="toast"></div>
+<div id="loading"><div class="spin"></div><div id="loadingText" style="font-weight:700">جارٍ التحميل...</div><div class="muted small" id="loadingHint"></div></div>
+<script>
+'use strict';
+/* ================================================================
+   مخزن ورشة آل هاشم — تطبيق ويب (PWA)
+   قاعدة البيانات: شيت جوجل، عن طريق Apps Script (JSONP).
+   لا توجد أي بيانات تجريبية هنا — كل حاجة بتيجي من الشيت.
+   ================================================================ */
+var CFG_KEY = 'hsh_factory_cfg_v1';
+var STATUSES = ['جديد', 'تم الشحن', 'تم الاستلام', 'تم الصرف', 'مرتجع', 'ملغي'];
+var METHODS = ['كاش / نقدي', 'تحويل', 'محفظة إلكترونية', 'آجل'];
+var DEFAULT_PRESETS = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12];
+
+var cfg = loadCfg();
+var DATA = null;          // آخر بيانات جاية من الشيت
+var lastOkAt = null;
+var modalOpen = false;
+var UI = {
+  screen: 'home',
+  itemQ: '', itemStatus: 'all', itemSort: 'name', priceMin: '', priceMax: '',
+  merchRow: null, merchTab: 'all',
+  orderFilter: 'all', orderQ: '', orderRow: null,
+  disbFilter: 'all',
+  wizard: null, invoice: null,
+  merchantPreset: null, vipPrefill: null
+};
+
+/* ---------------- أدوات ---------------- */
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s === undefined || s === null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function num(v, def) {
+  if (v === '' || v === null || v === undefined) return (def === undefined ? 0 : def);
+  var x = Number(String(v).replace(/,/g, ''));
+  return isNaN(x) ? (def === undefined ? 0 : def) : x;
+}
+function fmtMoney(v) {
+  var x = num(v);
+  return x.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' ج.م';
+}
+function fmtNum(v) { return num(v).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function fmtDoz(v) {
+  var x = num(v);
+  return (Math.round(x * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function timeStr(d) {
+  d = d || new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+function loadCfg() {
+  try { var c = JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); return { url: c.url || '', secret: c.secret || '' }; }
+  catch (e) { return { url: '', secret: '' }; }
+}
+function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {} }
+function configured() { return !!(cfg.url && cfg.secret); }
+function presets() { return (DATA && DATA.presets && DATA.presets.length) ? DATA.presets : DEFAULT_PRESETS; }
+function pairsPerDozen() { return (DATA && DATA.settings) ? num(DATA.settings.pairsPerDozen, 12) : 12; }
+function settings() {
+  return (DATA && DATA.settings) || { factoryName: 'ورشة آل هاشم', address: 'منشية ناصر، القاهرة، مصر', phone1: '01275440919', phone2: '01034837061', note1: '', note2: '', note3: '', threshold: 20 };
+}
+function statusOf(o) { return o.status || 'جديد'; }
+function isActiveOrder(o) { return o.counts !== 'لا' && statusOf(o) !== 'مرتجع' && statusOf(o) !== 'ملغي'; }
+function statusBadge(st) {
+  var map = { 'جديد': 'b-slate', 'تم الشحن': 'b-blue', 'تم الاستلام': 'b-indigo', 'تم الصرف': 'b-green', 'مرتجع': 'b-amber', 'ملغي': 'b-red' };
+  return '<span class="badge ' + (map[st] || 'b-slate') + '">' + esc(st) + '</span>';
+}
+function stockBadge(st) {
+  var map = { 'متوفر': 'b-green', 'قرب يخلص': 'b-amber', 'خلص': 'b-red' };
+  return '<span class="badge ' + (map[st] || 'b-slate') + '">' + esc(st || '—') + '</span>';
+}
+function itemByName(name) {
+  if (!DATA) return null;
+  for (var i = 0; i < DATA.items.length; i++) if (DATA.items[i].name === name) return DATA.items[i];
+  return null;
+}
+function orderByRow(row) {
+  if (!DATA) return null;
+  for (var i = 0; i < DATA.orders.length; i++) if (DATA.orders[i]._row === row) return DATA.orders[i];
+  return null;
+}
+function linesOf(orderNo) {
+  if (!DATA) return [];
+  return DATA.lines.filter(function (l) { return num(l.orderNo) === num(orderNo); });
+}
+function phonesText(o) { return [o.phone1, o.phone2].filter(Boolean).join(' / '); }
+function invoiceNo(order) {
+  var y = (order.date || todayStr()).slice(0, 4) || new Date().getFullYear();
+  return 'INV-' + y + '-' + String(num(order.no)).padStart(3, '0');
+}
+
+/* ---------------- الاتصال بالسيرفر (JSONP) ---------------- */
+var __cbSeq = 0;
+function callApi(action, payload, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    if (!configured()) { reject(new Error('التطبيق مش مظبط بعد — اكتب رابط السيرفر وكلمة السر.')); return; }
+    var cb = 'hsh_cb_' + (++__cbSeq) + '_' + Date.now();
+    var done = false;
+    var script = document.createElement('script');
+    var timer = setTimeout(function () { finish(new Error('الطلب اتأخر أكتر من اللازم — ممكن السيرفر بيصحى من النوم، جرّب تاني.')); }, timeoutMs || 30000);
+    function finish(err, data) {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (err) reject(err); else resolve(data);
+    }
+    window[cb] = function (res) {
+      if (!res || res.ok !== true) finish(new Error((res && res.error) || 'رد غير متوقع من السيرفر.'));
+      else finish(null, res);
+    };
+    script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت ومن رابط السيرفر.')); };
+    var url = cfg.url + (cfg.url.indexOf('?') === -1 ? '?' : '&') +
+      'action=' + encodeURIComponent(action) +
+      '&secret=' + encodeURIComponent(cfg.secret) +
+      '&callback=' + encodeURIComponent(cb);
+    if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+
+function showLoading(text, hint) {
+  $('loadingText').textContent = text || 'جارٍ التحميل...';
+  $('loadingHint').textContent = hint || '';
+  $('loading').classList.add('open');
+}
+function hideLoading() { $('loading').classList.remove('open'); }
+function toast(msg, isErr) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = isErr ? 'err' : '';
+  t.style.display = 'block';
+  clearTimeout(t.__timer);
+  t.__timer = setTimeout(function () { t.style.display = 'none'; }, 3500);
+}
+function updateHeaderStatus(online) {
+  var dot = $('netDot');
+  dot.className = 'dot ' + (online === true ? 'on' : online === false ? 'off' : '');
+  $('lastUpdate').textContent = lastOkAt ? ('آخر تحديث ' + timeStr(lastOkAt)) : (configured() ? 'متصل — لسه مفيش تحديث' : 'مش متصل بعد');
+  $('factoryTitle').textContent = settings().factoryName || 'ورشة آل هاشم';
+}
+
+var refreshing = false;
+function refresh(opts) {
+  opts = opts || {};
+  if (!configured()) { go('setup'); return Promise.resolve(); }
+  if (refreshing) return Promise.resolve();
+  refreshing = true;
+  if (opts.spinner !== false) showLoading(opts.loadingText || 'جارٍ تحديث البيانات...', 'أول تحميل ممكن ياخد ثواني لو السيرفر كان نايم.');
+  return callApi('read', null, 45000).then(function (res) {
+    DATA = res; lastOkAt = new Date();
+    updateHeaderStatus(true);
+    render();
+    return res;
+  }).catch(function (err) {
+    updateHeaderStatus(false);
+    if (!DATA) { UI.screen = 'error'; UI.errorMsg = err.message; render(); }
+    else if (opts.toastOnError !== false) toast('تعذر التحديث: ' + err.message, true);
+    throw err;
+  }).finally(function () { refreshing = false; hideLoading(); });
+}
+
+function afterWrite(msg) {
+  toast(msg || 'تم الحفظ بنجاح');
+  return refresh({ spinner: false, toastOnError: false }).catch(function () {});
+}
+
+/* ---------------- التنقل والعرض ---------------- */
+var NAV_SCREENS = ['home', 'items', 'merchants', 'orders', 'disb'];
+function go(screen) {
+  UI.screen = screen;
+  render();
+  window.scrollTo(0, 0);
+}
+function render() {
+  if (!configured() && UI.screen !== 'setup' && UI.screen !== 'settings') UI.screen = 'setup';
+  var fn = SCREENS[UI.screen] || SCREENS.home;
+  $('app').innerHTML = fn();
+  var navKey = UI.screen;
+  if (navKey === 'merchantDetail') navKey = 'merchants';
+  if (navKey === 'orderDetail' || navKey === 'orderNew' || navKey === 'invoice') navKey = 'orders';
+  if (navKey === 'vips') navKey = 'home';
+  document.querySelectorAll('#bottomNav button').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-nav') === navKey);
+  });
+  updateHeaderStatus(navigator.onLine && !!DATA);
+  if (fn.afterRender) fn.afterRender();
+}
+function emptyState(icon, title, hint, btnHtml) {
+  return '<div class="empty"><div class="big">' + icon + '</div><div style="font-weight:800;font-size:17px;color:var(--ink)">' + esc(title) + '</div><div class="muted" style="margin-top:4px">' + esc(hint) + '</div>' + (btnHtml || '') + '</div>';
+}
+
+/* ---------------- النوافذ المنبثقة (Forms) ---------------- */
+function openModal(html) {
+  $('modal').innerHTML = html;
+  $('modalWrap').classList.add('open');
+  modalOpen = true;
+}
+function closeModal() {
+  $('modalWrap').classList.remove('open');
+  $('modal').innerHTML = '';
+  modalOpen = false;
+}
+$('modalWrap').addEventListener('click', function (e) { if (e.target === $('modalWrap')) closeModal(); });
+function confirmBox(title, body, okLabel, onOk) {
+  openModal('<h2>' + esc(title) + '</h2><p style="margin:8px 0 0">' + esc(body) + '</p>' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-danger-solid" id="confirmOk">' + esc(okLabel || 'تأكيد') + '</button></div>');
+  $('confirmOk').onclick = function () { closeModal(); onOk(); };
+}
+function fieldVal(id) { var el = $(id); return el ? el.value.trim() : ''; }
+function presetChipsHtml(inputId, currentVal) {
+  var h = '<div class="chips">';
+  presets().forEach(function (p) {
+    h += '<button type="button" class="chip" onclick="setDozens(\'' + inputId + '\',' + p + ')">' + fmtDoz(p) + ' دستة</button>';
+  });
+  h += '</div>';
+  return h;
+}
+function setDozens(inputId, v) { var el = $(inputId); if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); } }
+
+/* ---------------- شاشة الإعداد الأولي ---------------- */
+function screenSetup() {
+  return '<div class="card"><h2>إعداد التطبيق لأول مرة</h2>' +
+    '<p class="muted">اكتب رابط السيرفر (Web app URL) وكلمة السر اللي اخترتها وانت بتنشر الـ Apps Script. البيانات دي بتتحفظ في المتصفح ده بس، ومش بتتشارك مع حد.</p>' +
+    '<label for="setupUrl">رابط السيرفر (Web app URL)</label>' +
+    '<input type="url" id="setupUrl" dir="ltr" placeholder="https://script.google.com/macros/s/.../exec" value="' + esc(cfg.url) + '">' +
+    '<label for="setupSecret">كلمة السر (SECRET)</label>' +
+    '<input type="password" id="setupSecret" dir="ltr" placeholder="كلمة السر اللي غيّرتها في Code.gs" value="' + esc(cfg.secret) + '">' +
+    '<div class="hint">لو لسه مانشرتش السيرفر، اقرا ملف README.md اللي مع التطبيق — فيه الخطوات بالتفصيل.</div>' +
+    '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-ghost" style="flex:1" onclick="App.testConnection()">اختبار الاتصال</button>' +
+    '<button class="btn btn-pri" style="flex:1" onclick="App.saveSetup()">حفظ وبدء الاستخدام</button></div></div>' +
+    '<div class="card"><h2>ازاي أجيب الرابط وكلمة السر؟</h2><p class="muted" style="margin:0">1) افتح الشيت ← الإضافات ← Apps Script ← الصق Code.gs وغيّر SECRET.<br>2) نشر ← New deployment ← Web app ← Execute as: Me ← Anyone ← Deploy ← انسخ الرابط.<br>3) الصق الرابط وكلمة السر هنا.</p></div>';
+}
+
+/* ---------------- الرئيسية ---------------- */
+function screenHome() {
+  if (!DATA) return '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  var items = DATA.items, orders = DATA.orders, merchants = DATA.merchants;
+  var stockPairs = 0, invValue = 0, low = 0, out = 0;
+  items.forEach(function (it) { stockPairs += num(it.stock); invValue += num(it.value); if (it.status === 'خلص') out++; else if (it.status === 'قرب يخلص') low++; });
+  var debt = 0; merchants.forEach(function (m) { debt += num(m.remaining); });
+  var active = 0, excluded = 0, sales = 0, deposits = 0, remaining = 0, soldPairs = 0, maxNo = 0;
+  var counts = {};
+  STATUSES.forEach(function (s) { counts[s] = 0; });
+  orders.forEach(function (o) {
+    var st = statusOf(o); counts[st] = (counts[st] || 0) + 1;
+    if (num(o.no) > maxNo) maxNo = num(o.no);
+    if (isActiveOrder(o)) { active++; sales += num(o.total); deposits += num(o.deposit); remaining += num(o.remaining); soldPairs += num(o.pairs); }
+    else excluded++;
+  });
+  var lowItems = items.filter(function (it) { return it.status === 'خلص' || it.status === 'قرب يخلص'; });
+  var h = '';
+  h += '<div class="row" style="margin-bottom:12px"><button class="btn btn-pri grow" onclick="App.newOrder()">+ أوردر جديد</button>' +
+       '<button class="btn btn-dark grow" onclick="go(\'items\')">+ صنف جديد</button></div>';
+  h += '<div class="grid2">' +
+    stat(fmtNum(items.length), 'صنف مسجل', '') +
+    stat(fmtNum(stockPairs) + ' زوج', fmtDoz(stockPairs / pairsPerDozen()) + ' دستة', '') +
+    stat(fmtMoney(invValue), 'قيمة المخزون', '') +
+    stat(fmtNum(low + out) + ' صنف', 'قربت تخلص / خلصت', (low + out) ? 'warn' : '') +
+    stat(fmtNum(out), 'أصناف خلصت', out ? 'bad' : '') +
+    stat(fmtMoney(debt), 'المستحق عليك للتجار', debt ? 'warn' : '') +
+    stat(fmtNum(active), 'أوردرات نشطة', 'good') +
+    stat(fmtNum(excluded), 'ملغية / مرتجعة', '') +
+    stat(fmtMoney(sales), 'مبيعات النشطة', '') +
+    stat(fmtMoney(deposits), 'إجمالي العربون', '') +
+    stat(fmtMoney(remaining), 'متبقي على العملاء', '') +
+    stat(fmtNum(soldPairs) + ' زوج', 'أزواج مباعة', '') +
+    '</div>';
+  h += '<div class="card" style="margin-top:12px"><div class="row between"><b>رقم الأوردر التالي</b><b style="font-size:20px">#' + (maxNo + 1) + '</b></div>' +
+       '<div class="row between"><span class="muted">عدد العملاء المميزين</span><b>' + fmtNum(DATA.vips.length) + '</b></div></div>';
+  h += '<div class="section-title">حالات الأوردرات</div><div class="chips">' +
+    STATUSES.map(function (s) { return '<button class="chip" onclick="App.filterOrders(\'' + s + '\')">' + esc(s) + ' (' + fmtNum(counts[s] || 0) + ')</button>'; }).join('') + '</div>';
+  h += '<div class="section-title">الأصناف اللي قربت تخلص</div>';
+  if (!lowItems.length) h += '<div class="card muted">لا توجد أصناف قربت تخلص. تمام كده 👌</div>';
+  else lowItems.slice(0, 20).forEach(function (it) {
+    h += '<div class="item-card row" onclick="go(\'items\')"><div class="grow"><div class="item-name">' + esc(it.name) + '</div><div class="muted small">الرصيد: ' + fmtNum(it.stock) + ' زوج (' + fmtDoz(it.stockDoz) + ' دستة)</div></div>' + stockBadge(it.status) + '</div>';
+  });
+  h += '<div class="section-title">روابط سريعة</div><div class="grid2">' +
+    '<button class="btn btn-ghost" onclick="go(\'vips\')">★ العملاء المميزين (' + fmtNum(DATA.vips.length) + ')</button>' +
+    '<button class="btn btn-ghost" onclick="go(\'disb\')">سجل الصرف</button></div>';
+  return h;
+}
+function stat(v, l, cls) { return '<div class="stat ' + (cls || '') + '"><div class="v">' + v + '</div><div class="l">' + esc(l) + '</div></div>'; }
+
+/* ---------------- الأصناف ---------------- */
+function screenItems() {
+  if (!DATA) return '';
+  var q = UI.itemQ.trim();
+  var list = DATA.items.filter(function (it) {
+    if (UI.itemStatus !== 'all' && it.status !== UI.itemStatus) return false;
+    if (q && (it.name + ' ' + it.model + ' ' + it.color).indexOf(q) === -1) return false;
+    if (UI.priceMin !== '' && num(it.price) < num(UI.priceMin)) return false;
+    if (UI.priceMax !== '' && num(it.price) > num(UI.priceMax)) return false;
+    return true;
+  });
+  var sort = UI.itemSort;
+  list.sort(function (a, b) {
+    if (sort === 'priceAsc') return num(a.price) - num(b.price);
+    if (sort === 'priceDesc') return num(b.price) - num(a.price);
+    if (sort === 'stockAsc') return num(a.stock) - num(b.stock);
+    if (sort === 'stockDesc') return num(b.stock) - num(a.stock);
+    return String(a.name).localeCompare(String(b.name), 'ar');
+  });
+  var h = '<div class="toolbar"><input type="text" id="itemSearch" placeholder="ابحث بالاسم أو الموديل أو اللون..." value="' + esc(UI.itemQ) + '"></div>';
+  h += '<div class="row"><input type="number" id="priceMin" placeholder="أقل سعر" inputmode="decimal" value="' + esc(UI.priceMin) + '" style="flex:1">' +
+       '<input type="number" id="priceMax" placeholder="أعلى سعر" inputmode="decimal" value="' + esc(UI.priceMax) + '" style="flex:1">' +
+       '<select id="itemSort" style="flex:1.2"><option value="name">ترتيب: الاسم</option><option value="priceAsc">السعر: من الأقل</option><option value="priceDesc">السعر: من الأعلى</option><option value="stockAsc">المخزون: من الأقل</option><option value="stockDesc">المخزون: من الأعلى</option></select></div>';
+  h += '<div class="chips">' + ['all', 'متوفر', 'قرب يخلص', 'خلص'].map(function (s) {
+    return '<button class="chip' + (UI.itemStatus === s ? ' on' : '') + '" onclick="App.setItemStatus(\'' + s + '\')">' + (s === 'all' ? 'الكل' : s) + '</button>';
+  }).join('') + '</div>';
+  h += '<div class="muted small" style="margin-bottom:8px">' + fmtNum(list.length) + ' صنف معروض من ' + fmtNum(DATA.items.length) + '</div>';
+  if (!DATA.items.length) return h + emptyState('👞', 'لسه مفيش أصناف', 'ابدأ وسجّل أول موديل: الموديل واللون وسعر بيع الدستة. كل لون صنف لوحده.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.itemForm()">+ إضافة صنف</button></div>');
+  if (!list.length) return h + emptyState('🔍', 'مفيش نتائج', 'جرّب كلمة بحث أو سعر مختلف.');
+  list.forEach(function (it) {
+    h += '<div class="item-card"><div class="row"><div class="grow"><div class="item-name">' + esc(it.name) + '</div>' +
+      '<div class="muted small">سعر الدستة: ' + fmtMoney(it.price) + ' • سعر الزوج: ' + fmtMoney(it.pairPrice) + '</div>' +
+      '<div class="small">الرصيد: <b>' + fmtNum(it.stock) + ' زوج</b> (' + fmtDoz(it.stockDoz) + ' دستة) • وارد: ' + fmtNum(it.supplied) + ' • منصرف: ' + fmtNum(it.out) + '</div>' +
+      (it.notes ? '<div class="muted small">' + esc(it.notes) + '</div>' : '') + '</div>' + stockBadge(it.status) + '</div>' +
+      '<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm grow" onclick="App.itemForm(' + it._row + ')">تعديل</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="App.deleteItem(' + it._row + ')">حذف</button></div></div>';
+  });
+  h += '<button class="fab" onclick="App.itemForm()">+ صنف جديد</button>';
+  return h;
+}
+screenItems.afterRender = function () {
+  var s = $('itemSearch'); if (s) s.addEventListener('input', function () { UI.itemQ = s.value; UI.__focusId = 'itemSearch'; softRerender('items'); });
+  var mn = $('priceMin'); if (mn) mn.addEventListener('input', function () { UI.priceMin = mn.value; UI.__focusId = 'priceMin'; softRerender('items'); });
+  var mx = $('priceMax'); if (mx) mx.addEventListener('input', function () { UI.priceMax = mx.value; UI.__focusId = 'priceMax'; softRerender('items'); });
+  var so = $('itemSort'); if (so) { so.value = UI.itemSort; so.addEventListener('change', function () { UI.itemSort = so.value; render(); }); }
+  restoreFocus();
+};
+function restoreFocus() {
+  if (!UI.__focusId) return;
+  var el = $(UI.__focusId); UI.__focusId = null;
+  if (el) { el.focus(); try { var v = el.value; el.setSelectionRange(v.length, v.length); } catch (e) {} }
+}
+var __softTimer = null;
+function softRerender(screen) {
+  clearTimeout(__softTimer);
+  __softTimer = setTimeout(function () { if (UI.screen === screen) render(); }, 350);
+}
+function itemFormHtml(it) {
+  var isEdit = !!it;
+  return '<h2>' + (isEdit ? 'تعديل صنف' : 'إضافة صنف جديد') + '</h2>' +
+    '<p class="muted small" style="margin:0">كل لون صنف لوحده — مثلاً موديل «س» أحمر و«س» أخضر صنفين مختلفين.</p>' +
+    '<label for="fModel">الموديل (اسم أو رقم)</label><input type="text" id="fModel" value="' + esc(it ? it.model : '') + '" placeholder="مثال: س أو 101">' +
+    '<label for="fColor">اللون</label><input type="text" id="fColor" value="' + esc(it ? it.color : '') + '" placeholder="مثال: أحمر">' +
+    '<label for="fPrice">سعر بيع الدستة (ج.م)</label><input type="number" id="fPrice" inputmode="decimal" min="0" step="any" value="' + esc(it ? it.price : '') + '" placeholder="مثال: 1200">' +
+    '<label for="fOpening">رصيد افتتاحي (دستة) — اختياري</label><input type="number" id="fOpening" inputmode="decimal" min="0" step="any" value="' + esc(it && num(it.openingDoz) ? it.openingDoz : '') + '" placeholder="0">' +
+    presetChipsHtml('fOpening') +
+    '<label for="fNotes">ملاحظات — اختياري</label><input type="text" id="fNotes" value="' + esc(it ? it.notes : '') + '">' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-pri" onclick="App.saveItem(' + (isEdit ? it._row : 0) + ')">' + (isEdit ? 'حفظ التعديل' : 'إضافة الصنف') + '</button></div>';
+}
+
+/* ---------------- التجار ---------------- */
+function screenMerchants() {
+  if (!DATA) return '';
+  var h = '<div class="row between" style="margin-bottom:10px"><h2 style="font-size:18px">التجار (' + fmtNum(DATA.merchants.length) + ')</h2><button class="btn btn-pri btn-sm" onclick="App.merchantForm()">+ تاجر جديد</button></div>';
+  if (!DATA.merchants.length) return h + emptyState('◈', 'لسه مفيش تجار', 'سجّل التجار اللي بتجيب منهم الشغل، وبعد كده سجّل توريداتهم ودفعاتهم.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.merchantForm()">+ إضافة تاجر</button></div>');
+  DATA.merchants.forEach(function (m) {
+    h += '<div class="item-card" onclick="App.openMerchant(' + m._row + ')"><div class="row"><div class="grow"><div class="item-name">' + esc(m.name) + '</div>' +
+      '<div class="muted small">' + esc(phonesText(m) || 'بدون تليفون') + (m.address ? ' • ' + esc(m.address) : '') + '</div></div>' +
+      '<div style="text-align:left"><div class="small muted">المتبقي عليك</div><b style="font-size:17px">' + fmtMoney(m.remaining) + '</b></div></div>' +
+      '<div class="small muted" style="margin-top:4px">توريدات: ' + fmtNum(m.supPairs) + ' زوج (' + fmtMoney(m.supValue) + ') • مدفوعات: ' + fmtMoney(m.paid) + ' • عدد التوريدات: ' + fmtNum(m.supCount) + '</div></div>';
+  });
+  return h;
+}
+function screenMerchantDetail() {
+  if (!DATA) return '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  var m = null;
+  DATA.merchants.forEach(function (x) { if (x._row === UI.merchRow) m = x; });
+  if (!m) return '<div class="card">التاجر مش موجود. <button class="btn btn-ghost btn-sm" onclick="go(\'merchants\')">رجوع للتجار</button></div>';
+  var sups = DATA.supplies.filter(function (s) { return s.merchant === m.name; });
+  var pays = DATA.payments.filter(function (p) { return p.merchant === m.name; });
+  var rows = [];
+  sups.forEach(function (s) { rows.push({ kind: 'توريد', date: s.date, item: s.item, dozens: s.dozens, pairs: s.pairs, price: s.buyPrice, amount: s.total, notes: s.notes, row: s._row }); });
+  pays.forEach(function (p) { rows.push({ kind: 'دفعة', date: p.date, item: '', dozens: 0, pairs: 0, price: 0, amount: -num(p.amount), notes: (p.method ? p.method + (p.notes ? ' — ' + p.notes : '') : p.notes), row: p._row }); });
+  rows.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)) || (a.row - b.row); });
+  var bal = 0;
+  rows.forEach(function (r) { bal += num(r.amount); r.balance = bal; });
+  var shown = rows.filter(function (r) { return UI.merchTab === 'all' || (UI.merchTab === 'sup' && r.kind === 'توريد') || (UI.merchTab === 'pay' && r.kind === 'دفعة'); });
+  var h = '<button class="btn btn-ghost btn-sm" onclick="go(\'merchants\')">← كل التجار</button>';
+  h += '<div class="card" style="margin-top:10px"><div class="row between"><h2>' + esc(m.name) + '</h2><button class="btn btn-ghost btn-sm" onclick="App.merchantForm(' + m._row + ')">تعديل</button></div>' +
+    '<div class="muted">' + esc(phonesText(m) || 'بدون تليفون') + '</div>' + (m.address ? '<div class="muted">' + esc(m.address) + '</div>' : '') + (m.notes ? '<div class="muted small">' + esc(m.notes) + '</div>' : '') + '</div>';
+  h += '<div class="grid2">' +
+    stat(fmtNum(m.supPairs) + ' زوج', 'إجمالي التوريدات', '') +
+    stat(fmtMoney(m.supValue), 'قيمة التوريدات', '') +
+    stat(fmtMoney(m.paid), 'إجمالي المدفوعات', 'good') +
+    stat(fmtMoney(m.remaining), 'المتبقي عليك', num(m.remaining) ? 'warn' : '') + '</div>';
+  h += '<div class="row" style="margin:12px 0"><button class="btn btn-pri grow" onclick="App.supplyForm(' + m._row + ')">+ توريد جديد</button><button class="btn btn-dark grow" onclick="App.paymentForm(' + m._row + ')">+ دفعة جديدة</button></div>';
+  h += '<div class="tabs">' +
+    '<button class="tab' + (UI.merchTab === 'all' ? ' on' : '') + '" onclick="App.setMerchTab(\'all\')">كل الحركات</button>' +
+    '<button class="tab' + (UI.merchTab === 'sup' ? ' on' : '') + '" onclick="App.setMerchTab(\'sup\')">توريدات</button>' +
+    '<button class="tab' + (UI.merchTab === 'pay' ? ' on' : '') + '" onclick="App.setMerchTab(\'pay\')">مدفوعات</button></div>';
+  if (!shown.length) h += emptyState('📄', 'مفيش حركات هنا', 'سجّل أول توريد أو دفعة للتاجر ده من الزرارين اللي فوق.');
+  shown.slice().reverse().forEach(function (r) {
+    h += '<div class="item-card"><div class="row"><div class="grow"><div><span class="badge ' + (r.kind === 'توريد' ? 'b-blue' : 'b-green') + '">' + r.kind + '</span> <b>' + esc(r.date || 'بدون تاريخ') + '</b></div>' +
+      (r.item ? '<div class="small">الصنف: ' + esc(r.item) + ' • ' + fmtDoz(r.dozens) + ' دستة (' + fmtNum(r.pairs) + ' زوج) • سعر الدستة: ' + fmtMoney(r.price) + '</div>' : '') +
+      (r.notes ? '<div class="muted small">' + esc(r.notes) + '</div>' : '') +
+      '<div class="small">الرصيد التراكمي (عليك): <b>' + fmtMoney(r.balance) + '</b></div></div>' +
+      '<div style="text-align:left"><b style="font-size:16px">' + (num(r.amount) < 0 ? '−' : '+') + fmtMoney(Math.abs(num(r.amount))) + '</b>' +
+      '<div><button class="btn btn-danger btn-sm" style="margin-top:6px" onclick="App.deleteMovement(\'' + r.kind + '\',' + r.row + ')">حذف</button></div></div></div></div>';
+  });
+  h += '<div style="margin-top:14px"><button class="btn btn-danger btn-block" onclick="App.deleteMerchant(' + m._row + ')">حذف التاجر</button></div>';
+  return h;
+}
+function merchantFormHtml(m) {
+  var isEdit = !!m;
+  return '<h2>' + (isEdit ? 'تعديل تاجر' : 'إضافة تاجر جديد') + '</h2>' +
+    '<label for="fMName">اسم التاجر</label><input type="text" id="fMName" value="' + esc(m ? m.name : '') + '">' +
+    '<label for="fMPhone1">هاتف 1</label><input type="tel" id="fMPhone1" inputmode="tel" dir="ltr" style="text-align:right" value="' + esc(m ? m.phone1 : '') + '">' +
+    '<label for="fMPhone2">هاتف 2 — اختياري</label><input type="tel" id="fMPhone2" inputmode="tel" dir="ltr" style="text-align:right" value="' + esc(m ? m.phone2 : '') + '">' +
+    '<label for="fMAddr">العنوان — اختياري</label><input type="text" id="fMAddr" value="' + esc(m ? m.address : '') + '">' +
+    '<label for="fMNotes">ملاحظات — اختياري</label><input type="text" id="fMNotes" value="' + esc(m ? m.notes : '') + '">' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-pri" onclick="App.saveMerchant(' + (isEdit ? m._row : 0) + ')">' + (isEdit ? 'حفظ التعديل' : 'إضافة التاجر') + '</button></div>';
+}
+function itemOptionsDatalist(id) {
+  var h = '<datalist id="' + id + '">';
+  DATA.items.forEach(function (it) { h += '<option value="' + esc(it.name) + '"></option>'; });
+  return h + '</datalist>';
+}
+function supplyFormHtml(merchantRow) {
+  var m = null; DATA.merchants.forEach(function (x) { if (x._row === merchantRow) m = x; });
+  var merchOpts = DATA.merchants.map(function (x) { return '<option value="' + esc(x.name) + '"' + (m && x.name === m.name ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('');
+  return '<h2>توريد جديد من تاجر</h2><p class="muted small" style="margin:0">التوريد بيزود المخزون وحساب التاجر لوحده.</p>' +
+    '<label for="fSDate">التاريخ</label><input type="date" id="fSDate" value="' + todayStr() + '">' +
+    '<label for="fSMerchant">التاجر</label><select id="fSMerchant">' + merchOpts + '</select>' +
+    '<label for="fSItem">الصنف</label><input type="text" id="fSItem" list="dlItemsSup" placeholder="اكتب اسم الصنف واختار من القائمة" autocomplete="off">' + itemOptionsDatalist('dlItemsSup') +
+    '<div class="hint" id="supItemInfo"></div>' +
+    '<label for="fSDoz">الكمية (دستة)</label><input type="number" id="fSDoz" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5">' + presetChipsHtml('fSDoz') +
+    '<label for="fSBuy">سعر شراء الدستة (ج.م)</label><input type="number" id="fSBuy" inputmode="decimal" min="0" step="any" placeholder="مثال: 1000">' +
+    '<label for="fSNotes">ملاحظات — اختياري</label><input type="text" id="fSNotes">' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-pri" onclick="App.saveSupply()">حفظ التوريد</button></div>';
+}
+function paymentFormHtml(merchantRow) {
+  var m = null; DATA.merchants.forEach(function (x) { if (x._row === merchantRow) m = x; });
+  var merchOpts = DATA.merchants.map(function (x) { return '<option value="' + esc(x.name) + '"' + (m && x.name === m.name ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('');
+  var methOpts = METHODS.map(function (x) { return '<option>' + x + '</option>'; }).join('');
+  return '<h2>دفعة جديدة لتاجر</h2>' +
+    '<label for="fPDate">التاريخ</label><input type="date" id="fPDate" value="' + todayStr() + '">' +
+    '<label for="fPMerchant">التاجر</label><select id="fPMerchant">' + merchOpts + '</select>' +
+    '<label for="fPAmount">المبلغ المدفوع (ج.م)</label><input type="number" id="fPAmount" inputmode="decimal" min="0" step="any" placeholder="مثال: 5000">' +
+    '<label for="fPMethod">طريقة الدفع</label><select id="fPMethod">' + methOpts + '</select>' +
+    '<label for="fPNotes">ملاحظات — اختياري</label><input type="text" id="fPNotes">' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-pri" onclick="App.savePayment()">حفظ الدفعة</button></div>';
+}
+
+/* ---------------- العملاء المميزين ---------------- */
+function screenVips() {
+  if (!DATA) return '';
+  var h = '<div class="row between" style="margin-bottom:10px"><h2 style="font-size:18px">العملاء المميزين (' + fmtNum(DATA.vips.length) + ')</h2><button class="btn btn-pri btn-sm" onclick="App.vipForm()">+ عميل مميز</button></div>';
+  h += '<p class="muted small">سجّل العميل المميز هنا مرة واحدة، وبعد كده وانت بتعمل أوردر اختار اسمه وهتتملا بياناته لوحدها.</p>';
+  if (!DATA.vips.length) return h + emptyState('★', 'لسه مفيش عملاء مميزين', 'ضيف عميل مميز عشان تعملّه أوردرات بسرعة وبياناته تتملا لوحدها.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.vipForm()">+ إضافة عميل مميز</button></div>');
+  DATA.vips.forEach(function (v) {
+    h += '<div class="item-card"><div class="row"><div class="grow"><div class="item-name">' + esc(v.name) + '</div>' +
+      '<div class="muted small">' + esc(phonesText(v) || 'بدون تليفون') + (v.address ? ' • ' + esc(v.address) : '') + '</div>' +
+      '<div class="small">أوردرات: ' + fmtNum(v.orderCount) + ' • إجمالي مشترياته: ' + fmtMoney(v.totalPurchases) + (v.lastOrder ? ' • آخر أوردر: ' + esc(v.lastOrder) : '') + '</div></div></div>' +
+      '<div class="row" style="margin-top:10px"><button class="btn btn-pri btn-sm grow" onclick="App.newOrderForVip(' + v._row + ')">أوردر جديد</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="App.vipForm(' + v._row + ')">تعديل</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="App.deleteVip(' + v._row + ')">حذف</button></div></div>';
+  });
+  return h;
+}
+function vipFormHtml(v) {
+  var isEdit = !!v;
+  return '<h2>' + (isEdit ? 'تعديل عميل مميز' : 'إضافة عميل مميز') + '</h2>' +
+    '<label for="fVName">الاسم</label><input type="text" id="fVName" value="' + esc(v ? v.name : '') + '">' +
+    '<label for="fVPhone1">هاتف 1</label><input type="tel" id="fVPhone1" inputmode="tel" dir="ltr" style="text-align:right" value="' + esc(v ? v.phone1 : '') + '">' +
+    '<label for="fVPhone2">هاتف 2 — اختياري</label><input type="tel" id="fVPhone2" inputmode="tel" dir="ltr" style="text-align:right" value="' + esc(v ? v.phone2 : '') + '">' +
+    '<label for="fVAddr">العنوان — اختياري</label><input type="text" id="fVAddr" value="' + esc(v ? v.address : '') + '">' +
+    '<label for="fVNotes">ملاحظات — اختياري</label><input type="text" id="fVNotes" value="' + esc(v ? v.notes : '') + '">' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-pri" onclick="App.saveVip(' + (isEdit ? v._row : 0) + ')">' + (isEdit ? 'حفظ التعديل' : 'إضافة العميل') + '</button></div>';
+}
+
+/* ---------------- الأوردرات: القائمة ---------------- */
+function screenOrders() {
+  if (!DATA) return '';
+  var q = UI.orderQ.trim();
+  var list = DATA.orders.filter(function (o) {
+    if (UI.orderFilter !== 'all' && statusOf(o) !== UI.orderFilter) return false;
+    if (q && (o.customer + ' ' + phonesText(o)).indexOf(q) === -1) return false;
+    return true;
+  });
+  list.sort(function (a, b) { return num(b.no) - num(a.no); });
+  var h = '<div class="row" style="margin-bottom:10px"><button class="btn btn-pri grow" onclick="App.newOrder()">+ أوردر جديد</button></div>';
+  h += '<div class="toolbar"><input type="text" id="orderSearch" placeholder="ابحث بالاسم أو التليفون..." value="' + esc(UI.orderQ) + '"></div>';
+  h += '<div class="chips"><button class="chip' + (UI.orderFilter === 'all' ? ' on' : '') + '" onclick="App.setOrderFilter(\'all\')">الكل</button>' +
+    STATUSES.map(function (s) { return '<button class="chip' + (UI.orderFilter === s ? ' on' : '') + '" onclick="App.setOrderFilter(\'' + s + '\')">' + esc(s) + '</button>'; }).join('') + '</div>';
+  if (!DATA.orders.length) return h + emptyState('▦', 'لسه مفيش أوردرات', 'اعمل أول أوردر: اختار العميل، وضيف البنود، وأكّد — والفاتورة هتتولد لوحدها.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.newOrder()">+ أوردر جديد</button></div>');
+  if (!list.length) return h + emptyState('🔍', 'مفيش أوردرات بالفلتر ده', 'غيّر الحالة أو امسح البحث.');
+  list.forEach(function (o) {
+    h += '<div class="item-card" onclick="App.openOrder(' + o._row + ')"><div class="row"><div class="grow"><div class="item-name">#' + fmtNum(o.no) + ' — ' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★' : '') + '</div>' +
+      '<div class="muted small">' + esc(phonesText(o) || 'بدون تليفون') + ' • ' + esc(o.date || '') + '</div>' +
+      '<div class="small">الأزواج: <b>' + fmtNum(o.pairs) + '</b> • الإجمالي: <b>' + fmtMoney(o.total) + '</b>' + (num(o.remaining) ? ' • متبقي: <b>' + fmtMoney(o.remaining) + '</b>' : '') + '</div></div>' +
+      '<div style="text-align:left">' + statusBadge(statusOf(o)) + '<div style="margin-top:6px"><span class="badge ' + (o.disbStatus === 'تم الصرف' ? 'b-green' : 'b-amber') + '">' + esc(o.disbStatus || 'لم يتم الصرف') + '</span></div></div></div></div>';
+  });
+  return h;
+}
+screenOrders.afterRender = function () {
+  var s = $('orderSearch');
+  if (s) s.addEventListener('input', function () { UI.orderQ = s.value; UI.__focusId = 'orderSearch'; softRerender('orders'); });
+  restoreFocus();
+};
+
+/* ---------------- الأوردرات: التفاصيل ---------------- */
+function screenOrderDetail() {
+  var o = orderByRow(UI.orderRow);
+  if (!o) return '<div class="card">الأوردر مش موجود. <button class="btn btn-ghost btn-sm" onclick="go(\'orders\')">رجوع للأوردرات</button></div>';
+  var lines = linesOf(o.no);
+  var h = '<button class="btn btn-ghost btn-sm" onclick="go(\'orders\')">← كل الأوردرات</button>';
+  h += '<div class="card" style="margin-top:10px"><div class="row between"><h2>أوردر #' + fmtNum(o.no) + '</h2>' + statusBadge(statusOf(o)) + '</div>' +
+    '<div class="kv"><span>العميل</span><b>' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★ مميز' : '') + '</b></div>' +
+    '<div class="kv"><span>التليفون</span><b>' + esc(phonesText(o) || '—') + '</b></div>' +
+    '<div class="kv"><span>العنوان</span><b>' + esc(o.address || '—') + '</b></div>' +
+    '<div class="kv"><span>التاريخ</span><b>' + esc(o.date || '—') + '</b></div>' +
+    '<div class="kv"><span>طريقة الدفع</span><b>' + esc(o.method || '—') + '</b></div>' +
+    '<div class="kv"><span>حالة الصرف</span><b>' + esc(o.disbStatus || 'لم يتم الصرف') + '</b></div>' +
+    (o.notes ? '<div class="kv"><span>ملاحظات</span><b>' + esc(o.notes) + '</b></div>' : '') + '</div>';
+  h += '<div class="card"><h2>بنود الأوردر (' + fmtNum(lines.length) + ')</h2>';
+  if (!lines.length) h += '<p class="muted">مفيش بنود.</p>';
+  lines.forEach(function (l) {
+    h += '<div class="item-card" style="margin-bottom:8px"><div class="row"><div class="grow"><b>' + esc(l.item) + '</b>' +
+      '<div class="small">' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج) • سعر الدستة: ' + fmtMoney(l.price) + (num(l.discount) ? ' • خصم: ' + fmtMoney(l.discount) : '') + '</div></div>' +
+      '<div style="text-align:left"><b>' + fmtMoney(l.total) + '</b><div><button class="btn btn-danger btn-sm" style="margin-top:6px" onclick="App.deleteLine(' + l._row + ')">حذف البند</button></div></div></div></div>';
+  });
+  h += '<button class="btn btn-ghost btn-block" onclick="App.lineForm(' + o.no + ')">+ إضافة بند للأوردر ده</button></div>';
+  h += '<div class="card"><div class="kv"><span>المجموع الفرعي</span><b>' + fmtMoney(o.subtotal) + '</b></div>' +
+    '<div class="kv"><span>مصاريف الشحن</span><b>' + fmtMoney(o.shipping) + '</b></div>' +
+    '<div class="kv"><span>الخصم العام</span><b>' + fmtMoney(o.discount) + '</b></div>' +
+    '<div class="kv"><span>الإجمالي المستحق</span><b>' + fmtMoney(o.total) + '</b></div>' +
+    '<div class="kv"><span>إجمالي الأزواج</span><b>' + fmtNum(o.pairs) + ' زوج</b></div>' +
+    '<div class="kv"><span>العربون</span><b>' + fmtMoney(o.deposit) + '</b></div>' +
+    '<div class="kv"><span>المتبقي بعد العربون</span><b>' + fmtMoney(o.remaining) + '</b></div></div>';
+  h += '<div class="card"><label for="ordStatus">تغيير حالة الأوردر</label>' +
+    '<select id="ordStatus">' + STATUSES.map(function (s) { return '<option' + (statusOf(o) === s ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select>' +
+    '<div class="hint">لو غيّرت لـ «مرتجع» أو «ملغي» المخزون هيرجع لوحده والأوردر مش هيتحسب في المبيعات ولا الصرف. ولو غيّرت لـ «تم الصرف» يبقى اتحاسبت عليه خلاص.</div>' +
+    '<div class="row" style="margin-top:12px"><button class="btn btn-dark grow" onclick="App.changeOrderStatus(' + o._row + ')">حفظ الحالة</button>' +
+    '<button class="btn btn-ghost grow" onclick="App.editOrderNotes(' + o._row + ')">تعديل البيانات والملاحظات</button></div></div>';
+  h += '<button class="btn btn-pri btn-block" onclick="App.showInvoice(' + o._row + ')">عرض الفاتورة</button>';
+  return h;
+}
+function lineFormHtml(orderNo) {
+  return '<h2>إضافة بند لأوردر #' + fmtNum(orderNo) + '</h2>' +
+    '<label for="fLItem">الصنف</label><input type="text" id="fLItem" list="dlItemsLine" placeholder="اكتب اسم الصنف واختار من القائمة" autocomplete="off">' + itemOptionsDatalist('dlItemsLine') +
+    '<div class="hint" id="lineItemInfo"></div>' +
+    '<label for="fLDoz">الكمية (دستة)</label><input type="number" id="fLDoz" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5">' + presetChipsHtml('fLDoz') +
+    '<label for="fLPrice">سعر الدستة (ج.م) — سيبه فاضي عشان يتملا لوحده من الصنف</label><input type="number" id="fLPrice" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)">' +
+    '<label for="fLDisc">خصم البند (ج.م) — اختياري</label><input type="number" id="fLDisc" inputmode="decimal" min="0" step="any" placeholder="0">' +
+    '<label for="fLNotes">ملاحظات — اختياري</label><input type="text" id="fLNotes">' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-pri" onclick="App.saveLine(' + orderNo + ')">إضافة البند</button></div>';
+}
+function orderEditHtml(o) {
+  var methOpts = [''].concat(METHODS).map(function (x) { return '<option value="' + esc(x) + '"' + (o.method === x ? ' selected' : '') + '>' + (x || '— بدون —') + '</option>'; }).join('');
+  return '<h2>تعديل بيانات أوردر #' + fmtNum(o.no) + '</h2>' +
+    '<label for="fEDate">التاريخ</label><input type="date" id="fEDate" value="' + esc(o.date || todayStr()) + '">' +
+    '<label for="fEName">اسم العميل</label><input type="text" id="fEName" value="' + esc(o.customer) + '" list="dlVipsEdit">' +
+    '<datalist id="dlVipsEdit">' + DATA.vips.map(function (v) { return '<option value="' + esc(v.name) + '"></option>'; }).join('') + '</datalist>' +
+    '<div class="hint">لو الاسم بقى اسم عميل مميز، التليفونات والعنوان هيتملوا لوحدهم من بياناته.</div>' +
+    '<label for="fEPhone1">هاتف 1</label><input type="tel" id="fEPhone1" dir="ltr" style="text-align:right" value="' + esc(o.phone1) + '">' +
+    '<label for="fEPhone2">هاتف 2</label><input type="tel" id="fEPhone2" dir="ltr" style="text-align:right" value="' + esc(o.phone2) + '">' +
+    '<label for="fEAddr">العنوان</label><input type="text" id="fEAddr" value="' + esc(o.address) + '">' +
+    '<label for="fEMethod">طريقة الدفع</label><select id="fEMethod">' + methOpts + '</select>' +
+    '<label for="fEShip">مصاريف الشحن (ج.م)</label><input type="number" id="fEShip" inputmode="decimal" min="0" step="any" value="' + esc(num(o.shipping) || '') + '">' +
+    '<label for="fEDisc">الخصم العام (ج.م)</label><input type="number" id="fEDisc" inputmode="decimal" min="0" step="any" value="' + esc(num(o.discount) || '') + '">' +
+    '<label for="fEDep">العربون (ج.م)</label><input type="number" id="fEDep" inputmode="decimal" min="0" step="any" value="' + esc(num(o.deposit) || '') + '">' +
+    '<label for="fENotes">ملاحظات</label><textarea id="fENotes">' + esc(o.notes) + '</textarea>' +
+    '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
+    '<button class="btn btn-pri" onclick="App.saveOrderEdit(' + o._row + ')">حفظ التعديل</button></div>';
+}
+
+/* ---------------- الأوردرات: معالج الأوردر الجديد ---------------- */
+function newWizard(prefillVipRow) {
+  var w = {
+    step: 1,
+    date: todayStr(),
+    vipRow: 0, customer: '', phone1: '', phone2: '', address: '', isVip: false,
+    lines: [{ item: '', dozens: '', discount: '', customPrice: '' }],
+    shipping: '', discount: '', deposit: '', method: 'كاش / نقدي', notes: '', status: 'جديد'
+  };
+  if (prefillVipRow) {
+    var v = null; DATA.vips.forEach(function (x) { if (x._row === prefillVipRow) v = x; });
+    if (v) { w.vipRow = v._row; w.customer = v.name; w.phone1 = v.phone1; w.phone2 = v.phone2; w.address = v.address; w.isVip = true; }
+  }
+  return w;
+}
+function wizardTotals(w) {
+  var sub = 0, pairs = 0;
+  w.lines.forEach(function (ln) {
+    var it = itemByName(ln.item);
+    var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
+    var dz = num(ln.dozens);
+    sub += dz * price - num(ln.discount);
+    pairs += dz * pairsPerDozen();
+  });
+  var grand = sub + num(w.shipping) - num(w.discount);
+  return { subtotal: sub, pairs: pairs, grand: grand, remaining: grand - num(w.deposit) };
+}
+function updateWizardTotals() {
+  var w = UI.wizard; if (!w) return;
+  var t = wizardTotals(w);
+  var a = $('wzSub'); if (a) a.textContent = fmtMoney(t.subtotal);
+  var b = $('wzPairs'); if (b) b.textContent = fmtNum(t.pairs) + ' زوج';
+  w.lines.forEach(function (ln, i) {
+    var it = itemByName(ln.item);
+    var infoEl = $('wzInfo-' + i);
+    if (infoEl) infoEl.textContent = it ? ('سعر الدستة: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
+    var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
+    var lt = $('wzLineTotal-' + i);
+    if (lt) lt.textContent = fmtMoney(num(ln.dozens) * price - num(ln.discount));
+  });
+}
+function updateWizardStep3() {
+  var w = UI.wizard; if (!w) return;
+  var t = wizardTotals(w);
+  var set = function (id, txt) { var el = $(id); if (el) el.textContent = txt; };
+  set('wz3Sub', fmtMoney(t.subtotal)); set('wz3Ship', fmtMoney(w.shipping)); set('wz3Disc', fmtMoney(w.discount));
+  set('wz3Grand', fmtMoney(t.grand)); set('wz3Pairs', fmtNum(t.pairs) + ' زوج');
+  set('wz3Dep', fmtMoney(w.deposit)); set('wz3Rem', fmtMoney(t.remaining));
+}
+function screenOrderNew() {
+  if (!DATA) return '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  var w = UI.wizard;
+  if (!w) { UI.wizard = newWizard(); w = UI.wizard; }
+  var h = '<div class="stepbar"><div class="step' + (w.step === 1 ? ' on' : '') + '">1. العميل</div><div class="step' + (w.step === 2 ? ' on' : '') + '">2. البنود</div><div class="step' + (w.step === 3 ? ' on' : '') + '">3. التأكيد</div></div>';
+  if (w.step === 1) h += wizardStep1(w);
+  else if (w.step === 2) h += wizardStep2(w);
+  else h += wizardStep3(w);
+  return h;
+}
+function wizardStep1(w) {
+  var vipOpts = '<option value="0">— عميل عادي (اكتب بياناته يدوي) —</option>' + DATA.vips.map(function (v) {
+    return '<option value="' + v._row + '"' + (w.vipRow === v._row ? ' selected' : '') + '>' + esc(v.name) + ' ★</option>';
+  }).join('');
+  var ro = w.isVip ? ' readonly' : '';
+  var h = '<div class="card"><h2>بيانات العميل</h2>' +
+    '<label for="wVip">عميل مميز؟</label><select id="wVip" onchange="App.wizardPickVip(this.value)">' + vipOpts + '</select>' +
+    '<div class="hint">لو اخترت عميل مميز، بياناته هتتملا لوحدها ومش هتحتاج تكتبها.</div>' +
+    '<label for="wDate">التاريخ</label><input type="date" id="wDate" value="' + esc(w.date) + '" onchange="App.wizardField(\'date\',this.value)">' +
+    '<label for="wCustomer">اسم العميل</label><input type="text" id="wCustomer" value="' + esc(w.customer) + '" list="dlVipsW" placeholder="اسم العميل" oninput="App.wizardField(\'customer\',this.value)"' + (w.isVip ? ' readonly' : '') + '>' +
+    '<datalist id="dlVipsW">' + DATA.vips.map(function (v) { return '<option value="' + esc(v.name) + '"></option>'; }).join('') + '</datalist>' +
+    '<label for="wPhone1">هاتف 1</label><input type="tel" id="wPhone1" dir="ltr" style="text-align:right" value="' + esc(w.phone1) + '" oninput="App.wizardField(\'phone1\',this.value)"' + ro + '>' +
+    '<label for="wPhone2">هاتف 2 — اختياري</label><input type="tel" id="wPhone2" dir="ltr" style="text-align:right" value="' + esc(w.phone2) + '" oninput="App.wizardField(\'phone2\',this.value)"' + ro + '>' +
+    '<label for="wAddr">العنوان</label><input type="text" id="wAddr" value="' + esc(w.address) + '" oninput="App.wizardField(\'address\',this.value)"' + ro + '>' +
+    (w.isVip ? '<div class="banner" style="margin-top:12px">عميل مميز ★ — بياناته هتتملا تلقائياً من سجل العملاء المميزين.</div>' : '') + '</div>' +
+    '<div class="row"><button class="btn btn-ghost grow" onclick="go(\'orders\')">إلغاء</button>' +
+    '<button class="btn btn-pri grow" onclick="App.wizardNext()">التالي: البنود ←</button></div>';
+  return h;
+}
+function wizardStep2(w) {
+  var t = wizardTotals(w);
+  var h = '<div class="card"><h2>بنود الأوردر</h2><p class="muted small" style="margin:0">اختار الصنف والكمية بالدستة. السعر بيتملا لوحده من سعر الصنف.</p></div>';
+  h += '<datalist id="dlItemsW">' + DATA.items.map(function (x) { return '<option value="' + esc(x.name) + '"></option>'; }).join('') + '</datalist>';
+  h += '<div id="wizardLines">';
+  w.lines.forEach(function (ln, i) { h += wizardLineRow(w, i); });
+  h += '</div>';
+  h += '<button class="btn btn-ghost btn-block" onclick="App.wizardAddLine()">+ إضافة بند</button>';
+  h += '<div class="card" style="margin-top:12px"><div class="kv"><span>المجموع الفرعي</span><b id="wzSub">' + fmtMoney(t.subtotal) + '</b></div>' +
+    '<div class="kv"><span>إجمالي الأزواج</span><b id="wzPairs">' + fmtNum(t.pairs) + ' زوج</b></div></div>';
+  h += '<div class="row"><button class="btn btn-ghost grow" onclick="App.wizardBack()">→ رجوع</button>' +
+    '<button class="btn btn-pri grow" onclick="App.wizardNext()">التالي: التأكيد ←</button></div>';
+  return h;
+}
+function wizardLineRow(w, i) {
+  var ln = w.lines[i];
+  var it = itemByName(ln.item);
+  var info = it ? ('سعر الدستة: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
+  var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
+  var lineTotal = num(ln.dozens) * price - num(ln.discount);
+  return '<div class="line-row"><div class="row between"><b>بند ' + (i + 1) + '</b>' +
+    (w.lines.length > 1 ? '<button class="btn btn-danger btn-sm" onclick="App.wizardRemoveLine(' + i + ')">حذف البند</button>' : '') + '</div>' +
+    '<label>الصنف</label><input type="text" list="dlItemsW" placeholder="اكتب اسم الصنف واختار من القائمة" value="' + esc(ln.item) + '" autocomplete="off" oninput="App.wizardLineField(' + i + ',\'item\',this.value)">' +
+    '<div class="hint" id="wzInfo-' + i + '">' + esc(info) + '</div>' +
+    '<label>الكمية (دستة)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5" value="' + esc(ln.dozens) + '" oninput="App.wizardLineField(' + i + ',\'dozens\',this.value)">' +
+    '<div class="chips">' + presets().map(function (p) { return '<button type="button" class="chip" onclick="App.wizardLinePreset(' + i + ',' + p + ')">' + fmtDoz(p) + '</button>'; }).join('') + '</div>' +
+    '<label>سعر الدستة (ج.م) — سيبه فاضي عشان يتملا لوحده</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)" value="' + esc(ln.customPrice) + '" oninput="App.wizardLineField(' + i + ',\'customPrice\',this.value)">' +
+    '<label>خصم البند (ج.م)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(ln.discount) + '" oninput="App.wizardLineField(' + i + ',\'discount\',this.value)">' +
+    '<div class="kv" style="margin-top:8px"><span>إجمالي البند</span><b id="wzLineTotal-' + i + '">' + fmtMoney(lineTotal) + '</b></div></div>';
+}
+function wizardStep3(w) {
+  var t = wizardTotals(w);
+  var h = '<div class="card"><h2>مراجعة وتأكيد الأوردر</h2>' +
+    '<div class="kv"><span>العميل</span><b>' + esc(w.customer) + (w.isVip ? ' ★' : '') + '</b></div>' +
+    '<div class="kv"><span>التليفون</span><b>' + esc([w.phone1, w.phone2].filter(Boolean).join(' / ') || '—') + '</b></div>' +
+    '<div class="kv"><span>العنوان</span><b>' + esc(w.address || '—') + '</b></div>' +
+    '<div class="kv"><span>التاريخ</span><b>' + esc(w.date) + '</b></div></div>';
+  h += '<div class="card"><h2>البنود</h2>';
+  w.lines.forEach(function (ln, i) {
+    var it = itemByName(ln.item);
+    var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
+    h += '<div class="kv"><span>' + (i + 1) + '. ' + esc(ln.item) + ' — ' + fmtDoz(ln.dozens) + ' دستة (' + fmtNum(num(ln.dozens) * pairsPerDozen()) + ' زوج)</span><b>' + fmtMoney(num(ln.dozens) * price - num(ln.discount)) + '</b></div>';
+  });
+  h += '</div>';
+  h += '<div class="card"><label for="wShip">مصاريف الشحن (ج.م)</label><input type="number" id="wShip" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.shipping) + '" oninput="App.wizardField(\'shipping\',this.value)">' +
+    '<label for="wDisc">الخصم العام (ج.م)</label><input type="number" id="wDisc" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.discount) + '" oninput="App.wizardField(\'discount\',this.value)">' +
+    '<label for="wDep">العربون (ج.م)</label><input type="number" id="wDep" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.deposit) + '" oninput="App.wizardField(\'deposit\',this.value)">' +
+    '<label for="wMethod">طريقة الدفع</label><select id="wMethod" onchange="App.wizardField(\'method\',this.value)">' + METHODS.map(function (m) { return '<option' + (w.method === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' +
+    '<label for="wNotes">ملاحظات على الأوردر — اختياري</label><textarea id="wNotes" oninput="App.wizardField(\'notes\',this.value)">' + esc(w.notes) + '</textarea></div>';
+  h += '<div class="card"><div class="kv"><span>المجموع الفرعي</span><b id="wz3Sub">' + fmtMoney(t.subtotal) + '</b></div>' +
+    '<div class="kv"><span>مصاريف الشحن</span><b id="wz3Ship">' + fmtMoney(w.shipping) + '</b></div>' +
+    '<div class="kv"><span>الخصم العام</span><b id="wz3Disc">' + fmtMoney(w.discount) + '</b></div>' +
+    '<div class="kv"><span>الإجمالي المستحق</span><b id="wz3Grand">' + fmtMoney(t.grand) + '</b></div>' +
+    '<div class="kv"><span>إجمالي الأزواج</span><b id="wz3Pairs">' + fmtNum(t.pairs) + ' زوج</b></div>' +
+    '<div class="kv"><span>العربون</span><b id="wz3Dep">' + fmtMoney(w.deposit) + '</b></div>' +
+    '<div class="kv"><span>المتبقي بعد العربون</span><b id="wz3Rem">' + fmtMoney(t.remaining) + '</b></div></div>';
+  h += '<div class="row"><button class="btn btn-ghost grow" onclick="App.wizardBack()">→ رجوع</button></div>' +
+    '<button class="btn btn-pri btn-block" style="margin-top:10px;font-size:17px" onclick="App.confirmOrder()">تأكيد الأوردر وإنشاء الفاتورة ✓</button>';
+  return h;
+}
+
+/* ---------------- الفاتورة ---------------- */
+function screenInvoice() {
+  var inv = UI.invoice;
+  if (!inv || !inv.order) return '<div class="card">مفيش فاتورة معروضة. <button class="btn btn-ghost btn-sm" onclick="go(\'orders\')">رجوع للأوردرات</button></div>';
+  var o = inv.order, lines = inv.lines || [];
+  var st = settings();
+  var warn = '';
+  if (statusOf(o) === 'مرتجع') warn = '<div class="inv-warn">⚠ هذا الأوردر مرتجع — البضاعة رجعت المخزون ولا يُحسب في المبيعات.</div>';
+  else if (statusOf(o) === 'ملغي') warn = '<div class="inv-warn">⚠ هذا الأوردر ملغي — لا يُحسب في المخزون أو المبيعات.</div>';
+  var h = '<div class="inv-screen-wrap">';
+  h += '<div class="invoice">';
+  h += '<div class="inv-title">فـاتـورة مـبـيـعـات / INVOICE</div>';
+  h += '<div class="inv-company">' + esc(st.factoryName) + ' • هاتف: ' + esc([st.phone1, st.phone2].filter(Boolean).join(' / ')) + ' • العنوان: ' + esc(st.address) + '</div>';
+  h += '<div class="inv-meta"><div><div class="lbl">بيانات العميل</div><b>' + esc(o.customer) + '</b><br><span class="lbl">رقم الهاتف:</span> ' + esc(phonesText(o) || '—') + '<br><span class="lbl">العنوان:</span> ' + esc(o.address || '—') + '</div>' +
+       '<div style="text-align:left"><div class="lbl">رقم الفاتورة</div><b>' + esc(invoiceNo(o)) + '</b><br><span class="lbl">تاريخ الفاتورة:</span> ' + esc(o.date || '') + '<br><span class="lbl">طريقة الدفع:</span> ' + esc(o.method || '—') + '</div></div>';
+  h += warn;
+  h += '<table class="inv-table"><thead><tr><th style="width:34px">م</th><th>البيان / الصنف</th><th>الكمية</th><th>سعر الدستة</th><th>الخصم</th><th>الإجمالي</th></tr></thead><tbody>';
+  lines.forEach(function (l, i) {
+    h += '<tr' + (i % 2 === 1 ? ' class="alt"' : '') + '><td>' + (i + 1) + '</td><td class="nm">' + esc(l.item) + '</td><td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td><td>' + fmtMoney(l.price) + '</td><td>' + (num(l.discount) ? fmtMoney(l.discount) : '') + '</td><td><b>' + fmtMoney(l.total) + '</b></td></tr>';
+  });
+  h += '</tbody></table>';
+  h += '<div class="inv-totals">' +
+    '<div class="kv"><span>المجموع الفرعي</span><b>' + fmtMoney(o.subtotal) + '</b></div>' +
+    '<div class="kv"><span>مصاريف الشحن / التوصيل</span><b>' + fmtMoney(o.shipping) + '</b></div>' +
+    '<div class="kv"><span>الخصم العام</span><b>' + fmtMoney(o.discount) + '</b></div>' +
+    '<div class="inv-grand"><span>المبلغ الإجمالي المستحق</span><span>' + fmtMoney(o.total) + '</span></div>' +
+    '<div class="kv"><span>إجمالي الأجواز</span><b>' + fmtNum(o.pairs) + ' زوج</b></div>' +
+    '<div class="kv"><span>العربون المدفوع</span><b>' + fmtMoney(o.deposit) + '</b></div>' +
+    '<div class="kv"><span>المتبقي بعد العربون</span><b>' + fmtMoney(o.remaining) + '</b></div></div>';
+  var notes = [st.note1, st.note2, st.note3].filter(Boolean);
+  if (notes.length) h += '<div class="inv-notes"><b style="color:var(--ink)">شروط وملاحظات:</b><br>' + notes.map(function (n) { return '• ' + esc(n); }).join('<br>') + '</div>';
+  h += '<div class="inv-foot">— تم إنشاء هذه الفاتورة إلكترونياً ولا تحتاج إلى توقيع ورقي —</div>';
+  h += '</div></div>';
+  h += '<div class="no-print" style="margin-top:14px;display:flex;flex-direction:column;gap:8px">' +
+    '<button class="btn btn-pri btn-block" onclick="App.printInvoice()">🖨 طباعة / حفظ PDF</button>' +
+    '<button class="btn btn-dark btn-block" onclick="App.shareInvoice()">مشاركة الفاتورة</button>' +
+    '<div class="row"><button class="btn btn-ghost grow" onclick="go(\'orders\')">رجوع للأوردرات</button>' +
+    '<button class="btn btn-ghost grow" onclick="App.newOrder()">أوردر جديد</button></div></div>';
+  return h;
+}
+
+/* ---------------- الصرف ---------------- */
+function screenDisb() {
+  if (!DATA) return '';
+  var active = DATA.orders.filter(isActiveOrder);
+  var totalPairs = 0, paidPairs = 0, unpaidCount = 0;
+  active.forEach(function (o) {
+    totalPairs += num(o.pairs);
+    if (o.disbStatus === 'تم الصرف') paidPairs += num(o.pairs); else unpaidCount++;
+  });
+  var unpaidPairs = totalPairs - paidPairs;
+  var list = active.filter(function (o) {
+    if (UI.disbFilter === 'unpaid') return o.disbStatus !== 'تم الصرف';
+    if (UI.disbFilter === 'paid') return o.disbStatus === 'تم الصرف';
+    return true;
+  });
+  list.sort(function (a, b) { return num(b.no) - num(a.no); });
+  var h = '<div class="grid2">' +
+    stat(fmtNum(totalPairs) + ' زوج', 'إجمالي أزواج النشطة', '') +
+    stat(fmtNum(unpaidPairs) + ' زوج', 'لم يتم صرفها', unpaidPairs ? 'bad' : '') +
+    stat(fmtNum(paidPairs) + ' زوج', 'تم صرفها', 'good') +
+    stat(fmtNum(unpaidCount), 'أوردرات غير مصروفة', '') + '</div>';
+  h += '<p class="muted small" style="margin:10px 2px">عشان تغيّر الحالة: افتح الأوردر وغيّر حالته إلى «تم الصرف» لما تحاسب، وهتتحدث هنا فوراً. الأوردرات الملغية والمرتجعة لا تظهر هنا.</p>';
+  h += '<div class="chips">' +
+    '<button class="chip' + (UI.disbFilter === 'all' ? ' on' : '') + '" onclick="App.setDisbFilter(\'all\')">الكل</button>' +
+    '<button class="chip' + (UI.disbFilter === 'unpaid' ? ' on' : '') + '" onclick="App.setDisbFilter(\'unpaid\')">لم يتم الصرف فقط</button>' +
+    '<button class="chip' + (UI.disbFilter === 'paid' ? ' on' : '') + '" onclick="App.setDisbFilter(\'paid\')">تم الصرف فقط</button></div>';
+  if (!active.length) return h + emptyState('✓', 'لا توجد أوردرات نشطة', 'لما تعمل أوردرات هتظهر هنا بأجوازها وحالة صرفها.');
+  if (!list.length) return h + emptyState('✓', 'مفيش أوردرات بالفلتر ده', 'غيّر الفلتر عشان تشوف باقي الأوردرات.');
+  list.forEach(function (o) {
+    h += '<div class="item-card" onclick="App.openOrder(' + o._row + ')"><div class="row"><div class="grow"><div class="item-name">#' + fmtNum(o.no) + ' — ' + esc(o.customer) + '</div>' +
+      '<div class="muted small">' + esc(o.date || '') + ' • ' + statusOf(o) + '</div></div>' +
+      '<div style="text-align:left"><b style="font-size:17px">' + fmtNum(o.pairs) + ' زوج</b><div style="margin-top:4px"><span class="badge ' + (o.disbStatus === 'تم الصرف' ? 'b-green' : 'b-amber') + ' badge-lg">' + esc(o.disbStatus || 'لم يتم الصرف') + '</span></div></div></div></div>';
+  });
+  return h;
+}
+
+/* ---------------- الإعدادات وشاشة الخطأ ---------------- */
+function screenSettings() {
+  var st = settings();
+  var h = '<div class="card"><h2>اتصال السيرفر</h2>' +
+    '<label for="cfgUrl">رابط السيرفر (Web app URL)</label><input type="url" id="cfgUrl" dir="ltr" value="' + esc(cfg.url) + '">' +
+    '<label for="cfgSecret">كلمة السر (SECRET)</label><input type="password" id="cfgSecret" dir="ltr" value="' + esc(cfg.secret) + '">' +
+    '<div class="row" style="margin-top:14px"><button class="btn btn-ghost grow" onclick="App.testConnectionSettings()">اختبار الاتصال</button>' +
+    '<button class="btn btn-pri grow" onclick="App.saveSettingsCfg()">حفظ الاتصال</button></div></div>';
+  h += '<div class="card"><h2>بيانات المصنع (بتظهر في الفاتورة)</h2>' +
+    '<label for="setName">اسم المصنع</label><input type="text" id="setName" value="' + esc(st.factoryName) + '">' +
+    '<label for="setAddr">العنوان</label><input type="text" id="setAddr" value="' + esc(st.address) + '">' +
+    '<label for="setP1">هاتف 1</label><input type="tel" id="setP1" dir="ltr" style="text-align:right" value="' + esc(st.phone1) + '">' +
+    '<label for="setP2">هاتف 2</label><input type="tel" id="setP2" dir="ltr" style="text-align:right" value="' + esc(st.phone2) + '">' +
+    '<label for="setN1">ملاحظة الفاتورة 1</label><input type="text" id="setN1" value="' + esc(st.note1) + '">' +
+    '<label for="setN2">ملاحظة الفاتورة 2</label><input type="text" id="setN2" value="' + esc(st.note2) + '">' +
+    '<label for="setN3">ملاحظة الفاتورة 3</label><input type="text" id="setN3" value="' + esc(st.note3) + '">' +
+    '<label for="setTh">حد تنبيه المخزون (زوج)</label><input type="number" id="setTh" inputmode="numeric" min="0" step="1" value="' + esc(st.threshold) + '">' +
+    '<div class="hint">الدستة = 12 زوج (ثابتة ومش بتتغيّر).</div>' +
+    '<button class="btn btn-pri btn-block" style="margin-top:14px" onclick="App.saveFactorySettings()">حفظ بيانات المصنع</button></div>';
+  h += '<div class="card"><h2>الكميات السريعة (دستة)</h2><div class="chips">' + presets().map(function (p) { return '<span class="chip">' + fmtDoz(p) + '</span>'; }).join('') + '</div>' +
+    '<p class="muted small">الكميات دي جاية من تبويب الإعدادات في الشيت (العمود D). لو عايز تزود كمية، زودها هناك وهتظهر هنا.</p></div>';
+  h += '<div class="card"><h2>عن التطبيق</h2><p class="muted" style="margin:0">تطبيق مخزن ورشة آل هاشم — البيانات محفوظة سحابياً في شيت جوجل الخاص بيك، والتطبيق ده بس هو الواجهة. أي تعديل من أي موبايل بيظهر عند الطرف التاني مع التحديث التلقائي كل 25 ثانية.</p>' +
+    '<button class="btn btn-danger btn-block" style="margin-top:12px" onclick="App.clearCfg()">مسح إعدادات الاتصال من المتصفح ده</button></div>';
+  return h;
+}
+function screenError() {
+  return '<div class="card"><div class="banner err"><b>تعذر تحميل البيانات</b><br>' + esc(UI.errorMsg || 'حصلت مشكلة في الاتصال.') + '</div>' +
+    '<p class="muted">جرّب تحدّث تاني — أول طلب بعد فترة ممكن يتأخر شوية لأن السيرفر بيصحى. لو المشكلة مستمرة، اتأكد من رابط السيرفر وكلمة السر.</p>' +
+    '<div class="row"><button class="btn btn-pri grow" onclick="refresh({})">إعادة المحاولة</button>' +
+    '<button class="btn btn-ghost grow" onclick="go(\'settings\')">الإعدادات</button></div></div>';
+}
+
+var SCREENS = {
+  setup: screenSetup, home: screenHome, items: screenItems, merchants: screenMerchants,
+  merchantDetail: screenMerchantDetail, orders: screenOrders, orderDetail: screenOrderDetail,
+  orderNew: screenOrderNew, invoice: screenInvoice, disb: screenDisb, vips: screenVips,
+  settings: screenSettings, error: screenError
+};
+
+/* ---------------- الإجراءات (App) ---------------- */
+window.App = {
+  /* إعداد واتصال */
+  testConnection: function () {
+    var url = fieldVal('setupUrl'), secret = fieldVal('setupSecret');
+    if (!url || !secret) { toast('اكتب الرابط وكلمة السر الأول.', true); return; }
+    var old = { url: cfg.url, secret: cfg.secret };
+    cfg.url = url; cfg.secret = secret;
+    showLoading('جارٍ اختبار الاتصال...', 'أول طلب ممكن ياخد شوية.');
+    callApi('ping', null, 35000).then(function () { hideLoading(); toast('الاتصال شغال تمام ✓'); })
+      .catch(function (e) { hideLoading(); toast('فشل الاختبار: ' + e.message, true); });
+    cfg.url = old.url; cfg.secret = old.secret;
+  },
+  saveSetup: function () {
+    var url = fieldVal('setupUrl'), secret = fieldVal('setupSecret');
+    if (!url || !secret) { toast('اكتب الرابط وكلمة السر الأول.', true); return; }
+    cfg.url = url; cfg.secret = secret; saveCfg();
+    refresh({ loadingText: 'جارٍ تحميل بيانات المصنع...' }).then(function () { go('home'); }).catch(function () {});
+  },
+  testConnectionSettings: function () {
+    var url = fieldVal('cfgUrl'), secret = fieldVal('cfgSecret');
+    if (!url || !secret) { toast('اكتب الرابط وكلمة السر الأول.', true); return; }
+    var old = { url: cfg.url, secret: cfg.secret };
+    cfg.url = url; cfg.secret = secret;
+    showLoading('جارٍ اختبار الاتصال...');
+    callApi('ping', null, 35000).then(function () { hideLoading(); toast('الاتصال شغال تمام ✓'); })
+      .catch(function (e) { hideLoading(); toast('فشل الاختبار: ' + e.message, true); });
+    cfg.url = old.url; cfg.secret = old.secret;
+  },
+  saveSettingsCfg: function () {
+    var url = fieldVal('cfgUrl'), secret = fieldVal('cfgSecret');
+    if (!url || !secret) { toast('اكتب الرابط وكلمة السر الأول.', true); return; }
+    cfg.url = url; cfg.secret = secret; saveCfg();
+    refresh({ loadingText: 'جارٍ إعادة الاتصال...' }).then(function () { toast('تم حفظ الاتصال'); }).catch(function () {});
+  },
+  clearCfg: function () {
+    confirmBox('مسح إعدادات الاتصال؟', 'هتمسح الرابط وكلمة السر من المتصفح ده بس، والبيانات في الشيت مش هتتأثر. هتحتاج تكتبهم تاني عشان تستخدم التطبيق.', 'مسح', function () {
+      cfg = { url: '', secret: '' }; saveCfg(); DATA = null; go('setup');
+    });
+  },
+  saveFactorySettings: function () {
+    var p = { factoryName: fieldVal('setName'), address: fieldVal('setAddr'), phone1: fieldVal('setP1'), phone2: fieldVal('setP2'),
+      note1: fieldVal('setN1'), note2: fieldVal('setN2'), note3: fieldVal('setN3'), threshold: fieldVal('setTh') };
+    if (!p.factoryName) { toast('اكتب اسم المصنع.', true); return; }
+    showLoading('جارٍ الحفظ...');
+    callApi('updateSettings', p).then(function () { hideLoading(); return afterWrite('تم حفظ بيانات المصنع'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  /* أصناف */
+  setItemStatus: function (s) { UI.itemStatus = s; render(); },
+  itemForm: function (row) {
+    var it = null;
+    if (row) DATA.items.forEach(function (x) { if (x._row === row) it = x; });
+    openModal(itemFormHtml(it));
+  },
+  saveItem: function (row) {
+    var p = { model: fieldVal('fModel'), color: fieldVal('fColor'), price: fieldVal('fPrice'), openingDoz: fieldVal('fOpening'), notes: fieldVal('fNotes') };
+    if (!p.model || !p.color) { toast('اكتب الموديل واللون.', true); return; }
+    if (p.price === '' || isNaN(Number(p.price)) || Number(p.price) < 0) { toast('اكتب سعر بيع الدستة.', true); return; }
+    showLoading('جارٍ الحفظ...');
+    var action = row ? 'updateItem' : 'addItem';
+    if (row) p.row = row;
+    callApi(action, p).then(function () { hideLoading(); closeModal(); return afterWrite(row ? 'تم تعديل الصنف' : 'تمت إضافة الصنف'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  deleteItem: function (row) {
+    var it = null; DATA.items.forEach(function (x) { if (x._row === row) it = x; });
+    confirmBox('حذف الصنف؟', 'هيتمسح الصنف «' + (it ? it.name : '') + '» من الأصناف. البنود والتوريدات القديمة اللي فيها اسمه هتفضل موجودة باسمها.', 'حذف', function () {
+      showLoading('جارٍ الحذف...');
+      callApi('deleteItem', { row: row }).then(function () { hideLoading(); return afterWrite('تم حذف الصنف'); })
+        .catch(function (e) { hideLoading(); toast(e.message, true); });
+    });
+  },
+  /* تجار */
+  openMerchant: function (row) { UI.merchRow = row; UI.merchTab = 'all'; go('merchantDetail'); },
+  setMerchTab: function (t) { UI.merchTab = t; render(); },
+  merchantForm: function (row) {
+    var m = null;
+    if (row) DATA.merchants.forEach(function (x) { if (x._row === row) m = x; });
+    openModal(merchantFormHtml(m));
+  },
+  saveMerchant: function (row) {
+    var p = { name: fieldVal('fMName'), phone1: fieldVal('fMPhone1'), phone2: fieldVal('fMPhone2'), address: fieldVal('fMAddr'), notes: fieldVal('fMNotes') };
+    if (!p.name) { toast('اكتب اسم التاجر.', true); return; }
+    showLoading('جارٍ الحفظ...');
+    var action = row ? 'updateMerchant' : 'addMerchant';
+    if (row) p.row = row;
+    callApi(action, p).then(function (res) { hideLoading(); closeModal(); if (!row && res.row) UI.merchRow = res.row; return afterWrite(row ? 'تم تعديل التاجر' : 'تمت إضافة التاجر').then(function () { if (!row) go('merchantDetail'); }); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  deleteMerchant: function (row) {
+    confirmBox('حذف التاجر؟', 'هيتمسح التاجر من قائمة التجار. توريداته ودفعاته القديمة هتفضل موجودة بأسمائها في السجلات.', 'حذف', function () {
+      showLoading('جارٍ الحذف...');
+      callApi('deleteMerchant', { row: row }).then(function () { hideLoading(); go('merchants'); return afterWrite('تم حذف التاجر'); })
+        .catch(function (e) { hideLoading(); toast(e.message, true); });
+    });
+  },
+  supplyForm: function (merchantRow) {
+    if (!DATA.merchants.length) { toast('ضيف تاجر الأول.', true); return; }
+    if (!DATA.items.length) { toast('ضيف أصناف الأول عشان تختار منها.', true); return; }
+    openModal(supplyFormHtml(merchantRow));
+    var inp = $('fSItem');
+    inp.addEventListener('input', function () {
+      var it = itemByName(inp.value.trim());
+      $('supItemInfo').textContent = it ? ('سعر البيع: ' + fmtMoney(it.price) + ' • المخزون الحالي: ' + fmtNum(it.stock) + ' زوج') : '';
+    });
+  },
+  saveSupply: function () {
+    var p = { date: fieldVal('fSDate'), merchant: fieldVal('fSMerchant'), item: fieldVal('fSItem'), dozens: fieldVal('fSDoz'), buyPrice: fieldVal('fSBuy'), notes: fieldVal('fSNotes') };
+    if (!p.merchant || !p.item) { toast('اختار التاجر والصنف.', true); return; }
+    if (!itemByName(p.item)) { toast('الصنف ده مش موجود في الأصناف — اختاره من القائمة.', true); return; }
+    if (!p.dozens || Number(p.dozens) <= 0) { toast('اكتب الكمية بالدستة.', true); return; }
+    if (p.buyPrice === '' || Number(p.buyPrice) < 0) { toast('اكتب سعر شراء الدستة.', true); return; }
+    showLoading('جارٍ حفظ التوريد...');
+    callApi('addSupply', p).then(function () { hideLoading(); closeModal(); return afterWrite('تم حفظ التوريد — المخزون زاد'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  paymentForm: function (merchantRow) {
+    if (!DATA.merchants.length) { toast('ضيف تاجر الأول.', true); return; }
+    openModal(paymentFormHtml(merchantRow));
+  },
+  savePayment: function () {
+    var p = { date: fieldVal('fPDate'), merchant: fieldVal('fPMerchant'), amount: fieldVal('fPAmount'), method: fieldVal('fPMethod'), notes: fieldVal('fPNotes') };
+    if (!p.merchant) { toast('اختار التاجر.', true); return; }
+    if (!p.amount || Number(p.amount) <= 0) { toast('اكتب مبلغ أكبر من صفر.', true); return; }
+    showLoading('جارٍ حفظ الدفعة...');
+    callApi('addPayment', p).then(function () { hideLoading(); closeModal(); return afterWrite('تم حفظ الدفعة'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  deleteMovement: function (kind, row) {
+    confirmBox('حذف الحركة؟', 'هيتمسح سجل الـ' + (kind === 'توريد' ? 'توريد' : 'دفعة') + ' ده نهائياً، والمخزون والحساب هيتظبطوا لوحدهم.', 'حذف', function () {
+      showLoading('جارٍ الحذف...');
+      callApi(kind === 'توريد' ? 'deleteSupply' : 'deletePayment', { row: row })
+        .then(function () { hideLoading(); return afterWrite('تم حذف الحركة'); })
+        .catch(function (e) { hideLoading(); toast(e.message, true); });
+    });
+  },
+  /* عملاء مميزون */
+  vipForm: function (row) {
+    var v = null;
+    if (row) DATA.vips.forEach(function (x) { if (x._row === row) v = x; });
+    openModal(vipFormHtml(v));
+  },
+  saveVip: function (row) {
+    var p = { name: fieldVal('fVName'), phone1: fieldVal('fVPhone1'), phone2: fieldVal('fVPhone2'), address: fieldVal('fVAddr'), notes: fieldVal('fVNotes') };
+    if (!p.name) { toast('اكتب اسم العميل.', true); return; }
+    showLoading('جارٍ الحفظ...');
+    var action = row ? 'updateVip' : 'addVip';
+    if (row) p.row = row;
+    callApi(action, p).then(function () { hideLoading(); closeModal(); return afterWrite(row ? 'تم تعديل العميل' : 'تمت إضافة العميل المميز'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  deleteVip: function (row) {
+    confirmBox('حذف العميل المميز؟', 'هيتمسح من قائمة المميزين بس، وأوردراته القديمة هتفضل موجودة.', 'حذف', function () {
+      showLoading('جارٍ الحذف...');
+      callApi('deleteVip', { row: row }).then(function () { hideLoading(); return afterWrite('تم حذف العميل المميز'); })
+        .catch(function (e) { hideLoading(); toast(e.message, true); });
+    });
+  },
+  newOrderForVip: function (row) {
+    UI.wizard = newWizard(row);
+    UI.wizard.step = 2;
+    go('orderNew');
+  },
+  /* أوردرات */
+  newOrder: function () {
+    if (!DATA) { toast('استنى تحميل البيانات الأول.', true); return; }
+    if (!DATA.items.length) { toast('ضيف أصناف الأول عشان تعمل أوردر.', true); go('items'); return; }
+    UI.wizard = newWizard();
+    go('orderNew');
+  },
+  filterOrders: function (st) { UI.orderFilter = st; UI.orderQ = ''; go('orders'); },
+  setOrderFilter: function (st) { UI.orderFilter = st; render(); },
+  openOrder: function (row) { UI.orderRow = row; go('orderDetail'); },
+  lineForm: function (orderNo) {
+    openModal(lineFormHtml(orderNo));
+    var inp = $('fLItem');
+    inp.addEventListener('input', function () {
+      var it = itemByName(inp.value.trim());
+      $('lineItemInfo').textContent = it ? ('سعر الدستة: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج') : '';
+    });
+  },
+  saveLine: function (orderNo) {
+    var item = fieldVal('fLItem'), dozens = fieldVal('fLDoz');
+    if (!item) { toast('اختار الصنف.', true); return; }
+    if (!itemByName(item)) { toast('الصنف ده مش موجود في الأصناف — اختاره من القائمة.', true); return; }
+    if (!dozens || Number(dozens) <= 0) { toast('اكتب الكمية بالدستة.', true); return; }
+    var p = { orderNo: orderNo, item: item, dozens: dozens, discount: fieldVal('fLDisc'), customPrice: fieldVal('fLPrice'), notes: fieldVal('fLNotes') };
+    showLoading('جارٍ إضافة البند...');
+    callApi('addLine', p).then(function () { hideLoading(); closeModal(); return afterWrite('تمت إضافة البند'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  deleteLine: function (row) {
+    confirmBox('حذف البند؟', 'هيتمسح البند ده من الأوردر، والمخزون والإجمالي هيتظبطوا لوحدهم.', 'حذف', function () {
+      showLoading('جارٍ الحذف...');
+      callApi('deleteLine', { row: row }).then(function () { hideLoading(); return afterWrite('تم حذف البند'); })
+        .catch(function (e) { hideLoading(); toast(e.message, true); });
+    });
+  },
+  changeOrderStatus: function (row) {
+    var st = fieldVal('ordStatus');
+    var o = orderByRow(row);
+    function doIt() {
+      showLoading('جارٍ حفظ الحالة...');
+      callApi('setOrderStatus', { row: row, status: st })
+        .then(function () { hideLoading(); return afterWrite('تم تغيير الحالة إلى: ' + st); })
+        .catch(function (e) { hideLoading(); toast(e.message, true); });
+    }
+    if ((st === 'مرتجع' || st === 'ملغي') && o && isActiveOrder(o)) {
+      confirmBox('تأكيد: ' + st + '؟', 'الأوردر ده هيبقى «' + st + '»: البضاعة هترجع المخزون لوحدها، والأوردر مش هيتحسب في المبيعات ولا الصرف. متأكد؟', 'أيوة، ' + st, doIt);
+    } else doIt();
+  },
+  editOrderNotes: function (row) { var o = orderByRow(row); if (o) openModal(orderEditHtml(o)); },
+  saveOrderEdit: function (row) {
+    var o = orderByRow(row);
+    var h = { date: fieldVal('fEDate'), customer: fieldVal('fEName'), phone1: fieldVal('fEPhone1'), phone2: fieldVal('fEPhone2'),
+      address: fieldVal('fEAddr'), status: o ? statusOf(o) : 'جديد', method: fieldVal('fEMethod'),
+      shipping: fieldVal('fEShip'), discount: fieldVal('fEDisc'), deposit: fieldVal('fEDep'), notes: fieldVal('fENotes') };
+    if (!h.customer) { toast('اكتب اسم العميل.', true); return; }
+    showLoading('جارٍ الحفظ...');
+    callApi('updateOrder', { row: row, header: h }).then(function () { hideLoading(); closeModal(); return afterWrite('تم حفظ التعديل'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  showInvoice: function (row) {
+    var o = orderByRow(row);
+    if (!o) return;
+    UI.invoice = { order: o, lines: linesOf(o.no), fromWizard: false };
+    go('invoice');
+  },
+  /* المعالج */
+  wizardPickVip: function (rowVal) {
+    var w = UI.wizard; var row = Number(rowVal);
+    if (!row) { w.vipRow = 0; w.isVip = false; w.customer = ''; w.phone1 = ''; w.phone2 = ''; w.address = ''; }
+    else {
+      var v = null; DATA.vips.forEach(function (x) { if (x._row === row) v = x; });
+      if (v) { w.vipRow = row; w.isVip = true; w.customer = v.name; w.phone1 = v.phone1; w.phone2 = v.phone2; w.address = v.address; }
+    }
+    render();
+  },
+  wizardField: function (k, v) { if (UI.wizard) { UI.wizard[k] = v; if (UI.wizard.step === 3) updateWizardStep3(); } },
+  wizardLineField: function (i, k, v) {
+    var w = UI.wizard; if (!w || !w.lines[i]) return;
+    w.lines[i][k] = v;
+    updateWizardTotals();
+  },
+  wizardLinePreset: function (i, v) {
+    var w = UI.wizard; if (!w || !w.lines[i]) return;
+    w.lines[i].dozens = String(v);
+    render();
+  },
+  wizardAddLine: function () { UI.wizard.lines.push({ item: '', dozens: '', discount: '', customPrice: '' }); render(); },
+  wizardRemoveLine: function (i) { UI.wizard.lines.splice(i, 1); render(); },
+  wizardNext: function () {
+    var w = UI.wizard;
+    if (w.step === 1) {
+      if (!w.customer.trim()) { toast('اكتب اسم العميل أو اختار عميل مميز.', true); return; }
+      w.step = 2; render(); return;
+    }
+    if (w.step === 2) {
+      for (var i = 0; i < w.lines.length; i++) {
+        var ln = w.lines[i];
+        if (!ln.item.trim()) { toast('اختار الصنف في بند ' + (i + 1) + '.', true); return; }
+        if (!itemByName(ln.item.trim())) { toast('الصنف «' + ln.item + '» مش موجود في الأصناف — اختاره من القائمة.', true); return; }
+        if (!ln.dozens || Number(ln.dozens) <= 0) { toast('اكتب الكمية بالدستة في بند ' + (i + 1) + '.', true); return; }
+      }
+      w.step = 3; render(); return;
+    }
+  },
+  wizardBack: function () { if (UI.wizard.step > 1) { UI.wizard.step--; render(); } },
+  confirmOrder: function () {
+    var w = UI.wizard;
+    if (!w) return;
+    var lines = w.lines.map(function (ln) {
+      return { item: ln.item.trim(), dozens: Number(ln.dozens), discount: ln.discount === '' ? 0 : Number(ln.discount),
+        customPrice: (ln.customPrice === '' || ln.customPrice === null) ? '' : Number(ln.customPrice), notes: '' };
+    });
+    var header = { date: w.date, customer: w.customer.trim(), phone1: w.phone1, phone2: w.phone2, address: w.address,
+      status: 'جديد', method: w.method, shipping: w.shipping, discount: w.discount, deposit: w.deposit, notes: w.notes };
+    showLoading('جارٍ تأكيد الأوردر وإنشاء الفاتورة...', 'متقفلش الصفحة لحد ما الفاتورة تظهر.');
+    callApi('createOrder', { header: header, lines: lines }, 60000).then(function (res) {
+      hideLoading();
+      var t = wizardTotals(w);
+      var order = { _row: res.row, no: res.orderNo, date: w.date, customer: header.customer, phone1: w.phone1, phone2: w.phone2,
+        address: w.address, status: 'جديد', method: w.method, shipping: num(w.shipping), discount: num(w.discount),
+        deposit: num(w.deposit), subtotal: t.subtotal, total: t.grand, remaining: t.remaining, pairs: t.pairs,
+        disbStatus: 'لم يتم الصرف', notes: w.notes, counts: 'نعم', isVip: res.isVip ? 'نعم' : 'لا' };
+      var invLines = lines.map(function (ln, i) {
+        var it = itemByName(ln.item);
+        var price = ln.customPrice === '' ? (it ? num(it.price) : 0) : num(ln.customPrice);
+        return { _row: 0, orderNo: res.orderNo, item: ln.item, dozens: ln.dozens, pairs: ln.dozens * pairsPerDozen(),
+          price: price, discount: ln.discount, total: ln.dozens * price - ln.discount, deducts: 'نعم', notes: '' };
+      });
+      UI.invoice = { order: order, lines: invLines, fromWizard: true };
+      UI.wizard = null;
+      go('invoice');
+      toast('تم تأكيد الأوردر #' + res.orderNo + ' — الفاتورة جاهزة ✓');
+      refresh({ spinner: false, toastOnError: false }).then(function () {
+        if (UI.screen === 'invoice' && UI.invoice && UI.invoice.fromWizard) {
+          var fresh = orderByRow(res.row);
+          if (fresh) { UI.invoice = { order: fresh, lines: linesOf(fresh.no), fromWizard: false }; render(); }
+        }
+      }).catch(function () {});
+    }).catch(function (e) { hideLoading(); toast('تعذر تأكيد الأوردر: ' + e.message, true); });
+  },
+  /* فاتورة */
+  printInvoice: function () { window.print(); },
+  shareInvoice: function () {
+    var inv = UI.invoice; if (!inv) return;
+    var o = inv.order, st = settings();
+    var text = 'فاتورة مبيعات ' + invoiceNo(o) + ' — ' + st.factoryName + '\n' +
+      'العميل: ' + o.customer + '\n' +
+      'التاريخ: ' + (o.date || '') + ' • الدفع: ' + (o.method || '—') + '\n' +
+      '------------------------\n' +
+      inv.lines.map(function (l, i) { return (i + 1) + '. ' + l.item + ' — ' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج) = ' + fmtMoney(l.total); }).join('\n') +
+      '\n------------------------\n' +
+      'المجموع الفرعي: ' + fmtMoney(o.subtotal) + '\n' +
+      'الشحن: ' + fmtMoney(o.shipping) + ' • الخصم: ' + fmtMoney(o.discount) + '\n' +
+      'الإجمالي: ' + fmtMoney(o.total) + '\n' +
+      'إجمالي الأزواج: ' + fmtNum(o.pairs) + ' زوج\n' +
+      'العربون: ' + fmtMoney(o.deposit) + ' • المتبقي: ' + fmtMoney(o.remaining);
+    if (navigator.share) {
+      navigator.share({ title: 'فاتورة ' + invoiceNo(o), text: text }).catch(function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast('اتنسخ نص الفاتورة — الصقه في واتساب أو أي مكان.'); })
+        .catch(function () { App.showShareText(text); });
+    } else App.showShareText(text);
+  },
+  showShareText: function (text) {
+    openModal('<h2>نص الفاتورة</h2><p class="muted small">انسخ النص ده والصقه في واتساب:</p>' +
+      '<textarea readonly style="min-height:220px" onclick="this.select()">' + esc(text) + '</textarea>' +
+      '<div class="modal-actions"><button class="btn btn-pri btn-block" onclick="closeModal()">تمام</button></div>');
+  },
+  /* صرف */
+  setDisbFilter: function (f) { UI.disbFilter = f; render(); }
+};
+
+/* ---------------- التشغيل ---------------- */
+document.querySelectorAll('#bottomNav button').forEach(function (b) {
+  b.addEventListener('click', function () { go(b.getAttribute('data-nav')); });
+});
+$('btnRefresh').addEventListener('click', function () { refresh({}).catch(function () {}); });
+$('btnSettings').addEventListener('click', function () { go('settings'); });
+window.addEventListener('online', function () { updateHeaderStatus(true); refresh({ spinner: false }).catch(function () {}); });
+window.addEventListener('offline', function () { updateHeaderStatus(false); toast('النت مقطوع — التطبيق هيحاول تاني لما النت يرجع.', true); });
+
+// تحديث تلقائي كل 25 ثانية — بس لما الصفحة ظاهرة ومفيش نموذج مفتوح ولا كتابة شغالة.
+setInterval(function () {
+  if (!configured() || document.hidden || modalOpen || refreshing) return;
+  if (UI.screen === 'orderNew' || UI.screen === 'invoice') return;
+  var ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.tagName === 'SELECT')) return;
+  refresh({ spinner: false, toastOnError: false }).catch(function () {});
+}, 25000);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () { /* PWA اختياري — التطبيق بيشتغل من غيره */ });
+  });
+}
+
+if (!configured()) { go('setup'); }
+else { refresh({ loadingText: 'جارٍ تحميل بيانات المصنع...', toastOnError: false }).catch(function () {}); }
+</script>
+</body>
+</html>
