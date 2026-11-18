@@ -123,8 +123,8 @@ nav button .ic{display:block;font-size:20px;line-height:1.2}
 .inv-meta .lbl{color:var(--muted);font-size:12.5px}
 .inv-warn{background:#FEF2F2;color:#B91C1C;font-weight:700;text-align:center;padding:9px;font-size:14px}
 .inv-table{width:100%;border-collapse:collapse;font-size:14.5px}
-.inv-table th{background:var(--dark2);color:#fff;padding:9px 6px;font-size:13.5px}
-.inv-table td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:center}
+.inv-table th{background:var(--dark2);color:#fff;padding:9px 6px;font-size:13.5px;border:1px solid #94A3B8}
+.inv-table td{padding:9px 6px;border:1px solid #CBD5E1;text-align:center}
 .inv-table td.nm{text-align:right}
 .inv-table tr.alt td{background:#F1F5F9}
 .inv-totals{padding:12px 14px}
@@ -132,6 +132,16 @@ nav button .ic{display:block;font-size:20px;line-height:1.2}
 .inv-grand{background:var(--dark);color:#fff;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;font-weight:800;font-size:17px;margin:8px 0}
 .inv-notes{font-size:13px;color:var(--muted);padding:0 14px 6px}
 .inv-foot{text-align:center;color:#94A3B8;font-size:12px;padding:10px;border-top:1px solid var(--line)}
+.inv-bottom{display:flex;gap:14px;padding:12px 14px;flex-wrap:wrap;align-items:flex-start}
+.inv-bottom .inv-notes{flex:1.15;min-width:140px;padding:0}
+.inv-bottom .inv-totals{flex:1;min-width:165px;padding:0}
+.inv-bottom .inv-totals .kv{font-size:14.5px}
+.order-row{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin-bottom:8px;cursor:pointer}
+.order-row .o-no{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.order-row .o-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:15px}
+.order-row .o-phone{direction:ltr;unicode-bidi:isolate;font-size:13px;color:var(--muted);white-space:nowrap}
+.order-row .o-amt{font-weight:800;font-size:15px;white-space:nowrap}
+.order-row .badge{white-space:nowrap}
 @media print{
   header,nav,.fab,#toast,#loading,#modalWrap,.no-print{display:none!important}
   body{background:#fff;padding-bottom:0}
@@ -667,10 +677,11 @@ function screenOrders() {
   if (!DATA.orders.length) return h + emptyState('▦', 'لسه مفيش أوردرات', 'اعمل أول أوردر: اختار العميل، وضيف البنود، وأكّد — والفاتورة هتتولد لوحدها.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.newOrder()">+ أوردر جديد</button></div>');
   if (!list.length) return h + emptyState('🔍', 'مفيش أوردرات بالفلتر ده', 'غيّر الحالة أو امسح البحث.');
   list.forEach(function (o) {
-    h += '<div class="item-card" onclick="App.openOrder(' + o._row + ')"><div class="row"><div class="grow"><div class="item-name">#' + fmtNum(o.no) + ' — ' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★' : '') + '</div>' +
-      '<div class="muted small">' + esc(phonesText(o) || 'بدون تليفون') + ' • ' + esc(o.date || '') + '</div>' +
-      '<div class="small">الأزواج: <b>' + fmtNum(o.pairs) + '</b> • الإجمالي: <b>' + fmtMoney(o.total) + '</b>' + (num(o.remaining) ? ' • متبقي: <b>' + fmtMoney(o.remaining) + '</b>' : '') + '</div></div>' +
-      '<div style="text-align:left">' + statusBadge(statusOf(o)) + '<div style="margin-top:6px"><span class="badge ' + (o.disbStatus === 'تم الصرف' ? 'b-green' : 'b-amber') + '">' + esc(o.disbStatus || 'لم يتم الصرف') + '</span></div></div></div></div>';
+    var ph = o.phone1 || o.phone2 || '';
+    h += '<div class="order-row" onclick="App.showInvoice(' + o._row + ')"><span class="o-no">#' + fmtNum(o.no) + '</span>' +
+      '<span class="o-name">' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★' : '') + '</span>' +
+      (ph ? '<span class="o-phone">' + esc(ph) + '</span>' : '') +
+      '<span class="o-amt">' + fmtMoney(o.total) + '</span>' + statusBadge(statusOf(o)) + '</div>';
   });
   return h;
 }
@@ -902,11 +913,17 @@ function screenInvoice() {
   h += '<div class="inv-meta"><div><div class="lbl">بيانات العميل</div><b>' + esc(o.customer) + '</b><br><span class="lbl">رقم الهاتف:</span> ' + esc(phonesText(o) || '—') + '<br><span class="lbl">العنوان:</span> ' + esc(o.address || '—') + '</div>' +
        '<div style="text-align:left"><div class="lbl">رقم الفاتورة</div><b>' + esc(invoiceNo(o)) + '</b><br><span class="lbl">تاريخ الفاتورة:</span> ' + esc(o.date || '') + '<br><span class="lbl">طريقة الدفع:</span> ' + esc(o.method || '—') + '</div></div>';
   h += warn;
-  h += '<table class="inv-table"><thead><tr><th style="width:34px">م</th><th>البيان / الصنف</th><th>الكمية</th><th>سعر الزوج</th><th>الخصم</th><th>الإجمالي</th></tr></thead><tbody>';
+  h += '<table class="inv-table"><thead><tr><th style="width:34px">م</th><th>البيان / الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>الخصم (ج.م)</th><th>الإجمالي</th></tr></thead><tbody>';
   lines.forEach(function (l, i) {
     h += '<tr' + (i % 2 === 1 ? ' class="alt"' : '') + '><td>' + (i + 1) + '</td><td class="nm">' + esc(l.item) + '</td><td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td><td>' + fmtMoney(l.price) + '</td><td>' + (num(l.discount) ? fmtMoney(l.discount) : '') + '</td><td><b>' + fmtMoney(l.total) + '</b></td></tr>';
   });
+  for (var k = lines.length; k < 10; k++) {
+    h += '<tr' + (k % 2 === 1 ? ' class="alt"' : '') + '><td>' + (k + 1) + '</td><td class="nm">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
+  }
   h += '</tbody></table>';
+  var notes = [st.note1, st.note2, st.note3].filter(Boolean);
+  h += '<div class="inv-bottom">';
+  if (notes.length) h += '<div class="inv-notes"><b style="color:var(--ink)">شروط وملاحظات:</b><br>' + notes.map(function (n) { return '• ' + esc(n); }).join('<br>') + '</div>';
   h += '<div class="inv-totals">' +
     '<div class="kv"><span>المجموع الفرعي</span><b>' + fmtMoney(o.subtotal) + '</b></div>' +
     '<div class="kv"><span>مصاريف الشحن / التوصيل</span><b>' + fmtMoney(o.shipping) + '</b></div>' +
@@ -914,14 +931,13 @@ function screenInvoice() {
     '<div class="inv-grand"><span>المبلغ الإجمالي المستحق</span><span>' + fmtMoney(o.total) + '</span></div>' +
     '<div class="kv"><span>إجمالي الأجواز</span><b>' + fmtNum(o.pairs) + ' زوج</b></div>' +
     '<div class="kv"><span>العربون المدفوع</span><b>' + fmtMoney(o.deposit) + '</b></div>' +
-    '<div class="kv"><span>المتبقي بعد العربون</span><b>' + fmtMoney(o.remaining) + '</b></div></div>';
-  var notes = [st.note1, st.note2, st.note3].filter(Boolean);
-  if (notes.length) h += '<div class="inv-notes"><b style="color:var(--ink)">شروط وملاحظات:</b><br>' + notes.map(function (n) { return '• ' + esc(n); }).join('<br>') + '</div>';
+    '<div class="kv"><span>المتبقي بعد العربون</span><b>' + fmtMoney(o.remaining) + '</b></div></div></div>';
   h += '<div class="inv-foot">— تم إنشاء هذه الفاتورة إلكترونياً ولا تحتاج إلى توقيع ورقي —</div>';
   h += '</div></div>';
   h += '<div class="no-print" style="margin-top:14px;display:flex;flex-direction:column;gap:8px">' +
     '<button class="btn btn-pri btn-block" onclick="App.printInvoice()">🖨 طباعة / حفظ PDF</button>' +
     '<button class="btn btn-dark btn-block" onclick="App.shareInvoice()">مشاركة الفاتورة</button>' +
+    '<button class="btn btn-ghost btn-block" onclick="App.openOrder(' + o._row + ')">تفاصيل الأوردر وإدارته</button>' +
     '<div class="row"><button class="btn btn-ghost grow" onclick="go(\'orders\')">رجوع للأوردرات</button>' +
     '<button class="btn btn-ghost grow" onclick="App.newOrder()">أوردر جديد</button></div></div>';
   return h;
