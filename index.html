@@ -482,11 +482,11 @@ function screenItems() {
     return '<button class="chip' + (UI.itemStatus === s ? ' on' : '') + '" onclick="App.setItemStatus(\'' + s + '\')">' + (s === 'all' ? 'الكل' : s) + '</button>';
   }).join('') + '</div>';
   h += '<div class="muted small" style="margin-bottom:8px">' + fmtNum(list.length) + ' صنف معروض من ' + fmtNum(DATA.items.length) + '</div>';
-  if (!DATA.items.length) return h + emptyState('👞', 'لسه مفيش أصناف', 'ابدأ وسجّل أول موديل: الموديل واللون وسعر بيع الدستة. كل لون صنف لوحده.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.itemForm()">+ إضافة صنف</button></div>');
+  if (!DATA.items.length) return h + emptyState('👞', 'لسه مفيش أصناف', 'ابدأ وسجّل أول موديل: الموديل واللون وسعر بيع الزوج. كل لون صنف لوحده.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.itemForm()">+ إضافة صنف</button></div>');
   if (!list.length) return h + emptyState('🔍', 'مفيش نتائج', 'جرّب كلمة بحث أو سعر مختلف.');
   list.forEach(function (it) {
     h += '<div class="item-card"><div class="row"><div class="grow"><div class="item-name">' + esc(it.name) + '</div>' +
-      '<div class="muted small">سعر الدستة: ' + fmtMoney(it.price) + ' • سعر الزوج: ' + fmtMoney(it.pairPrice) + '</div>' +
+      '<div class="muted small">سعر الزوج: ' + fmtMoney(it.price) + ' • سعر الدستة: ' + fmtMoney(it.pairPrice) + '</div>' +
       '<div class="small">الرصيد: <b>' + fmtNum(it.stock) + ' زوج</b> (' + fmtDoz(it.stockDoz) + ' دستة) • وارد: ' + fmtNum(it.supplied) + ' • منصرف: ' + fmtNum(it.out) + '</div>' +
       (it.notes ? '<div class="muted small">' + esc(it.notes) + '</div>' : '') + '</div>' + stockBadge(it.status) + '</div>' +
       '<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm grow" onclick="App.itemForm(' + it._row + ')">تعديل</button>' +
@@ -518,7 +518,7 @@ function itemFormHtml(it) {
     '<p class="muted small" style="margin:0">كل لون صنف لوحده — مثلاً موديل «س» أحمر و«س» أخضر صنفين مختلفين.</p>' +
     '<label for="fModel">الموديل (اسم أو رقم)</label><input type="text" id="fModel" value="' + esc(it ? it.model : '') + '" placeholder="مثال: س أو 101">' +
     '<label for="fColor">اللون</label><input type="text" id="fColor" value="' + esc(it ? it.color : '') + '" placeholder="مثال: أحمر">' +
-    '<label for="fPrice">سعر بيع الدستة (ج.م)</label><input type="number" id="fPrice" inputmode="decimal" min="0" step="any" value="' + esc(it ? it.price : '') + '" placeholder="مثال: 1200">' +
+    '<label for="fPrice">سعر بيع الزوج (ج.م)</label><input type="number" id="fPrice" inputmode="decimal" min="0" step="any" value="' + esc(it ? it.price : '') + '" placeholder="مثال: 40">' +
     '<label for="fOpening">رصيد افتتاحي (دستة) — اختياري</label><input type="number" id="fOpening" inputmode="decimal" min="0" step="any" value="' + esc(it && num(it.openingDoz) ? it.openingDoz : '') + '" placeholder="0">' +
     presetChipsHtml('fOpening') +
     '<label for="fNotes">ملاحظات — اختياري</label><input type="text" id="fNotes" value="' + esc(it ? it.notes : '') + '">' +
@@ -569,7 +569,7 @@ function screenMerchantDetail() {
   if (!shown.length) h += emptyState('📄', 'مفيش حركات هنا', 'سجّل أول توريد أو دفعة للتاجر ده من الزرارين اللي فوق.');
   shown.slice().reverse().forEach(function (r) {
     h += '<div class="item-card"><div class="row"><div class="grow"><div><span class="badge ' + (r.kind === 'توريد' ? 'b-blue' : 'b-green') + '">' + r.kind + '</span> <b>' + esc(r.date || 'بدون تاريخ') + '</b></div>' +
-      (r.item ? '<div class="small">الصنف: ' + esc(r.item) + ' • ' + fmtDoz(r.dozens) + ' دستة (' + fmtNum(r.pairs) + ' زوج) • سعر الدستة: ' + fmtMoney(r.price) + '</div>' : '') +
+      (r.item ? '<div class="small">الصنف: ' + esc(r.item) + ' • ' + fmtDoz(r.dozens) + ' دستة (' + fmtNum(r.pairs) + ' زوج) • سعر الزوج: ' + fmtMoney(r.price) + '</div>' : '') +
       (r.notes ? '<div class="muted small">' + esc(r.notes) + '</div>' : '') +
       '<div class="small">الرصيد التراكمي (عليك): <b>' + fmtMoney(r.balance) + '</b></div></div>' +
       '<div style="text-align:left"><b style="font-size:16px">' + (num(r.amount) < 0 ? '−' : '+') + fmtMoney(Math.abs(num(r.amount))) + '</b>' +
@@ -698,7 +698,7 @@ function screenOrderDetail() {
   if (!lines.length) h += '<p class="muted">مفيش بنود.</p>';
   lines.forEach(function (l) {
     h += '<div class="item-card" style="margin-bottom:8px"><div class="row"><div class="grow"><b>' + esc(l.item) + '</b>' +
-      '<div class="small">' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج) • سعر الدستة: ' + fmtMoney(l.price) + (num(l.discount) ? ' • خصم: ' + fmtMoney(l.discount) : '') + '</div></div>' +
+      '<div class="small">' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج) • سعر الزوج: ' + fmtMoney(l.price) + (num(l.discount) ? ' • خصم: ' + fmtMoney(l.discount) : '') + '</div></div>' +
       '<div style="text-align:left"><b>' + fmtMoney(l.total) + '</b><div><button class="btn btn-danger btn-sm" style="margin-top:6px" onclick="App.deleteLine(' + l._row + ')">حذف البند</button></div></div></div></div>';
   });
   h += '<button class="btn btn-ghost btn-block" onclick="App.lineForm(' + o.no + ')">+ إضافة بند للأوردر ده</button></div>';
@@ -722,7 +722,7 @@ function lineFormHtml(orderNo) {
     '<label for="fLItem">الصنف</label><input type="text" id="fLItem" list="dlItemsLine" placeholder="اكتب اسم الصنف واختار من القائمة" autocomplete="off">' + itemOptionsDatalist('dlItemsLine') +
     '<div class="hint" id="lineItemInfo"></div>' +
     '<label for="fLDoz">الكمية (دستة)</label><input type="number" id="fLDoz" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5">' + presetChipsHtml('fLDoz') +
-    '<label for="fLPrice">سعر الدستة (ج.م) — سيبه فاضي عشان يتملا لوحده من الصنف</label><input type="number" id="fLPrice" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)">' +
+    '<label for="fLPrice">سعر الزوج (ج.م) — سيبه فاضي عشان يتملا لوحده من الصنف</label><input type="number" id="fLPrice" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)">' +
     '<label for="fLDisc">خصم البند (ج.م) — اختياري</label><input type="number" id="fLDisc" inputmode="decimal" min="0" step="any" placeholder="0">' +
     '<label for="fLNotes">ملاحظات — اختياري</label><input type="text" id="fLNotes">' +
     '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
@@ -768,7 +768,7 @@ function wizardTotals(w) {
     var it = itemByName(ln.item);
     var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
     var dz = num(ln.dozens);
-    sub += dz * price - num(ln.discount);
+    sub += dz * pairsPerDozen() * price - num(ln.discount);
     pairs += dz * pairsPerDozen();
   });
   var grand = sub + num(w.shipping) - num(w.discount);
@@ -782,10 +782,10 @@ function updateWizardTotals() {
   w.lines.forEach(function (ln, i) {
     var it = itemByName(ln.item);
     var infoEl = $('wzInfo-' + i);
-    if (infoEl) infoEl.textContent = it ? ('سعر الدستة: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
+    if (infoEl) infoEl.textContent = it ? ('سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
     var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
     var lt = $('wzLineTotal-' + i);
-    if (lt) lt.textContent = fmtMoney(num(ln.dozens) * price - num(ln.discount));
+    if (lt) lt.textContent = fmtMoney(num(ln.dozens) * pairsPerDozen() * price - num(ln.discount));
   });
 }
 function updateWizardStep3() {
@@ -842,16 +842,16 @@ function wizardStep2(w) {
 function wizardLineRow(w, i) {
   var ln = w.lines[i];
   var it = itemByName(ln.item);
-  var info = it ? ('سعر الدستة: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
+  var info = it ? ('سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
   var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
-  var lineTotal = num(ln.dozens) * price - num(ln.discount);
+  var lineTotal = num(ln.dozens) * pairsPerDozen() * price - num(ln.discount);
   return '<div class="line-row"><div class="row between"><b>بند ' + (i + 1) + '</b>' +
     (w.lines.length > 1 ? '<button class="btn btn-danger btn-sm" onclick="App.wizardRemoveLine(' + i + ')">حذف البند</button>' : '') + '</div>' +
     '<label>الصنف</label><input type="text" list="dlItemsW" placeholder="اكتب اسم الصنف واختار من القائمة" value="' + esc(ln.item) + '" autocomplete="off" oninput="App.wizardLineField(' + i + ',\'item\',this.value)">' +
     '<div class="hint" id="wzInfo-' + i + '">' + esc(info) + '</div>' +
     '<label>الكمية (دستة)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5" value="' + esc(ln.dozens) + '" oninput="App.wizardLineField(' + i + ',\'dozens\',this.value)">' +
     '<div class="chips">' + presets().map(function (p) { return '<button type="button" class="chip" onclick="App.wizardLinePreset(' + i + ',' + p + ')">' + fmtDoz(p) + '</button>'; }).join('') + '</div>' +
-    '<label>سعر الدستة (ج.م) — سيبه فاضي عشان يتملا لوحده</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)" value="' + esc(ln.customPrice) + '" oninput="App.wizardLineField(' + i + ',\'customPrice\',this.value)">' +
+    '<label>سعر الزوج (ج.م) — سيبه فاضي عشان يتملا لوحده</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)" value="' + esc(ln.customPrice) + '" oninput="App.wizardLineField(' + i + ',\'customPrice\',this.value)">' +
     '<label>خصم البند (ج.م)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(ln.discount) + '" oninput="App.wizardLineField(' + i + ',\'discount\',this.value)">' +
     '<div class="kv" style="margin-top:8px"><span>إجمالي البند</span><b id="wzLineTotal-' + i + '">' + fmtMoney(lineTotal) + '</b></div></div>';
 }
@@ -866,7 +866,7 @@ function wizardStep3(w) {
   w.lines.forEach(function (ln, i) {
     var it = itemByName(ln.item);
     var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
-    h += '<div class="kv"><span>' + (i + 1) + '. ' + esc(ln.item) + ' — ' + fmtDoz(ln.dozens) + ' دستة (' + fmtNum(num(ln.dozens) * pairsPerDozen()) + ' زوج)</span><b>' + fmtMoney(num(ln.dozens) * price - num(ln.discount)) + '</b></div>';
+    h += '<div class="kv"><span>' + (i + 1) + '. ' + esc(ln.item) + ' — ' + fmtDoz(ln.dozens) + ' دستة (' + fmtNum(num(ln.dozens) * pairsPerDozen()) + ' زوج)</span><b>' + fmtMoney(num(ln.dozens) * pairsPerDozen() * price - num(ln.discount)) + '</b></div>';
   });
   h += '</div>';
   h += '<div class="card"><label for="wShip">مصاريف الشحن (ج.م)</label><input type="number" id="wShip" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.shipping) + '" oninput="App.wizardField(\'shipping\',this.value)">' +
@@ -902,7 +902,7 @@ function screenInvoice() {
   h += '<div class="inv-meta"><div><div class="lbl">بيانات العميل</div><b>' + esc(o.customer) + '</b><br><span class="lbl">رقم الهاتف:</span> ' + esc(phonesText(o) || '—') + '<br><span class="lbl">العنوان:</span> ' + esc(o.address || '—') + '</div>' +
        '<div style="text-align:left"><div class="lbl">رقم الفاتورة</div><b>' + esc(invoiceNo(o)) + '</b><br><span class="lbl">تاريخ الفاتورة:</span> ' + esc(o.date || '') + '<br><span class="lbl">طريقة الدفع:</span> ' + esc(o.method || '—') + '</div></div>';
   h += warn;
-  h += '<table class="inv-table"><thead><tr><th style="width:34px">م</th><th>البيان / الصنف</th><th>الكمية</th><th>سعر الدستة</th><th>الخصم</th><th>الإجمالي</th></tr></thead><tbody>';
+  h += '<table class="inv-table"><thead><tr><th style="width:34px">م</th><th>البيان / الصنف</th><th>الكمية</th><th>سعر الزوج</th><th>الخصم</th><th>الإجمالي</th></tr></thead><tbody>';
   lines.forEach(function (l, i) {
     h += '<tr' + (i % 2 === 1 ? ' class="alt"' : '') + '><td>' + (i + 1) + '</td><td class="nm">' + esc(l.item) + '</td><td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td><td>' + fmtMoney(l.price) + '</td><td>' + (num(l.discount) ? fmtMoney(l.discount) : '') + '</td><td><b>' + fmtMoney(l.total) + '</b></td></tr>';
   });
@@ -1060,7 +1060,7 @@ window.App = {
   saveItem: function (row) {
     var p = { model: fieldVal('fModel'), color: fieldVal('fColor'), price: fieldVal('fPrice'), openingDoz: fieldVal('fOpening'), notes: fieldVal('fNotes') };
     if (!p.model || !p.color) { toast('اكتب الموديل واللون.', true); return; }
-    if (p.price === '' || isNaN(Number(p.price)) || Number(p.price) < 0) { toast('اكتب سعر بيع الدستة.', true); return; }
+    if (p.price === '' || isNaN(Number(p.price)) || Number(p.price) < 0) { toast('اكتب سعر بيع الزوج.', true); return; }
     showLoading('جارٍ الحفظ...');
     var action = row ? 'updateItem' : 'addItem';
     if (row) p.row = row;
@@ -1181,7 +1181,7 @@ window.App = {
     var inp = $('fLItem');
     inp.addEventListener('input', function () {
       var it = itemByName(inp.value.trim());
-      $('lineItemInfo').textContent = it ? ('سعر الدستة: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج') : '';
+      $('lineItemInfo').textContent = it ? ('سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج') : '';
     });
   },
   saveLine: function (orderNo) {
@@ -1292,7 +1292,7 @@ window.App = {
         var it = itemByName(ln.item);
         var price = ln.customPrice === '' ? (it ? num(it.price) : 0) : num(ln.customPrice);
         return { _row: 0, orderNo: res.orderNo, item: ln.item, dozens: ln.dozens, pairs: ln.dozens * pairsPerDozen(),
-          price: price, discount: ln.discount, total: ln.dozens * price - ln.discount, deducts: 'نعم', notes: '' };
+          price: price, discount: ln.discount, total: ln.dozens * pairsPerDozen() * price - ln.discount, deducts: 'نعم', notes: '' };
       });
       UI.invoice = { order: order, lines: invLines, fromWizard: true };
       UI.wizard = null;
