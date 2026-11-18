@@ -2,6 +2,8 @@
  * مخزن ورشة آل هاشم — Apps Script backend
  * هذا الملف هو الواجهة البرمجية (API) بين موقع/تطبيق المخزن
  * وبين شيت جوجل اللي شغال كقاعدة بيانات سحابية.
+ * v2 (2026-11-19): صور الأصناف — الصور بتترفع إلى Google Drive
+ * ورابط الصورة بيتخزن في عمود «صورة» (P) في تبويب الأصناف.
  *
  * طريقة التركيب: افتح الشيت > الإضافات Extensions > Apps Script
  * امسح الكود الافتراضي والصق هذا الملف كاملاً، ثم غيّر SECRET
@@ -37,6 +39,9 @@ var SHEETS = {
 // أقصى عدد صفوف بيانات في كل تبويب (الصفوف من 2 لحد الرقم + 1).
 var MAXROWS = { items: 2000, merchants: 500, supplies: 5000, payments: 5000, vips: 500, orders: 5000, lines: 5000 };
 
+// مجلد صور الأصناف في Drive — بيتعمل لوحده أول مرة ترفع صورة.
+var PHOTO_FOLDER = 'صور أصناف ورشة آل هاشم';
+
 var STATUSES = ['جديد', 'تم الشحن', 'تم الاستلام', 'تم الصرف', 'مرتجع', 'ملغي'];
 var METHODS = ['كاش / نقدي', 'تحويل', 'محفظة إلكترونية', 'آجل'];
 
@@ -68,6 +73,22 @@ function jsonp_(cb, obj) {
     .setMimeType(cb ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON);
 }
 
+/* نقطة الدخول للـ POST (رفع الصور): التطبيق بيبعت POST نصي من غير preflight،
+ * والرد JSON عادي. نفس فحص كلمة السر ونفس dispatch_ بتاع doGet. */
+function doPost(e) {
+  try {
+    var body = {};
+    if (e && e.postData && e.postData.contents) body = JSON.parse(e.postData.contents);
+    if (body.secret !== SECRET) throw new Error('كلمة السر غير صحيحة. تأكد من السر المكتوب في التطبيق.');
+    var result = dispatch_(String(body.action || ''), body.payload || {});
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String((err && err.message) || err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
 function dispatch_(action, payload) {
   switch (action) {
     case 'ping': return { ok: true, message: 'متصل', time: new Date().toISOString() };
@@ -91,6 +112,7 @@ function dispatch_(action, payload) {
     case 'addLine': return withLock_(function () { return addLine_(payload); });
     case 'deleteLine': return withLock_(function () { return deleteLine_(payload); });
     case 'updateSettings': return withLock_(function () { return updateSettings_(payload); });
+    case 'uploadImage': return withLock_(function () { return uploadImage_(payload); });
     default: throw new Error('إجراء غير معروف: ' + action);
   }
 }
@@ -222,11 +244,12 @@ function readTab_(key, keyCol, ncols, mapFn) {
 }
 
 function readAll_() {
-  var items = readTab_('items', 2, 15, function (r) {
+  var items = readTab_('items', 2, 16, function (r) {
     return { num: n_(r[0]), model: s_(r[1]), color: s_(r[2]), name: s_(r[3]),
+      // price = سعر الزوج (col E, entered). pairPrice = سعر الدستة (col F = E×B9) since the 2026-11-18 price-model fix; field name kept for compatibility — do not rename without redeploying.
       price: n_(r[4]), pairPrice: n_(r[5]), openingDoz: n_(r[6]), openingPairs: n_(r[7]),
       supplied: n_(r[8]), out: n_(r[9]), stock: n_(r[10]), stockDoz: n_(r[11]),
-      value: n_(r[12]), status: s_(r[13]), notes: s_(r[14]) };
+      value: n_(r[12]), status: s_(r[13]), notes: s_(r[14]), photo: s_(r[15]) };
   });
   var merchants = readTab_('merchants', 2, 12, function (r) {
     return { num: n_(r[0]), name: s_(r[1]), phone1: s_(r[2]), phone2: s_(r[3]), address: s_(r[4]),
@@ -260,7 +283,7 @@ function readAll_() {
   var settings = {
     factoryName: s_(bv[0][0]), address: s_(bv[1][0]), phone1: s_(bv[2][0]), phone2: s_(bv[3][0]),
     note1: s_(bv[4][0]), note2: s_(bv[5][0]), note3: s_(bv[6][0]),
-    pairsPerDozen: n_(bv[7][0], 12), threshold: n_(bv[8][0], 20)
+    pairsPerDozen: n_(bv[7][0], 10), threshold: n_(bv[8][0], 20)
   };
   var pv = setSh.getRange('D2:D20').getValues();
   var presets = [];
@@ -308,10 +331,46 @@ function updateItem_(p) {
 function deleteItem_(p) {
   var sh = sh_('items');
   var row = validRow_(p.row, MAXROWS.items, 'الصنف');
+  trashPhoto_(sh.getRange(row, 16).getValue()); // امسح صورة الصنف من Drive لو موجودة
   // مسح خلايا الإدخال بس — أعمدة المعادلات (ARRAYFORMULA) محدش يلمسها.
-  [2, 3, 5, 7, 15].forEach(function (c) { sh.getRange(row, c).setValue(''); });
+  [2, 3, 5, 7, 15, 16].forEach(function (c) { sh.getRange(row, c).setValue(''); });
   SpreadsheetApp.flush();
   return { ok: true, row: row };
+}
+
+/* امسح ملف صورة من Drive (من رابط thumbnail اللي متخزن) — لو مش موجود أو اتمسح قبل كده، عدّي من غير ما توقف الحذف. */
+function trashPhoto_(url) {
+  try {
+    var m = String(url || '').match(/id=([A-Za-z0-9_-]+)/);
+    if (m) DriveApp.getFileById(m[1]).setTrashed(true);
+  } catch (e) {}
+}
+
+/* رفع صورة صنف: التطبيق بيبعت الصورة (data URL بعد تصغيرها على الموبايل).
+ * بتتحفظ في مجلد Drive «صور أصناف ورشة آل هاشم» بمشاركة «أي حد معاه اللينك»،
+ * ورابط الصورة بيتخزن في عمود P (صورة) في صف الصنف. data فاضية = مسح الصورة. */
+function uploadImage_(p) {
+  var sh = sh_('items');
+  var row = validRow_(p.row, MAXROWS.items, 'الصنف');
+  var data = String(p.data || '');
+  if (!data) {
+    sh.getRange(row, 16).setValue('');
+    SpreadsheetApp.flush();
+    return { ok: true, row: row, url: '' };
+  }
+  var m = data.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
+  if (!m) throw new Error('صيغة الصورة مش مدعومة.');
+  var bytes = Utilities.base64Decode(m[2]);
+  if (bytes.length > 300 * 1024) throw new Error('الصورة كبيرة أوي — جرّب صورة أصغر.');
+  var folders = DriveApp.getFoldersByName(PHOTO_FOLDER);
+  var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(PHOTO_FOLDER);
+  var blob = Utilities.newBlob(bytes, m[1], 'item-' + row + '-' + Date.now() + '.jpg');
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  var url = 'https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w400';
+  sh.getRange(row, 16).setValue(url);
+  SpreadsheetApp.flush();
+  return { ok: true, row: row, url: url };
 }
 
 /* ===================== التجار ===================== */
@@ -588,8 +647,20 @@ function updateSettings_(p) {
   sh.getRange('B6').setValue(s_(p.note1));                // B6 ملاحظة الفاتورة 1
   sh.getRange('B7').setValue(s_(p.note2));                // B7 ملاحظة الفاتورة 2
   sh.getRange('B8').setValue(s_(p.note3));                // B8 ملاحظة الفاتورة 3
-  // B9 (عدد الأزواج في الدستة = 12) لا تتغيّر أبداً — لا نلمسها هنا.
+  // B9 (عدد الأزواج في الدستة = 10) لا تتغيّر أبداً — لا نلمسها هنا.
   sh.getRange('B10').setValue(threshold);                 // B10 حد تنبيه المخزون
   SpreadsheetApp.flush();
   return { ok: true };
+}
+
+/* اختبار صلاحية Drive — شغّلها من المحرر مرة واحدة للموافقة على صلاحية Drive. */
+function testDriveAuth() {
+  return DriveApp.getFoldersByName(PHOTO_FOLDER).hasNext();
+}
+
+/* اختبار الكتابة على Drive — شغّلها من المحرر مرة واحدة للموافقة على صلاحية الكتابة على Drive. */
+function testDriveWrite() {
+  var f = DriveApp.getFoldersByName(PHOTO_FOLDER);
+  var folder = f.hasNext() ? f.next() : DriveApp.createFolder(PHOTO_FOLDER);
+  return folder.getId();
 }

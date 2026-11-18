@@ -142,6 +142,9 @@ nav button .ic{display:block;font-size:20px;line-height:1.2}
 .order-row .o-phone{direction:ltr;unicode-bidi:isolate;font-size:13px;color:var(--muted);white-space:nowrap}
 .order-row .o-amt{font-weight:800;font-size:15px;white-space:nowrap}
 .order-row .badge{white-space:nowrap}
+.item-thumb{width:56px;height:56px;object-fit:cover;border-radius:10px;flex:none;border:1px solid var(--line)}
+.photo-prev{width:100%;max-height:220px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#F8FAFC;display:block}
+.photo-actions{display:flex;gap:8px;margin-top:8px}
 @media print{
   header,nav,.fab,#toast,#loading,#modalWrap,.no-print{display:none!important}
   body{background:#fff;padding-bottom:0}
@@ -298,6 +301,19 @@ function callApi(action, payload, timeoutMs) {
     if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
     script.src = url;
     document.head.appendChild(script);
+  });
+}
+
+/* رفع صورة: POST نصي (من غير preflight) للـ Web app — doPost في Code.gs */
+function postApi(action, payload, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    if (!configured()) { reject(new Error('التطبيق مش مظبط بعد — اكتب رابط السيرفر وكلمة السر.')); return; }
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); reject(new Error('رفع الصورة اتأخر — اتأكد من النت وجرّب تاني.')); }, timeoutMs || 60000);
+    fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ secret: cfg.secret, action: action, payload: payload }), signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { return r.json(); })
+      .then(function (res) { clearTimeout(timer); if (!res || res.ok !== true) reject(new Error((res && res.error) || 'رد غير متوقع من السيرفر.')); else resolve(res); })
+      .catch(function (e) { clearTimeout(timer); if (e && e.name === 'AbortError') return; reject(new Error('تعذر رفع الصورة — اتأكد من النت وجرّب تاني.')); });
   });
 }
 
@@ -495,7 +511,7 @@ function screenItems() {
   if (!DATA.items.length) return h + emptyState('👞', 'لسه مفيش أصناف', 'ابدأ وسجّل أول موديل: الموديل واللون وسعر بيع الزوج. كل لون صنف لوحده.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.itemForm()">+ إضافة صنف</button></div>');
   if (!list.length) return h + emptyState('🔍', 'مفيش نتائج', 'جرّب كلمة بحث أو سعر مختلف.');
   list.forEach(function (it) {
-    h += '<div class="item-card"><div class="row"><div class="grow"><div class="item-name">' + esc(it.name) + '</div>' +
+    h += '<div class="item-card"><div class="row">' + (it.photo ? '<img class="item-thumb" src="' + esc(it.photo) + '" alt="">' : '') + '<div class="grow"><div class="item-name">' + esc(it.name) + '</div>' +
       '<div class="muted small">سعر الزوج: ' + fmtMoney(it.price) + ' • سعر الدستة: ' + fmtMoney(it.pairPrice) + '</div>' +
       '<div class="small">الرصيد: <b>' + fmtNum(it.stock) + ' زوج</b> (' + fmtDoz(it.stockDoz) + ' دستة) • وارد: ' + fmtNum(it.supplied) + ' • منصرف: ' + fmtNum(it.out) + '</div>' +
       (it.notes ? '<div class="muted small">' + esc(it.notes) + '</div>' : '') + '</div>' + stockBadge(it.status) + '</div>' +
@@ -522,6 +538,24 @@ function softRerender(screen) {
   clearTimeout(__softTimer);
   __softTimer = setTimeout(function () { if (UI.screen === screen) render(); }, 350);
 }
+/* تصغير الصورة على الموبايل قبل الرفع: أقصى ضلع 480px وJPEG — عشان تترفع بسرعة وتتخزن في Drive */
+function compressPhoto(img, maxSide, quality) {
+  try {
+    var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    if (!w || !h) return '';
+    var scale = Math.min(1, maxSide / Math.max(w, h));
+    var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+    var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+    var ctx = cv.getContext('2d'); ctx.drawImage(img, 0, 0, cw, ch);
+    var out = cv.toDataURL('image/jpeg', quality || 0.72);
+    if (out.length > 140000) {
+      var cw2 = Math.max(1, Math.round(cw * 0.7)), ch2 = Math.max(1, Math.round(ch * 0.7));
+      cv.width = cw2; cv.height = ch2; ctx = cv.getContext('2d'); ctx.drawImage(img, 0, 0, cw2, ch2);
+      out = cv.toDataURL('image/jpeg', 0.65);
+    }
+    return out;
+  } catch (e) { return ''; }
+}
 function itemFormHtml(it) {
   var isEdit = !!it;
   return '<h2>' + (isEdit ? 'تعديل صنف' : 'إضافة صنف جديد') + '</h2>' +
@@ -531,6 +565,11 @@ function itemFormHtml(it) {
     '<label for="fPrice">سعر بيع الزوج (ج.م)</label><input type="number" id="fPrice" inputmode="decimal" min="0" step="any" value="' + esc(it ? it.price : '') + '" placeholder="مثال: 40">' +
     '<label for="fOpening">رصيد افتتاحي (دستة) — اختياري</label><input type="number" id="fOpening" inputmode="decimal" min="0" step="any" value="' + esc(it && num(it.openingDoz) ? it.openingDoz : '') + '" placeholder="0">' +
     presetChipsHtml('fOpening') +
+    '<label>صورة المنتج — اختياري</label>' +
+    '<div>' + (it && it.photo ? '<img class="photo-prev" id="photoPrev" src="' + esc(it.photo) + '" alt="صورة الصنف">' : '<img class="photo-prev" id="photoPrev" style="display:none" alt="">') + '</div>' +
+    '<div class="photo-actions"><label class="btn btn-ghost btn-sm" for="fPhoto" style="cursor:pointer">📷 اختار صورة / صوّر</label>' +
+    '<input type="file" id="fPhoto" accept="image/*" style="display:none" onchange="App.pickPhoto(this)">' +
+    '<button type="button" class="btn btn-ghost btn-sm" id="photoRemoveBtn" style="' + ((it && it.photo) ? '' : 'display:none') + '" onclick="App.removePhoto()">إزالة الصورة</button></div>' +
     '<label for="fNotes">ملاحظات — اختياري</label><input type="text" id="fNotes" value="' + esc(it ? it.notes : '') + '">' +
     '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>' +
     '<button class="btn btn-pri" onclick="App.saveItem(' + (isEdit ? it._row : 0) + ')">' + (isEdit ? 'حفظ التعديل' : 'إضافة الصنف') + '</button></div>';
@@ -1071,6 +1110,7 @@ window.App = {
   itemForm: function (row) {
     var it = null;
     if (row) DATA.items.forEach(function (x) { if (x._row === row) it = x; });
+    App._photoData = null;
     openModal(itemFormHtml(it));
   },
   saveItem: function (row) {
@@ -1080,8 +1120,42 @@ window.App = {
     showLoading('جارٍ الحفظ...');
     var action = row ? 'updateItem' : 'addItem';
     if (row) p.row = row;
-    callApi(action, p).then(function () { hideLoading(); closeModal(); return afterWrite(row ? 'تم تعديل الصنف' : 'تمت إضافة الصنف'); })
-      .catch(function (e) { hideLoading(); toast(e.message, true); });
+    callApi(action, p).then(function (res) {
+      var targetRow = row || (res && res.row);
+      if (App._photoData === null || !targetRow) { App._photoData = null; hideLoading(); closeModal(); return afterWrite(row ? 'تم تعديل الصنف' : 'تمت إضافة الصنف'); }
+      showLoading('جارٍ رفع الصورة...');
+      return postApi('uploadImage', { row: targetRow, data: App._photoData }).then(function () {
+        App._photoData = null; hideLoading(); closeModal(); return afterWrite(row ? 'تم تعديل الصنف' : 'تمت إضافة الصنف');
+      }).catch(function (e2) {
+        App._photoData = null; hideLoading(); closeModal(); toast('تم حفظ الصنف، لكن الصورة مترفعتش: ' + e2.message, true); return afterWrite('تم حفظ الصنف');
+      });
+    }).catch(function (e) { App._photoData = null; hideLoading(); toast(e.message, true); });
+  },
+  pickPhoto: function (input) {
+    var f = input && input.files && input.files[0];
+    if (!f) return;
+    if (!/^image\//.test(f.type || '')) { toast('اختار ملف صورة.', true); return; }
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      var img = new Image();
+      img.onload = function () {
+        var dataUrl = compressPhoto(img, 480, 0.72);
+        if (!dataUrl) { toast('تعذر قراءة الصورة.', true); return; }
+        App._photoData = dataUrl;
+        var prev = $('photoPrev'); if (prev) { prev.src = dataUrl; prev.style.display = 'block'; }
+        var rb = $('photoRemoveBtn'); if (rb) rb.style.display = '';
+      };
+      img.onerror = function () { toast('تعذر قراءة الصورة.', true); };
+      img.src = ev.target.result;
+    };
+    reader.onerror = function () { toast('تعذر قراءة الصورة.', true); };
+    reader.readAsDataURL(f);
+  },
+  removePhoto: function () {
+    App._photoData = '';
+    var prev = $('photoPrev'); if (prev) { prev.src = ''; prev.style.display = 'none'; }
+    var rb = $('photoRemoveBtn'); if (rb) rb.style.display = 'none';
+    var inp = $('fPhoto'); if (inp) inp.value = '';
   },
   deleteItem: function (row) {
     var it = null; DATA.items.forEach(function (x) { if (x._row === row) it = x; });
