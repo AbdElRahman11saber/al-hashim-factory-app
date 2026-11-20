@@ -69,6 +69,12 @@ textarea{resize:vertical;min-height:64px}
 .chip{border:1.5px solid #CBD5E1;background:#fff;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;min-height:40px}
 .chip.on{background:var(--dark);color:#fff;border-color:var(--dark)}
 .chip.warn.on{background:var(--amber);border-color:var(--amber)}
+/* ===== مربعات اختيار اللون — زي اختيار المساحة والرام في مواقع الموبايلات ===== */
+.color-tiles{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.color-tile{border:1.5px solid #CBD5E1;background:#fff;border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:700;min-height:48px;min-width:64px;text-align:center}
+.color-tile .ct-stock{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.color-tile.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+.color-tile.on .ct-stock{color:#CBD5E1}
 /* ===== Lists ===== */
 .item-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;margin-bottom:10px}
 .item-card:active{background:#F8FAFC}
@@ -257,6 +263,86 @@ function itemByName(name) {
   if (!DATA) return null;
   for (var i = 0; i < DATA.items.length; i++) if (DATA.items[i].name === name) return DATA.items[i];
   return null;
+}
+
+/* ---------------- الألوان (مشتركة + إضافية لكل موديل) ---------------- */
+/* escape لاستخدام الاسم جوه onclick بالكوتيشن المفردة */
+function jsq(s) { return String(s === undefined || s === null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+/* الألوان المشتركة — بتيجي من تبويب «الألوان» في الشيت */
+function commonColors() { return (DATA && DATA.colors) ? DATA.colors : []; }
+/* الألوان الإضافية بتاعة موديل معين — متسجلة في عمود C في الأصناف، مفصولة بفاصلة */
+function parseExtraColors(it) {
+  if (!it || !it.extraColors) return [];
+  var out = [], seen = {};
+  String(it.extraColors).replace(/،/g, ',').split(',').forEach(function (c) {
+    c = c.trim();
+    if (c && !seen[c]) { seen[c] = true; out.push(c); }
+  });
+  return out;
+}
+/* كل ألوان الموديل: المشتركة + الإضافية بتاعته (من غير تكرار) */
+function modelColors(it) {
+  var out = [], seen = {};
+  commonColors().concat(parseExtraColors(it)).forEach(function (c) {
+    if (!seen[c]) { seen[c] = true; out.push(c); }
+  });
+  return out;
+}
+/* مخزون لون معين من موديل — بيتجاب من تبويب «مخزون الألوان» */
+function colorStockOf(model, color) {
+  if (!DATA || !DATA.colorStock) return null;
+  for (var i = 0; i < DATA.colorStock.length; i++) {
+    var cs = DATA.colorStock[i];
+    if (cs.model === model && cs.color === color) return cs;
+  }
+  return null;
+}
+/* كل صفوف مخزون الألوان بتاعة موديل */
+function modelColorStock(it) {
+  if (!DATA || !DATA.colorStock || !it) return [];
+  return DATA.colorStock.filter(function (cs) { return cs.model === it.model; });
+}
+/* شارات مخزون الألوان في كارت الصنف: كل لون وجنبه رصيده.
+   لو الموديل ليه ألوان متسجلة بس لسه مفيش مخزون، بنعرض الألوان المتاحة كـ نص باهت. */
+function itemColorBadges(it) {
+  var csRows = modelColorStock(it);
+  if (csRows.length) {
+    return '<div style="margin-top:6px">' + csRows.map(function (cs) {
+      return '<span class="badge ' + (cs.status === 'خلص' ? 'b-red' : cs.status === 'قرب يخلص' ? 'b-amber' : 'b-green') + '" style="margin:2px 0 2px 4px">' + esc(cs.color) + ': ' + fmtNum(cs.stock) + ' زوج</span>';
+    }).join('') + '</div>';
+  }
+  var avail = modelColors(it);
+  if (avail.length) return '<div class="muted small" style="margin-top:4px">الألوان: ' + esc(avail.join('، ')) + ' — لسه مفيش مخزون بالألوان</div>';
+  return '';
+}
+/* اسم البند للعرض: الموديل + اللون (زي اسم الصنف القديم «س أحمر») */
+function lineItemLabel(l) {
+  if (!l) return '';
+  return (l.item || '') + (l.color ? ' ' + l.color : '');
+}
+/* مربعات اختيار اللون — زي اختيار المساحة والرام في مواقع الموبايلات.
+   كل مربع عليه مخزون اللون ده. containerId هو الحاوية اللي بتتحدّث لو اتغيّر الموديل،
+   وhiddenId هو الحقل المخفي اللي بيخزّن اللون المختار. */
+function colorTilesHtml(it, containerId, hiddenId, selected) {
+  var colors = modelColors(it);
+  var h = '<div class="color-tiles" id="' + containerId + '">';
+  if (!colors.length) {
+    h += '<div class="hint" style="margin:0">مفيش ألوان متسجلة — ضيف الألوان المشتركة في تبويب «الألوان» في الشيت، أو ضيف ألوان إضافية من تعديل الصنف.</div>';
+  } else {
+    colors.forEach(function (c) {
+      var cs = it ? colorStockOf(it.model, c) : null;
+      h += '<button type="button" class="color-tile' + (selected === c ? ' on' : '') + '" onclick="App.pickColor(\'' + hiddenId + '\',\'' + jsq(c) + '\',this)">' + esc(c) +
+        (cs ? '<span class="ct-stock">' + fmtNum(cs.stock) + ' زوج</span>' : '') + '</button>';
+    });
+  }
+  return h + '</div><input type="hidden" id="' + hiddenId + '" value="' + esc(selected || '') + '">';
+}
+/* إعادة رسم مربعات اللون لما يتغيّر الموديل المختار (بتصفّر اللون المختار) */
+function refreshColorTiles(containerId, hiddenId, modelName, selected) {
+  var c = $(containerId); if (!c) return;
+  var wrap = c.parentNode;
+  if (!wrap) return;
+  wrap.innerHTML = colorTilesHtml(modelName ? itemByName(modelName.trim()) : null, containerId, hiddenId, selected || '');
 }
 function orderByRow(row) {
   if (!DATA) return null;
@@ -487,7 +573,7 @@ function screenItems() {
   var q = UI.itemQ.trim();
   var list = DATA.items.filter(function (it) {
     if (UI.itemStatus !== 'all' && it.status !== UI.itemStatus) return false;
-    if (q && (it.name + ' ' + it.model + ' ' + it.color).indexOf(q) === -1) return false;
+    if (q && (it.name + ' ' + it.model + ' ' + (it.extraColors || '')).indexOf(q) === -1) return false;
     if (UI.priceMin !== '' && num(it.price) < num(UI.priceMin)) return false;
     if (UI.priceMax !== '' && num(it.price) > num(UI.priceMax)) return false;
     return true;
@@ -508,13 +594,13 @@ function screenItems() {
     return '<button class="chip' + (UI.itemStatus === s ? ' on' : '') + '" onclick="App.setItemStatus(\'' + s + '\')">' + (s === 'all' ? 'الكل' : s) + '</button>';
   }).join('') + '</div>';
   h += '<div class="muted small" style="margin-bottom:8px">' + fmtNum(list.length) + ' صنف معروض من ' + fmtNum(DATA.items.length) + '</div>';
-  if (!DATA.items.length) return h + emptyState('👞', 'لسه مفيش أصناف', 'ابدأ وسجّل أول موديل: الموديل واللون وسعر بيع الزوج. كل لون صنف لوحده.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.itemForm()">+ إضافة صنف</button></div>');
+  if (!DATA.items.length) return h + emptyState('👞', 'لسه مفيش أصناف', 'ابدأ وسجّل أول موديل: رقم الموديل وسعر بيع الزوج وصورته. الألوان بتتختار بعد كده عند التوريد والأوردرات.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.itemForm()">+ إضافة صنف</button></div>');
   if (!list.length) return h + emptyState('🔍', 'مفيش نتائج', 'جرّب كلمة بحث أو سعر مختلف.');
   list.forEach(function (it) {
     h += '<div class="item-card"><div class="row">' + (it.photo ? '<img class="item-thumb" src="' + esc(it.photo) + '" alt="">' : '') + '<div class="grow"><div class="item-name">' + esc(it.name) + '</div>' +
       '<div class="muted small">سعر الزوج: ' + fmtMoney(it.price) + ' • سعر الدستة: ' + fmtMoney(it.pairPrice) + '</div>' +
       '<div class="small">الرصيد: <b>' + fmtNum(it.stock) + ' زوج</b> (' + fmtDoz(it.stockDoz) + ' دستة) • وارد: ' + fmtNum(it.supplied) + ' • منصرف: ' + fmtNum(it.out) + '</div>' +
-      (it.notes ? '<div class="muted small">' + esc(it.notes) + '</div>' : '') + '</div>' + stockBadge(it.status) + '</div>' +
+      (it.notes ? '<div class="muted small">' + esc(it.notes) + '</div>' : '') + itemColorBadges(it) + '</div>' + stockBadge(it.status) + '</div>' +
       '<div class="row" style="margin-top:10px"><button class="btn btn-ghost btn-sm grow" onclick="App.itemForm(' + it._row + ')">تعديل</button>' +
       '<button class="btn btn-danger btn-sm" onclick="App.deleteItem(' + it._row + ')">حذف</button></div></div>';
   });
@@ -559,12 +645,11 @@ function compressPhoto(img, maxSide, quality) {
 function itemFormHtml(it) {
   var isEdit = !!it;
   return '<h2>' + (isEdit ? 'تعديل صنف' : 'إضافة صنف جديد') + '</h2>' +
-    '<p class="muted small" style="margin:0">كل لون صنف لوحده — مثلاً موديل «س» أحمر و«س» أخضر صنفين مختلفين.</p>' +
+    '<p class="muted small" style="margin:0">الموديل بيتسجل برقمه وصورته وسعره بس — واللون بتختاره بعد كده من مربعات عند التوريد أو الأوردر.</p>' +
     '<label for="fModel">الموديل (اسم أو رقم)</label><input type="text" id="fModel" value="' + esc(it ? it.model : '') + '" placeholder="مثال: س أو 101">' +
-    '<label for="fColor">اللون</label><input type="text" id="fColor" value="' + esc(it ? it.color : '') + '" placeholder="مثال: أحمر">' +
     '<label for="fPrice">سعر بيع الزوج (ج.م)</label><input type="number" id="fPrice" inputmode="decimal" min="0" step="any" value="' + esc(it ? it.price : '') + '" placeholder="مثال: 40">' +
-    '<label for="fOpening">رصيد افتتاحي (دستة) — اختياري</label><input type="number" id="fOpening" inputmode="decimal" min="0" step="any" value="' + esc(it && num(it.openingDoz) ? it.openingDoz : '') + '" placeholder="0">' +
-    presetChipsHtml('fOpening') +
+    '<label for="fExtraColors">ألوان إضافية للموديل ده — اختياري</label><input type="text" id="fExtraColors" value="' + esc(it ? (it.extraColors || '') : '') + '" placeholder="مثال: ذهبي، فضي">' +
+    '<div class="hint">الألوان المشتركة بتظهر لوحدها لكل الموديلات. اكتب هنا أي لون زيادة خاص بالموديل ده بس، مفصول بفاصلة.</div>' +
     '<label>صورة المنتج — اختياري</label>' +
     '<div>' + (it && it.photo ? '<img class="photo-prev" id="photoPrev" src="' + esc(it.photo) + '" alt="صورة الصنف">' : '<img class="photo-prev" id="photoPrev" style="display:none" alt="">') + '</div>' +
     '<div class="photo-actions"><label class="btn btn-ghost btn-sm" for="fPhoto" style="cursor:pointer">📷 اختار صورة / صوّر</label>' +
@@ -596,7 +681,7 @@ function screenMerchantDetail() {
   var sups = DATA.supplies.filter(function (s) { return s.merchant === m.name; });
   var pays = DATA.payments.filter(function (p) { return p.merchant === m.name; });
   var rows = [];
-  sups.forEach(function (s) { rows.push({ kind: 'توريد', date: s.date, item: s.item, dozens: s.dozens, pairs: s.pairs, price: s.buyPrice, amount: s.total, notes: s.notes, row: s._row }); });
+  sups.forEach(function (s) { rows.push({ kind: 'توريد', date: s.date, item: s.item, color: s.color, dozens: s.dozens, pairs: s.pairs, price: s.buyPrice, amount: s.total, notes: s.notes, row: s._row }); });
   pays.forEach(function (p) { rows.push({ kind: 'دفعة', date: p.date, item: '', dozens: 0, pairs: 0, price: 0, amount: -num(p.amount), notes: (p.method ? p.method + (p.notes ? ' — ' + p.notes : '') : p.notes), row: p._row }); });
   rows.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)) || (a.row - b.row); });
   var bal = 0;
@@ -618,7 +703,7 @@ function screenMerchantDetail() {
   if (!shown.length) h += emptyState('📄', 'مفيش حركات هنا', 'سجّل أول توريد أو دفعة للتاجر ده من الزرارين اللي فوق.');
   shown.slice().reverse().forEach(function (r) {
     h += '<div class="item-card"><div class="row"><div class="grow"><div><span class="badge ' + (r.kind === 'توريد' ? 'b-blue' : 'b-green') + '">' + r.kind + '</span> <b>' + esc(r.date || 'بدون تاريخ') + '</b></div>' +
-      (r.item ? '<div class="small">الصنف: ' + esc(r.item) + ' • ' + fmtDoz(r.dozens) + ' دستة (' + fmtNum(r.pairs) + ' زوج) • سعر الزوج: ' + fmtMoney(r.price) + '</div>' : '') +
+      (r.item ? '<div class="small">الصنف: ' + esc(lineItemLabel(r)) + ' • ' + fmtDoz(r.dozens) + ' دستة (' + fmtNum(r.pairs) + ' زوج) • سعر الزوج: ' + fmtMoney(r.price) + '</div>' : '') +
       (r.notes ? '<div class="muted small">' + esc(r.notes) + '</div>' : '') +
       '<div class="small">الرصيد التراكمي (عليك): <b>' + fmtMoney(r.balance) + '</b></div></div>' +
       '<div style="text-align:left"><b style="font-size:16px">' + (num(r.amount) < 0 ? '−' : '+') + fmtMoney(Math.abs(num(r.amount))) + '</b>' +
@@ -651,6 +736,7 @@ function supplyFormHtml(merchantRow) {
     '<label for="fSMerchant">التاجر</label><select id="fSMerchant">' + merchOpts + '</select>' +
     '<label for="fSItem">الصنف</label><input type="text" id="fSItem" list="dlItemsSup" placeholder="اكتب اسم الصنف واختار من القائمة" autocomplete="off">' + itemOptionsDatalist('dlItemsSup') +
     '<div class="hint" id="supItemInfo"></div>' +
+    '<label>اللون</label><div id="supColorWrap">' + colorTilesHtml(null, 'supColorTiles', 'fSColor', '') + '</div>' +
     '<label for="fSDoz">الكمية (دستة)</label><input type="number" id="fSDoz" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5">' + presetChipsHtml('fSDoz') +
     '<label for="fSBuy">سعر شراء الدستة (ج.م)</label><input type="number" id="fSBuy" inputmode="decimal" min="0" step="any" placeholder="مثال: 1000">' +
     '<label for="fSNotes">ملاحظات — اختياري</label><input type="text" id="fSNotes">' +
@@ -747,7 +833,7 @@ function screenOrderDetail() {
   h += '<div class="card"><h2>بنود الأوردر (' + fmtNum(lines.length) + ')</h2>';
   if (!lines.length) h += '<p class="muted">مفيش بنود.</p>';
   lines.forEach(function (l) {
-    h += '<div class="item-card" style="margin-bottom:8px"><div class="row"><div class="grow"><b>' + esc(l.item) + '</b>' +
+    h += '<div class="item-card" style="margin-bottom:8px"><div class="row"><div class="grow"><b>' + esc(lineItemLabel(l)) + '</b>' +
       '<div class="small">' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج) • سعر الزوج: ' + fmtMoney(l.price) + (num(l.discount) ? ' • خصم: ' + fmtMoney(l.discount) : '') + '</div></div>' +
       '<div style="text-align:left"><b>' + fmtMoney(l.total) + '</b><div><button class="btn btn-danger btn-sm" style="margin-top:6px" onclick="App.deleteLine(' + l._row + ')">حذف البند</button></div></div></div></div>';
   });
@@ -771,6 +857,7 @@ function lineFormHtml(orderNo) {
   return '<h2>إضافة بند لأوردر #' + fmtNum(orderNo) + '</h2>' +
     '<label for="fLItem">الصنف</label><input type="text" id="fLItem" list="dlItemsLine" placeholder="اكتب اسم الصنف واختار من القائمة" autocomplete="off">' + itemOptionsDatalist('dlItemsLine') +
     '<div class="hint" id="lineItemInfo"></div>' +
+    '<label>اللون</label><div id="lineColorWrap">' + colorTilesHtml(null, 'lineColorTiles', 'fLColor', '') + '</div>' +
     '<label for="fLDoz">الكمية (دستة)</label><input type="number" id="fLDoz" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5">' + presetChipsHtml('fLDoz') +
     '<label for="fLPrice">سعر الزوج (ج.م) — سيبه فاضي عشان يتملا لوحده من الصنف</label><input type="number" id="fLPrice" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)">' +
     '<label for="fLDisc">خصم البند (ج.م) — اختياري</label><input type="number" id="fLDisc" inputmode="decimal" min="0" step="any" placeholder="0">' +
@@ -803,7 +890,7 @@ function newWizard(prefillVipRow) {
     step: 1,
     date: todayStr(),
     vipRow: 0, customer: '', phone1: '', phone2: '', address: '', isVip: false,
-    lines: [{ item: '', dozens: '', discount: '', customPrice: '' }],
+    lines: [{ item: '', color: '', dozens: '', discount: '', customPrice: '' }],
     shipping: '', discount: '', deposit: '', method: 'كاش / نقدي', notes: '', status: 'جديد'
   };
   if (prefillVipRow) {
@@ -824,6 +911,16 @@ function wizardTotals(w) {
   var grand = sub + num(w.shipping) - num(w.discount);
   return { subtotal: sub, pairs: pairs, grand: grand, remaining: grand - num(w.deposit) };
 }
+/* سطر معلومات بند المعالج: سعر الزوج + مخزون الموديل + مخزون اللون المختار */
+function wizardLineInfo(ln, it) {
+  if (!it) return ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '';
+  var s = 'سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '');
+  if (ln.color) {
+    var cs = colorStockOf(it.model, ln.color);
+    s += cs ? (' • مخزون «' + ln.color + '»: ' + fmtNum(cs.stock) + ' زوج') : (' • «' + ln.color + '»: لسه مفيش مخزون');
+  }
+  return s;
+}
 function updateWizardTotals() {
   var w = UI.wizard; if (!w) return;
   var t = wizardTotals(w);
@@ -831,8 +928,16 @@ function updateWizardTotals() {
   var b = $('wzPairs'); if (b) b.textContent = fmtNum(t.pairs) + ' زوج';
   w.lines.forEach(function (ln, i) {
     var it = itemByName(ln.item);
+    /* لو الموديل اتغيّر، مربعات اللون بتتحدّث واللون المختار بيتصفّر —
+       بنتابع _tilesFor عشان ما نعيدش الرسم مع كل ضغطة زر.
+       (قبل تحديث سطر المعلومات عشان ميتعرضش مخزون لون قديم على الموديل الجديد) */
+    if (ln.item !== ln._tilesFor) {
+      ln._tilesFor = ln.item;
+      ln.color = '';
+      refreshColorTiles('wzTiles-' + i, 'wzColor-' + i, ln.item, '');
+    }
     var infoEl = $('wzInfo-' + i);
-    if (infoEl) infoEl.textContent = it ? ('سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
+    if (infoEl) infoEl.textContent = wizardLineInfo(ln, it);
     var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
     var lt = $('wzLineTotal-' + i);
     if (lt) lt.textContent = fmtMoney(num(ln.dozens) * pairsPerDozen() * price - num(ln.discount));
@@ -892,13 +997,15 @@ function wizardStep2(w) {
 function wizardLineRow(w, i) {
   var ln = w.lines[i];
   var it = itemByName(ln.item);
-  var info = it ? ('سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج ' + (it.status === 'خلص' ? '(خلص!)' : it.status === 'قرب يخلص' ? '(قرب يخلص)' : '')) : (ln.item ? 'الصنف ده مش موجود في الأصناف — اكتب الاسم زي ما هو مسجل.' : '');
+  if (ln._tilesFor === undefined) ln._tilesFor = ln.item;
+  var info = wizardLineInfo(ln, it);
   var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
   var lineTotal = num(ln.dozens) * pairsPerDozen() * price - num(ln.discount);
   return '<div class="line-row"><div class="row between"><b>بند ' + (i + 1) + '</b>' +
     (w.lines.length > 1 ? '<button class="btn btn-danger btn-sm" onclick="App.wizardRemoveLine(' + i + ')">حذف البند</button>' : '') + '</div>' +
     '<label>الصنف</label><input type="text" list="dlItemsW" placeholder="اكتب اسم الصنف واختار من القائمة" value="' + esc(ln.item) + '" autocomplete="off" oninput="App.wizardLineField(' + i + ',\'item\',this.value)">' +
     '<div class="hint" id="wzInfo-' + i + '">' + esc(info) + '</div>' +
+    '<label>اللون</label><div id="wzColorWrap-' + i + '">' + colorTilesHtml(it, 'wzTiles-' + i, 'wzColor-' + i, ln.color || '') + '</div>' +
     '<label>الكمية (دستة)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5" value="' + esc(ln.dozens) + '" oninput="App.wizardLineField(' + i + ',\'dozens\',this.value)">' +
     '<div class="chips">' + presets().map(function (p) { return '<button type="button" class="chip" onclick="App.wizardLinePreset(' + i + ',' + p + ')">' + fmtDoz(p) + '</button>'; }).join('') + '</div>' +
     '<label>سعر الزوج (ج.م) — سيبه فاضي عشان يتملا لوحده</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)" value="' + esc(ln.customPrice) + '" oninput="App.wizardLineField(' + i + ',\'customPrice\',this.value)">' +
@@ -916,7 +1023,7 @@ function wizardStep3(w) {
   w.lines.forEach(function (ln, i) {
     var it = itemByName(ln.item);
     var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
-    h += '<div class="kv"><span>' + (i + 1) + '. ' + esc(ln.item) + ' — ' + fmtDoz(ln.dozens) + ' دستة (' + fmtNum(num(ln.dozens) * pairsPerDozen()) + ' زوج)</span><b>' + fmtMoney(num(ln.dozens) * pairsPerDozen() * price - num(ln.discount)) + '</b></div>';
+    h += '<div class="kv"><span>' + (i + 1) + '. ' + esc(lineItemLabel(ln)) + ' — ' + fmtDoz(ln.dozens) + ' دستة (' + fmtNum(num(ln.dozens) * pairsPerDozen()) + ' زوج)</span><b>' + fmtMoney(num(ln.dozens) * pairsPerDozen() * price - num(ln.discount)) + '</b></div>';
   });
   h += '</div>';
   h += '<div class="card"><label for="wShip">مصاريف الشحن (ج.م)</label><input type="number" id="wShip" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.shipping) + '" oninput="App.wizardField(\'shipping\',this.value)">' +
@@ -954,7 +1061,7 @@ function screenInvoice() {
   h += warn;
   h += '<table class="inv-table"><thead><tr><th style="width:34px">م</th><th>البيان / الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>الخصم (ج.م)</th><th>الإجمالي</th></tr></thead><tbody>';
   lines.forEach(function (l, i) {
-    h += '<tr' + (i % 2 === 1 ? ' class="alt"' : '') + '><td>' + (i + 1) + '</td><td class="nm">' + esc(l.item) + '</td><td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td><td>' + fmtMoney(l.price) + '</td><td>' + (num(l.discount) ? fmtMoney(l.discount) : '') + '</td><td><b>' + fmtMoney(l.total) + '</b></td></tr>';
+    h += '<tr' + (i % 2 === 1 ? ' class="alt"' : '') + '><td>' + (i + 1) + '</td><td class="nm">' + esc(lineItemLabel(l)) + '</td><td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td><td>' + fmtMoney(l.price) + '</td><td>' + (num(l.discount) ? fmtMoney(l.discount) : '') + '</td><td><b>' + fmtMoney(l.total) + '</b></td></tr>';
   });
   for (var k = lines.length; k < 10; k++) {
     h += '<tr' + (k % 2 === 1 ? ' class="alt"' : '') + '><td>' + (k + 1) + '</td><td class="nm">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
@@ -1039,6 +1146,8 @@ function screenSettings() {
     '<button class="btn btn-pri btn-block" style="margin-top:14px" onclick="App.saveFactorySettings()">حفظ بيانات المصنع</button></div>';
   h += '<div class="card"><h2>الكميات السريعة (دستة)</h2><div class="chips">' + presets().map(function (p) { return '<span class="chip">' + fmtDoz(p) + '</span>'; }).join('') + '</div>' +
     '<p class="muted small">الكميات دي جاية من تبويب الإعدادات في الشيت (العمود D). لو عايز تزود كمية، زودها هناك وهتظهر هنا.</p></div>';
+  h += '<div class="card"><h2>الألوان المشتركة</h2><div class="chips">' + (commonColors().length ? commonColors().map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('') : '<span class="muted small">مفيش ألوان مشتركة متسجلة.</span>') + '</div>' +
+    '<p class="muted small">الألوان دي بتظهر لكل الموديلات عند التوريد والأوردرات. بتتعدل من تبويب «الألوان» في الشيت — لون في كل صف. وأي موديل ممكن يزود ألوان خاصة بيه من تعديل الصنف.</p></div>';
   h += '<div class="card"><h2>عن التطبيق</h2><p class="muted" style="margin:0">تطبيق مخزن ورشة آل هاشم — البيانات محفوظة سحابياً في شيت جوجل الخاص بيك، والتطبيق ده بس هو الواجهة. أي تعديل من أي موبايل بيظهر عند الطرف التاني مع التحديث التلقائي كل 25 ثانية.</p>' +
     '<button class="btn btn-danger btn-block" style="margin-top:12px" onclick="App.clearCfg()">مسح إعدادات الاتصال من المتصفح ده</button></div>';
   return h;
@@ -1114,8 +1223,8 @@ window.App = {
     openModal(itemFormHtml(it));
   },
   saveItem: function (row) {
-    var p = { model: fieldVal('fModel'), color: fieldVal('fColor'), price: fieldVal('fPrice'), openingDoz: fieldVal('fOpening'), notes: fieldVal('fNotes') };
-    if (!p.model || !p.color) { toast('اكتب الموديل واللون.', true); return; }
+    var p = { model: fieldVal('fModel'), extraColors: fieldVal('fExtraColors'), price: fieldVal('fPrice'), notes: fieldVal('fNotes') };
+    if (!p.model) { toast('اكتب الموديل.', true); return; }
     if (p.price === '' || isNaN(Number(p.price)) || Number(p.price) < 0) { toast('اكتب سعر بيع الزوج.', true); return; }
     showLoading('جارٍ الحفظ...');
     var action = row ? 'updateItem' : 'addItem';
@@ -1197,12 +1306,15 @@ window.App = {
     inp.addEventListener('input', function () {
       var it = itemByName(inp.value.trim());
       $('supItemInfo').textContent = it ? ('سعر البيع: ' + fmtMoney(it.price) + ' • المخزون الحالي: ' + fmtNum(it.stock) + ' زوج') : '';
+      refreshColorTiles('supColorTiles', 'fSColor', inp.value.trim(), '');
     });
   },
   saveSupply: function () {
-    var p = { date: fieldVal('fSDate'), merchant: fieldVal('fSMerchant'), item: fieldVal('fSItem'), dozens: fieldVal('fSDoz'), buyPrice: fieldVal('fSBuy'), notes: fieldVal('fSNotes') };
+    var p = { date: fieldVal('fSDate'), merchant: fieldVal('fSMerchant'), item: fieldVal('fSItem'), color: fieldVal('fSColor'), dozens: fieldVal('fSDoz'), buyPrice: fieldVal('fSBuy'), notes: fieldVal('fSNotes') };
     if (!p.merchant || !p.item) { toast('اختار التاجر والصنف.', true); return; }
     if (!itemByName(p.item)) { toast('الصنف ده مش موجود في الأصناف — اختاره من القائمة.', true); return; }
+    if (!p.color) { toast('اختار اللون من المربعات.', true); return; }
+    if (modelColors(itemByName(p.item)).indexOf(p.color) === -1) { toast('اللون ده مش من ألوان الموديل ده.', true); return; }
     if (!p.dozens || Number(p.dozens) <= 0) { toast('اكتب الكمية بالدستة.', true); return; }
     if (p.buyPrice === '' || Number(p.buyPrice) < 0) { toast('اكتب سعر شراء الدستة.', true); return; }
     showLoading('جارٍ حفظ التوريد...');
@@ -1272,14 +1384,17 @@ window.App = {
     inp.addEventListener('input', function () {
       var it = itemByName(inp.value.trim());
       $('lineItemInfo').textContent = it ? ('سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج') : '';
+      refreshColorTiles('lineColorTiles', 'fLColor', inp.value.trim(), '');
     });
   },
   saveLine: function (orderNo) {
-    var item = fieldVal('fLItem'), dozens = fieldVal('fLDoz');
+    var item = fieldVal('fLItem'), dozens = fieldVal('fLDoz'), color = fieldVal('fLColor');
     if (!item) { toast('اختار الصنف.', true); return; }
     if (!itemByName(item)) { toast('الصنف ده مش موجود في الأصناف — اختاره من القائمة.', true); return; }
+    if (!color) { toast('اختار اللون من المربعات.', true); return; }
+    if (modelColors(itemByName(item)).indexOf(color) === -1) { toast('اللون ده مش من ألوان الموديل ده.', true); return; }
     if (!dozens || Number(dozens) <= 0) { toast('اكتب الكمية بالدستة.', true); return; }
-    var p = { orderNo: orderNo, item: item, dozens: dozens, discount: fieldVal('fLDisc'), customPrice: fieldVal('fLPrice'), notes: fieldVal('fLNotes') };
+    var p = { orderNo: orderNo, item: item, color: color, dozens: dozens, discount: fieldVal('fLDisc'), customPrice: fieldVal('fLPrice'), notes: fieldVal('fLNotes') };
     showLoading('جارٍ إضافة البند...');
     callApi('addLine', p).then(function () { hideLoading(); closeModal(); return afterWrite('تمت إضافة البند'); })
       .catch(function (e) { hideLoading(); toast(e.message, true); });
@@ -1342,7 +1457,22 @@ window.App = {
     w.lines[i].dozens = String(v);
     render();
   },
-  wizardAddLine: function () { UI.wizard.lines.push({ item: '', dozens: '', discount: '', customPrice: '' }); render(); },
+  /* اختيار اللون من المربعات — زي اختيار المساحة والرام في مواقع الموبايلات */
+  pickColor: function (hiddenId, color, btn) {
+    var h = $(hiddenId); if (h) h.value = color;
+    if (btn && btn.parentNode) {
+      var tiles = btn.parentNode.querySelectorAll('.color-tile');
+      tiles.forEach(function (t) { t.classList.remove('on'); });
+      btn.classList.add('on');
+    }
+    /* لو المربع ده في بند من بنود المعالج، حدّث سطر مخزون البند */
+    if (hiddenId.indexOf('wzColor-') === 0) {
+      var idx = Number(hiddenId.slice(8));
+      var w = UI.wizard;
+      if (w && w.lines[idx]) { w.lines[idx].color = color; updateWizardTotals(); }
+    }
+  },
+  wizardAddLine: function () { UI.wizard.lines.push({ item: '', color: '', dozens: '', discount: '', customPrice: '' }); render(); },
   wizardRemoveLine: function (i) { UI.wizard.lines.splice(i, 1); render(); },
   wizardNext: function () {
     var w = UI.wizard;
@@ -1355,6 +1485,8 @@ window.App = {
         var ln = w.lines[i];
         if (!ln.item.trim()) { toast('اختار الصنف في بند ' + (i + 1) + '.', true); return; }
         if (!itemByName(ln.item.trim())) { toast('الصنف «' + ln.item + '» مش موجود في الأصناف — اختاره من القائمة.', true); return; }
+        if (!ln.color) { toast('اختار اللون في بند ' + (i + 1) + ' من المربعات.', true); return; }
+        if (modelColors(itemByName(ln.item.trim())).indexOf(ln.color) === -1) { toast('لون بند ' + (i + 1) + ' مش من ألوان الموديل ده.', true); return; }
         if (!ln.dozens || Number(ln.dozens) <= 0) { toast('اكتب الكمية بالدستة في بند ' + (i + 1) + '.', true); return; }
       }
       w.step = 3; render(); return;
@@ -1365,7 +1497,7 @@ window.App = {
     var w = UI.wizard;
     if (!w) return;
     var lines = w.lines.map(function (ln) {
-      return { item: ln.item.trim(), dozens: Number(ln.dozens), discount: ln.discount === '' ? 0 : Number(ln.discount),
+      return { item: ln.item.trim(), color: ln.color, dozens: Number(ln.dozens), discount: ln.discount === '' ? 0 : Number(ln.discount),
         customPrice: (ln.customPrice === '' || ln.customPrice === null) ? '' : Number(ln.customPrice), notes: '' };
     });
     var header = { date: w.date, customer: w.customer.trim(), phone1: w.phone1, phone2: w.phone2, address: w.address,
@@ -1381,7 +1513,7 @@ window.App = {
       var invLines = lines.map(function (ln, i) {
         var it = itemByName(ln.item);
         var price = ln.customPrice === '' ? (it ? num(it.price) : 0) : num(ln.customPrice);
-        return { _row: 0, orderNo: res.orderNo, item: ln.item, dozens: ln.dozens, pairs: ln.dozens * pairsPerDozen(),
+        return { _row: 0, orderNo: res.orderNo, item: ln.item, color: ln.color, dozens: ln.dozens, pairs: ln.dozens * pairsPerDozen(),
           price: price, discount: ln.discount, total: ln.dozens * pairsPerDozen() * price - ln.discount, deducts: 'نعم', notes: '' };
       });
       UI.invoice = { order: order, lines: invLines, fromWizard: true };
@@ -1405,7 +1537,7 @@ window.App = {
       'العميل: ' + o.customer + '\n' +
       'التاريخ: ' + (o.date || '') + ' • الدفع: ' + (o.method || '—') + '\n' +
       '------------------------\n' +
-      inv.lines.map(function (l, i) { return (i + 1) + '. ' + l.item + ' — ' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج) = ' + fmtMoney(l.total); }).join('\n') +
+      inv.lines.map(function (l, i) { return (i + 1) + '. ' + lineItemLabel(l) + ' — ' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج) = ' + fmtMoney(l.total); }).join('\n') +
       '\n------------------------\n' +
       'المجموع الفرعي: ' + fmtMoney(o.subtotal) + '\n' +
       'الشحن: ' + fmtMoney(o.shipping) + ' • الخصم: ' + fmtMoney(o.discount) + '\n' +
