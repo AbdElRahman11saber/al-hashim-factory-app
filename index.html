@@ -75,6 +75,18 @@ textarea{resize:vertical;min-height:64px}
 .color-tile .ct-stock{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
 .color-tile.on{background:var(--dark);color:#fff;border-color:var(--dark)}
 .color-tile.on .ct-stock{color:#CBD5E1}
+/* ===== قائمة اختيار الموديل بالصور (الأوردرات بس) ===== */
+.picker-wrap{position:relative}
+.picker-wrap input[type=text]{padding-left:48px}
+.picker-btn{position:absolute;left:6px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:1.5px solid #CBD5E1;background:#F1F5F9;border-radius:9px;font-size:14px;line-height:1;color:var(--dark)}
+.picker-panel{position:absolute;right:0;left:0;top:calc(100% + 4px);z-index:45;background:#fff;border:1.5px solid #CBD5E1;border-radius:12px;box-shadow:0 10px 28px rgba(15,23,42,.18);max-height:272px;overflow-y:auto}
+.picker-row{display:flex;align-items:center;gap:10px;padding:7px 10px;cursor:pointer}
+.picker-row:active{background:#F1F5F9}
+.picker-row img{width:44px;height:44px;object-fit:cover;border-radius:8px;flex:none;border:1px solid var(--line)}
+.picker-noimg{width:44px;height:44px;flex:none;border:1px dashed #CBD5E1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;color:var(--muted)}
+.picker-name{flex:1;min-width:0;font-weight:800;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.picker-price{white-space:nowrap}
+.picker-empty{padding:14px;text-align:center;color:var(--muted);font-size:14px}
 /* ===== Lists ===== */
 .item-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;margin-bottom:10px}
 .item-card:active{background:#F8FAFC}
@@ -323,10 +335,12 @@ function lineItemLabel(l) {
 /* مربعات اختيار اللون — زي اختيار المساحة والرام في مواقع الموبايلات.
    كل مربع عليه مخزون اللون ده. containerId هو الحاوية اللي بتتحدّث لو اتغيّر الموديل،
    وhiddenId هو الحقل المخفي اللي بيخزّن اللون المختار. */
-function colorTilesHtml(it, containerId, hiddenId, selected) {
+function colorTilesHtml(it, containerId, hiddenId, selected, hideWhenEmpty) {
   var colors = modelColors(it);
   var h = '<div class="color-tiles" id="' + containerId + '">';
-  if (!colors.length) {
+  if (!it && hideWhenEmpty) {
+    h += '<div class="hint" style="margin:0">اختار الموديل الأول عشان تظهر ألوانه.</div>';
+  } else if (!colors.length) {
     h += '<div class="hint" style="margin:0">مفيش ألوان متسجلة — ضيف الألوان المشتركة في تبويب «الألوان» في الشيت، أو ضيف ألوان إضافية من تعديل الصنف.</div>';
   } else {
     colors.forEach(function (c) {
@@ -338,11 +352,40 @@ function colorTilesHtml(it, containerId, hiddenId, selected) {
   return h + '</div><input type="hidden" id="' + hiddenId + '" value="' + esc(selected || '') + '">';
 }
 /* إعادة رسم مربعات اللون لما يتغيّر الموديل المختار (بتصفّر اللون المختار) */
-function refreshColorTiles(containerId, hiddenId, modelName, selected) {
+function refreshColorTiles(containerId, hiddenId, modelName, selected, hideWhenEmpty) {
   var c = $(containerId); if (!c) return;
   var wrap = c.parentNode;
   if (!wrap) return;
-  wrap.innerHTML = colorTilesHtml(modelName ? itemByName(modelName.trim()) : null, containerId, hiddenId, selected || '');
+  wrap.innerHTML = colorTilesHtml(modelName ? itemByName(modelName.trim()) : null, containerId, hiddenId, selected || '', hideWhenEmpty);
+}
+
+/* ===== قائمة اختيار الموديل بالصور — للأوردرات بس (مش التوريد) ===== */
+/* صفوف القائمة: صورة الموديل + اسمه + سعر الزوج. q فلترة بالاسم. */
+function modelPickerRowsHtml(inputId, panelId, q) {
+  if (!DATA) return '';
+  q = (q || '').trim();
+  var list = DATA.items.filter(function (it) { return !q || it.name.indexOf(q) !== -1; });
+  if (!list.length) return '<div class="picker-empty">مفيش موديل بالاسم ده.</div>';
+  return list.map(function (it) {
+    var img = it.photo ? '<img src="' + esc(it.photo) + '" alt="">' : '<span class="picker-noimg">بلا صورة</span>';
+    return '<div class="picker-row" onclick="App.pickModel(\'' + inputId + '\',\'' + panelId + '\',\'' + jsq(it.name) + '\')">' + img +
+      '<span class="picker-name">' + esc(it.name) + '</span>' +
+      '<span class="picker-price muted small">' + fmtMoney(it.price) + ' / زوج</span></div>';
+  }).join('');
+}
+/* حقل النص + زرار ▼ + اللوحة المنسدلة. extraOnInput بيتنده مع الكتابة قبل فلترة القائمة. */
+function modelPickerHtml(inputId, panelId, value, extraOnInput) {
+  var onIn = 'App.modelPickerInput(\'' + inputId + '\',\'' + panelId + '\')';
+  if (extraOnInput) onIn = extraOnInput + ';' + onIn;
+  return '<div class="picker-wrap">' +
+    '<input type="text" id="' + inputId + '" placeholder="اكتب اسم الصنف واختار من القائمة" value="' + esc(value || '') + '" autocomplete="off" oninput="' + onIn + '">' +
+    '<button type="button" class="picker-btn" tabindex="-1" onclick="App.toggleModelPicker(\'' + panelId + '\',\'' + inputId + '\')">▼</button>' +
+    '<div class="picker-panel" id="' + panelId + '" style="display:none">' + modelPickerRowsHtml(inputId, panelId, '') + '</div>' +
+    '</div>';
+}
+/* قفل كل قوائم الموديلات المفتوحة (ضغطة برّه أو Escape) */
+function closeModelPickers() {
+  document.querySelectorAll('.picker-panel').forEach(function (p) { p.style.display = 'none'; });
 }
 function orderByRow(row) {
   if (!DATA) return null;
@@ -855,9 +898,9 @@ function screenOrderDetail() {
 }
 function lineFormHtml(orderNo) {
   return '<h2>إضافة بند لأوردر #' + fmtNum(orderNo) + '</h2>' +
-    '<label for="fLItem">الصنف</label><input type="text" id="fLItem" list="dlItemsLine" placeholder="اكتب اسم الصنف واختار من القائمة" autocomplete="off">' + itemOptionsDatalist('dlItemsLine') +
+    '<label for="fLItem">الصنف</label>' + modelPickerHtml('fLItem', 'linePickerPanel', '', '') +
     '<div class="hint" id="lineItemInfo"></div>' +
-    '<label>اللون</label><div id="lineColorWrap">' + colorTilesHtml(null, 'lineColorTiles', 'fLColor', '') + '</div>' +
+    '<label>اللون</label><div id="lineColorWrap">' + colorTilesHtml(null, 'lineColorTiles', 'fLColor', '', true) + '</div>' +
     '<label for="fLDoz">الكمية (دستة)</label><input type="number" id="fLDoz" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5">' + presetChipsHtml('fLDoz') +
     '<label for="fLPrice">سعر الزوج (ج.م) — سيبه فاضي عشان يتملا لوحده من الصنف</label><input type="number" id="fLPrice" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)">' +
     '<label for="fLDisc">خصم البند (ج.م) — اختياري</label><input type="number" id="fLDisc" inputmode="decimal" min="0" step="any" placeholder="0">' +
@@ -934,7 +977,7 @@ function updateWizardTotals() {
     if (ln.item !== ln._tilesFor) {
       ln._tilesFor = ln.item;
       ln.color = '';
-      refreshColorTiles('wzTiles-' + i, 'wzColor-' + i, ln.item, '');
+      refreshColorTiles('wzTiles-' + i, 'wzColor-' + i, ln.item, '', true);
     }
     var infoEl = $('wzInfo-' + i);
     if (infoEl) infoEl.textContent = wizardLineInfo(ln, it);
@@ -983,7 +1026,6 @@ function wizardStep1(w) {
 function wizardStep2(w) {
   var t = wizardTotals(w);
   var h = '<div class="card"><h2>بنود الأوردر</h2><p class="muted small" style="margin:0">اختار الصنف والكمية بالدستة. السعر بيتملا لوحده من سعر الصنف.</p></div>';
-  h += '<datalist id="dlItemsW">' + DATA.items.map(function (x) { return '<option value="' + esc(x.name) + '"></option>'; }).join('') + '</datalist>';
   h += '<div id="wizardLines">';
   w.lines.forEach(function (ln, i) { h += wizardLineRow(w, i); });
   h += '</div>';
@@ -1003,9 +1045,9 @@ function wizardLineRow(w, i) {
   var lineTotal = num(ln.dozens) * pairsPerDozen() * price - num(ln.discount);
   return '<div class="line-row"><div class="row between"><b>بند ' + (i + 1) + '</b>' +
     (w.lines.length > 1 ? '<button class="btn btn-danger btn-sm" onclick="App.wizardRemoveLine(' + i + ')">حذف البند</button>' : '') + '</div>' +
-    '<label>الصنف</label><input type="text" list="dlItemsW" placeholder="اكتب اسم الصنف واختار من القائمة" value="' + esc(ln.item) + '" autocomplete="off" oninput="App.wizardLineField(' + i + ',\'item\',this.value)">' +
+    '<label>الصنف</label>' + modelPickerHtml('wzItem-' + i, 'wzPicker-' + i, ln.item, 'App.wizardLineField(' + i + ',\'item\',this.value)') +
     '<div class="hint" id="wzInfo-' + i + '">' + esc(info) + '</div>' +
-    '<label>اللون</label><div id="wzColorWrap-' + i + '">' + colorTilesHtml(it, 'wzTiles-' + i, 'wzColor-' + i, ln.color || '') + '</div>' +
+    '<label>اللون</label><div id="wzColorWrap-' + i + '">' + colorTilesHtml(it, 'wzTiles-' + i, 'wzColor-' + i, ln.color || '', true) + '</div>' +
     '<label>الكمية (دستة)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5" value="' + esc(ln.dozens) + '" oninput="App.wizardLineField(' + i + ',\'dozens\',this.value)">' +
     '<div class="chips">' + presets().map(function (p) { return '<button type="button" class="chip" onclick="App.wizardLinePreset(' + i + ',' + p + ')">' + fmtDoz(p) + '</button>'; }).join('') + '</div>' +
     '<label>سعر الزوج (ج.م) — سيبه فاضي عشان يتملا لوحده</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)" value="' + esc(ln.customPrice) + '" oninput="App.wizardLineField(' + i + ',\'customPrice\',this.value)">' +
@@ -1384,7 +1426,7 @@ window.App = {
     inp.addEventListener('input', function () {
       var it = itemByName(inp.value.trim());
       $('lineItemInfo').textContent = it ? ('سعر الزوج: ' + fmtMoney(it.price) + ' • المخزون: ' + fmtNum(it.stock) + ' زوج') : '';
-      refreshColorTiles('lineColorTiles', 'fLColor', inp.value.trim(), '');
+      refreshColorTiles('lineColorTiles', 'fLColor', inp.value.trim(), '', true);
     });
   },
   saveLine: function (orderNo) {
@@ -1471,6 +1513,33 @@ window.App = {
       var w = UI.wizard;
       if (w && w.lines[idx]) { w.lines[idx].color = color; updateWizardTotals(); }
     }
+  },
+  /* قائمة الموديلات بالصور: ▼ بيعرض كل الموديلات، والكتابة بتفلتر */
+  toggleModelPicker: function (panelId, inputId) {
+    var p = $(panelId); if (!p) return;
+    if (p.style.display === 'none') {
+      p.innerHTML = modelPickerRowsHtml(inputId, panelId, '');
+      p.style.display = 'block';
+    } else p.style.display = 'none';
+  },
+  modelPickerInput: function (inputId, panelId) {
+    var p = $(panelId); if (!p) return;
+    /* بعد اختيار صف من القائمة منفتحش اللوحة تاني من حدث الـ input اللي بيتبعت */
+    if (UI.__pickerPicked === panelId) { UI.__pickerPicked = null; return; }
+    var inp = $(inputId);
+    var q = inp ? inp.value : '';
+    if (!q.trim()) { p.style.display = 'none'; return; }
+    p.innerHTML = modelPickerRowsHtml(inputId, panelId, q);
+    p.style.display = 'block';
+  },
+  pickModel: function (inputId, panelId, name) {
+    var inp = $(inputId); if (!inp) return;
+    var p = $(panelId); if (p) p.style.display = 'none';
+    UI.__pickerPicked = panelId;
+    inp.value = name;
+    /* نبعت حدث input عشان يشتغل نفس مسار الكتابة بالظبط (تحديث الإجمالي + مربعات اللون) */
+    inp.dispatchEvent(new Event('input', { bubbles: true }));
+    inp.focus();
   },
   wizardAddLine: function () { UI.wizard.lines.push({ item: '', color: '', dozens: '', discount: '', customPrice: '' }); render(); },
   wizardRemoveLine: function (i) { UI.wizard.lines.splice(i, 1); render(); },
@@ -1568,6 +1637,13 @@ $('btnRefresh').addEventListener('click', function () { refresh({}).catch(functi
 $('btnSettings').addEventListener('click', function () { go('settings'); });
 window.addEventListener('online', function () { updateHeaderStatus(true); refresh({ spinner: false }).catch(function () {}); });
 window.addEventListener('offline', function () { updateHeaderStatus(false); toast('النت مقطوع — التطبيق هيحاول تاني لما النت يرجع.', true); });
+/* قفل قوائم اختيار الموديلات بضغطة برّه أو Escape */
+document.addEventListener('click', function (e) {
+  if (!e.target.closest || !e.target.closest('.picker-wrap')) closeModelPickers();
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeModelPickers();
+});
 
 // تحديث تلقائي كل 25 ثانية — بس لما الصفحة ظاهرة ومفيش نموذج مفتوح ولا كتابة شغالة.
 setInterval(function () {
