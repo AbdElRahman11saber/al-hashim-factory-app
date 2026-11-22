@@ -270,15 +270,17 @@ function renderCatalog() {
   $('emptyCat').style.display = 'none';
   g.innerHTML = list.map(function (m) {
     var idx = CATALOG.indexOf(m);
-    var out = (m.stock !== null && m.stock !== undefined) && num(m.stock) <= 0;
+    var noPrice = !(num(m.price) > 0);
+    var noStock = (m.stock !== null && m.stock !== undefined) && num(m.stock) <= 0;
+    var out = noPrice || noStock;
     var img = m.photo
       ? photoHtml(m.photo, 'cat-photo', 'cat-noimg') + noimgHtml('cat-noimg')
       : '<div class="cat-noimg" style="display:flex">بلا صورة</div>';
     return '<div class="cat-card' + (SEL === m ? ' on' : '') + '" onclick="selectModel(' + idx + ')">' + img +
       '<div class="cat-name">' + esc(m.name) + '</div>' +
       (out ? '<div style="margin-top:4px"><span class="badge b-red">نفذ</span></div>' : '') +
-      '<div class="cat-price">' + fmtMoney(m.price) + ' / زوج</div>' +
-      '<div class="cat-sub">الدستة (' + PPD + ' أزواج): ' + fmtMoney(m.dozenPrice) + '</div></div>';
+      (noPrice ? '' : '<div class="cat-price">' + fmtMoney(m.price) + ' / زوج</div>' +
+      '<div class="cat-sub">الدستة (' + PPD + ' أزواج): ' + fmtMoney(m.dozenPrice) + '</div>') + '</div>';
   }).join('');
 }
 
@@ -299,19 +301,21 @@ function renderPick() {
   var img = SEL.photo
     ? photoHtml(SEL.photo, 'pick-photo', 'pick-noimg') + noimgHtml('pick-noimg')
     : '<div class="pick-noimg" style="display:flex">بلا صورة</div>';
+  var noPrice = !(num(SEL.price) > 0);
   var tiles = SEL.colors.map(function (c) {
-    var out = (c.stock !== null && c.stock !== undefined) && num(c.stock) <= 0;
+    var out = noPrice || ((c.stock !== null && c.stock !== undefined) && num(c.stock) <= 0);
     if (out) return '<button type="button" class="color-tile out" disabled>' + esc(c.color) + '<span class="ct-out">نفذ</span></button>';
     return '<button type="button" class="color-tile' + (SEL_COLOR === c.color ? ' on' : '') + '" onclick="setColor(\'' + jsq(c.color) + '\',this)">' + esc(c.color) + '</button>';
   }).join('');
   var chips = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12].map(function (v) {
     return '<button type="button" class="chip' + (num(SEL_QTY) === v ? ' on' : '') + '" onclick="setQty(' + v + ')">' + fmtDoz(v) + '</button>';
   }).join('');
-  var outModel = (SEL.stock !== null && SEL.stock !== undefined) && num(SEL.stock) <= 0;
+  var outModel = noPrice || ((SEL.stock !== null && SEL.stock !== undefined) && num(SEL.stock) <= 0);
   pc.innerHTML =
     '<div class="pick-head">' + img + '<div class="grow"><div style="font-weight:800;font-size:17px">' + esc(SEL.name) + '</div>' +
+    (noPrice ? '<div style="margin-top:4px"><span class="badge b-red">نفذ</span></div>' :
     '<div class="cat-price">' + fmtMoney(SEL.price) + ' / زوج</div>' +
-    '<div class="cat-sub">الدستة: ' + fmtMoney(SEL.dozenPrice) + (outModel ? ' • <span class="badge b-red">نفذ</span>' : '') + '</div></div></div>' +
+    '<div class="cat-sub">الدستة: ' + fmtMoney(SEL.dozenPrice) + (outModel ? ' • <span class="badge b-red">نفذ</span>' : '') + '</div>') + '</div></div>' +
     '<label>اللون</label><div class="color-tiles">' + (tiles || '<div class="hint">مفيش ألوان متسجلة للموديل ده.</div>') + '</div>' +
     '<label for="pickQty">الكمية (دستة)</label><input type="number" id="pickQty" inputmode="decimal" min="0" step="any" value="' + esc(SEL_QTY) + '" oninput="qtyInput(this.value)">' +
     '<div class="chips">' + chips + '</div>' +
@@ -357,6 +361,7 @@ function cancelPick() {
 
 function addToCart() {
   if (!SEL) return;
+  if (!(num(SEL.price) > 0)) { toast('الموديل ده مش متاح دلوقتي.', true); return; }
   if (!SEL_COLOR) { toast('اختار اللون الأول.', true); return; }
   var q = num(SEL_QTY);
   if (!(q > 0)) { toast('اكتب الكمية بالدستة.', true); return; }
