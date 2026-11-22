@@ -121,8 +121,10 @@ textarea{resize:vertical;min-height:64px}
       <input type="text" id="fName" placeholder="اسمك" autocomplete="name">
       <label for="fPhone">رقم التليفون *</label>
       <input type="tel" id="fPhone" dir="ltr" style="text-align:right" placeholder="01xxxxxxxxx" autocomplete="tel">
-      <label for="fAddr">العنوان — اختياري</label>
-      <input type="text" id="fAddr" placeholder="المحافظة / المنطقة / الشارع">
+      <label for="fPhone2">رقم تليفون تاني — اختياري</label>
+      <input type="tel" id="fPhone2" dir="ltr" style="text-align:right" placeholder="01xxxxxxxxx" autocomplete="tel">
+      <label for="fAddr">العنوان *</label>
+      <input type="text" id="fAddr" placeholder="المحافظة / المنطقة / الشارع" required>
       <label for="fNotes">ملاحظات — اختياري</label>
       <textarea id="fNotes" placeholder="أي تفاصيل زيادة عن الطلب"></textarea>
       <div style="margin-top:16px"><button class="btn btn-pri btn-block" id="submitBtn" onclick="submitOrder()">📤 ابعت الأوردر</button></div>
@@ -379,16 +381,19 @@ function submitOrder() {
   if (!CART.length) { toast('الأوردر فاضي — اختار موديل الأول.', true); return; }
   var name = ($('fName').value || '').trim();
   var phone = ($('fPhone').value || '').trim();
+  var address = ($('fAddr').value || '').trim();
   if (!name) { toast('اكتب اسمك.', true); $('fName').focus(); return; }
   var digits = phone.replace(/\D/g, '');
   if (digits.length < 9) { toast('رقم التليفون مش مظبوط.', true); $('fPhone').focus(); return; }
+  if (!address) { toast('اكتب العنوان.', true); $('fAddr').focus(); return; }
   var btn = $('submitBtn');
   btn.disabled = true;
   btn.textContent = 'بيتبعت...';
   var payload = {
     customer: name,
     phone: phone,
-    address: ($('fAddr').value || '').trim(),
+    phone2: ($('fPhone2').value || '').trim(),
+    address: address,
     notes: ($('fNotes').value || '').trim(),
     lines: CART.map(function (l) { return { model: l.model, color: l.color, dozens: num(l.dozens) }; })
   };
