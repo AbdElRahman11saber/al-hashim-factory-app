@@ -388,6 +388,20 @@ function itemColorBadges(it) {
   if (avail.length) return '<div class="muted small" style="margin-top:4px">الألوان: ' + esc(avail.join('، ')) + ' — لسه مفيش مخزون بالألوان</div>';
   return '';
 }
+/* تعديل كميات الألوان في تفاصيل الصنف — كل لون وجنبه رصيده الحالي
+   وحقل تعديل بالدستة وزر حفظ. الكمية اللي بتتكتب هي الرصيد الحالي المطلوب
+   للون ده (بالدستة)، والباك إند بيظبط الافتتاحي على أساسها. */
+function colorStockEditHtml(it) {
+  var colors = modelColors(it);
+  if (!colors.length) return '<div class="hint">مفيش ألوان متسجلة للموديل ده.</div>';
+  return colors.map(function (c) {
+    var cs = colorStockOf(it.model, c);
+    var doz = cs ? (cs.stockDoz || 0) : 0;
+    return '<div class="kv"><span>' + esc(c) + ' <span class="muted small">(' + fmtNum(doz * 10) + ' زوج)</span></span>' +
+      '<span style="display:flex;gap:6px;align-items:center"><input type="number" inputmode="decimal" min="0" step="any" value="' + doz + '" style="width:90px;text-align:center" placeholder="دستة">' +
+      '<button type="button" class="btn btn-pri btn-sm" onclick="App.saveColorStock(' + it._row + ',\'' + jsq(c) + '\',this)">حفظ</button></span></div>';
+  }).join('');
+}
 /* اسم البند للعرض: الموديل + اللون (زي اسم الصنف القديم «س أحمر») */
 function lineItemLabel(l) {
   if (!l) return '';
@@ -1497,12 +1511,26 @@ window.App = {
       '<div class="kv"><span>سعر الدستة</span><b>' + fmtMoney(it.pairPrice) + '</b></div>' +
       '<div class="kv"><span>الرصيد</span><b>' + fmtNum(it.stock) + ' زوج (' + fmtDoz(it.stockDoz) + ' دستة)</b></div>' +
       (it.notes ? '<div class="muted small" style="margin-top:6px">' + esc(it.notes) + '</div>' : '') +
-      '<div class="section-title" style="margin-top:14px">الألوان والمخزون</div>' +
-      itemColorBadges(it) +
+      '<div class="section-title" style="margin-top:14px">الألوان والمخزون — عدّل الكمية بالدستة</div>' +
+      colorStockEditHtml(it) +
       '<div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">إغلاق</button>' +
       '<button class="btn btn-dark" onclick="closeModal();App.itemForm(' + it._row + ')">تعديل</button>' +
       '<button class="btn btn-danger" onclick="closeModal();App.deleteItem(' + it._row + ')">حذف</button></div>';
     openModal(h);
+  },
+  /* حفظ كمية لون معين من موديل (من تفاصيل الصنف) */
+  saveColorStock: function (row, color, btn) {
+    var it = null; DATA.items.forEach(function (x) { if (x._row === row) it = x; });
+    if (!it) return;
+    var inp = btn && btn.parentNode ? btn.parentNode.querySelector('input') : null;
+    var v = inp ? Number(inp.value) : NaN;
+    if (isNaN(v) || v < 0) { toast('اكتب الكمية بالدستة (صفر أو أكتر).', true); return; }
+    showLoading('جارٍ حفظ كمية اللون...');
+    callApi('setColorStock', { model: it.model, color: color, dozens: v }).then(function () {
+      hideLoading();
+      return afterWrite('تم تعديل كمية ' + color + ' لـ ' + it.name + ' إلى ' + fmtDoz(v) + ' دستة');
+    }).then(function () { App.showItemDetail(row); })
+    .catch(function (e) { hideLoading(); toast(e.message, true); });
   },
   /* تجار */
   openMerchant: function (row) { UI.merchRow = row; UI.merchTab = 'all'; go('merchantDetail'); },
