@@ -1270,6 +1270,26 @@ function wizardStep3(w) {
 }
 
 /* ---------------- الفاتورة ---------------- */
+/* تجميع بنود الفاتورة حسب سعر الزوج — البنود اللي سعر الجوز بتاعها واحد
+   بتتجمع في سطر واحد، والبيان فيه «موديل لون» لكل بند وبينهم « / ».
+   التجميع للعرض بس (البنود في الأوردر بتفضل منفصلة عشان المخزون). */
+function groupInvoiceLines(lines) {
+  var groups = [], byPrice = {};
+  lines.forEach(function (l) {
+    var key = String(num(l.price));
+    if (!byPrice[key]) {
+      byPrice[key] = { price: num(l.price), labels: [], dozens: 0, pairs: 0, discount: 0, total: 0 };
+      groups.push(byPrice[key]);
+    }
+    var g = byPrice[key];
+    g.labels.push(lineItemLabel(l));
+    g.dozens += num(l.dozens);
+    g.pairs += num(l.pairs);
+    g.discount += num(l.discount);
+    g.total += num(l.total);
+  });
+  return groups;
+}
 function screenInvoice() {
   var inv = UI.invoice;
   if (!inv || !inv.order) return '<div class="card">مفيش فاتورة معروضة. <button class="btn btn-ghost btn-sm" onclick="go(\'orders\')">رجوع للأوردرات</button></div>';
@@ -1286,10 +1306,11 @@ function screenInvoice() {
        '<div style="text-align:left"><div class="lbl">رقم الفاتورة</div><b>' + esc(invoiceNo(o)) + '</b><br><span class="lbl">تاريخ الفاتورة:</span> ' + esc(o.date || '') + '<br><span class="lbl">طريقة الدفع:</span> ' + esc(o.method || '—') + '</div></div>';
   h += warn;
   h += '<table class="inv-table"><thead><tr><th style="width:34px">م</th><th>البيان / الصنف</th><th>الكمية</th><th>سعر الوحدة</th><th>الخصم (ج.م)</th><th>الإجمالي</th></tr></thead><tbody>';
-  lines.forEach(function (l, i) {
-    h += '<tr' + (i % 2 === 1 ? ' class="alt"' : '') + '><td>' + (i + 1) + '</td><td class="nm">' + esc(lineItemLabel(l)) + '</td><td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td><td>' + fmtMoney(l.price) + '</td><td>' + (num(l.discount) ? fmtMoney(l.discount) : '') + '</td><td><b>' + fmtMoney(l.total) + '</b></td></tr>';
+  var glines = groupInvoiceLines(lines);
+  glines.forEach(function (g, i) {
+    h += '<tr' + (i % 2 === 1 ? ' class="alt"' : '') + '><td>' + (i + 1) + '</td><td class="nm">' + esc(g.labels.join(' / ')) + '</td><td>' + fmtDoz(g.dozens) + ' دستة (' + fmtNum(g.pairs) + ' زوج)</td><td>' + fmtMoney(g.price) + '</td><td>' + (num(g.discount) ? fmtMoney(g.discount) : '') + '</td><td><b>' + fmtMoney(g.total) + '</b></td></tr>';
   });
-  for (var k = lines.length; k < 10; k++) {
+  for (var k = glines.length; k < 10; k++) {
     h += '<tr' + (k % 2 === 1 ? ' class="alt"' : '') + '><td>' + (k + 1) + '</td><td class="nm">&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
   }
   h += '</tbody></table>';
