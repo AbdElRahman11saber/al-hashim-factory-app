@@ -46,9 +46,10 @@ textarea{resize:vertical;min-height:64px}
 .chip.on{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.35)}
 .color-tiles{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
 .color-tile{border:0;background:var(--bg);border-radius:16px;padding:10px 14px;font-size:14.5px;font-weight:700;min-height:48px;min-width:64px;text-align:center;box-shadow:var(--sh-sm)}
-.color-tile .ct-stock{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.color-tile .ct-out{display:block;font-size:12px;font-weight:700;color:#DC2626;margin-top:2px}
 .color-tile.on{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.35)}
-.color-tile.on .ct-stock{color:#DBEAFE}
+.color-tile.out{border:2px solid #FCA5A5;color:#DC2626;opacity:.8;cursor:not-allowed}
+.color-tile.out .ct-out{color:#DC2626}
 .badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .b-green{background:#D1FAE5;color:#065F46}.b-amber{background:#FEF3C7;color:#92400E}.b-red{background:#FEE2E2;color:#991B1B}
 .empty{text-align:center;padding:34px 16px;color:var(--muted)}
@@ -249,11 +250,13 @@ function renderCatalog() {
   $('emptyCat').style.display = 'none';
   g.innerHTML = list.map(function (m) {
     var idx = CATALOG.indexOf(m);
+    var out = (m.stock !== null && m.stock !== undefined) && num(m.stock) <= 0;
     var img = m.photo
       ? photoHtml(m.photo, 'cat-photo', 'cat-noimg') + noimgHtml('cat-noimg')
       : '<div class="cat-noimg" style="display:flex">بلا صورة</div>';
     return '<div class="cat-card' + (SEL === m ? ' on' : '') + '" onclick="selectModel(' + idx + ')">' + img +
       '<div class="cat-name">' + esc(m.name) + '</div>' +
+      (out ? '<div style="margin-top:4px"><span class="badge b-red">نفذ</span></div>' : '') +
       '<div class="cat-price">' + fmtMoney(m.price) + ' / زوج</div>' +
       '<div class="cat-sub">الدستة (' + PPD + ' أزواج): ' + fmtMoney(m.dozenPrice) + '</div></div>';
   }).join('');
@@ -277,16 +280,18 @@ function renderPick() {
     ? photoHtml(SEL.photo, 'pick-photo', 'pick-noimg') + noimgHtml('pick-noimg')
     : '<div class="pick-noimg" style="display:flex">بلا صورة</div>';
   var tiles = SEL.colors.map(function (c) {
-    var st = (c.stock !== null && c.stock !== undefined) ? '<span class="ct-stock">' + fmtNum(c.stock) + ' زوج</span>' : '';
-    return '<button type="button" class="color-tile' + (SEL_COLOR === c.color ? ' on' : '') + '" onclick="setColor(\'' + jsq(c.color) + '\',this)">' + esc(c.color) + st + '</button>';
+    var out = (c.stock !== null && c.stock !== undefined) && num(c.stock) <= 0;
+    if (out) return '<button type="button" class="color-tile out" disabled>' + esc(c.color) + '<span class="ct-out">نفذ</span></button>';
+    return '<button type="button" class="color-tile' + (SEL_COLOR === c.color ? ' on' : '') + '" onclick="setColor(\'' + jsq(c.color) + '\',this)">' + esc(c.color) + '</button>';
   }).join('');
   var chips = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12].map(function (v) {
     return '<button type="button" class="chip' + (num(SEL_QTY) === v ? ' on' : '') + '" onclick="setQty(' + v + ')">' + fmtDoz(v) + '</button>';
   }).join('');
+  var outModel = (SEL.stock !== null && SEL.stock !== undefined) && num(SEL.stock) <= 0;
   pc.innerHTML =
     '<div class="pick-head">' + img + '<div class="grow"><div style="font-weight:800;font-size:17px">' + esc(SEL.name) + '</div>' +
     '<div class="cat-price">' + fmtMoney(SEL.price) + ' / زوج</div>' +
-    '<div class="cat-sub">الدستة: ' + fmtMoney(SEL.dozenPrice) + ' • متوفر: ' + fmtNum(SEL.stock) + ' زوج</div></div></div>' +
+    '<div class="cat-sub">الدستة: ' + fmtMoney(SEL.dozenPrice) + (outModel ? ' • <span class="badge b-red">نفذ</span>' : '') + '</div></div></div>' +
     '<label>اللون</label><div class="color-tiles">' + (tiles || '<div class="hint">مفيش ألوان متسجلة للموديل ده.</div>') + '</div>' +
     '<label for="pickQty">الكمية (دستة)</label><input type="number" id="pickQty" inputmode="decimal" min="0" step="any" value="' + esc(SEL_QTY) + '" oninput="qtyInput(this.value)">' +
     '<div class="chips">' + chips + '</div>' +
