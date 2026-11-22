@@ -134,25 +134,27 @@ nav button .ic{display:block;font-size:20px;line-height:1.2}
 .kv:last-child{border-bottom:0}
 .kv b{white-space:nowrap}
 /* ===== Invoice ===== */
-.invoice{background:#fff;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden}
-.inv-title{background:var(--dark);color:#fff;text-align:center;font-size:21px;font-weight:800;padding:13px 8px;letter-spacing:1px}
-.inv-company{background:var(--dark);color:#E2E8F0;text-align:center;font-size:13px;padding:0 10px 11px}
-.inv-meta{display:flex;gap:0;background:#F8FAFC;border-bottom:1px solid var(--line)}
-.inv-meta>div{flex:1;padding:10px 12px;font-size:14px}
+.invoice{background:var(--card);border-radius:22px;box-shadow:9px 9px 18px #B9C1CE,-9px -9px 18px #fff;padding:14px}
+.inv-title{background:var(--grad);color:#fff;text-align:center;font-size:20px;font-weight:800;padding:14px 8px;border-radius:16px;box-shadow:0 6px 14px rgba(37,99,235,.35)}
+.inv-company{text-align:center;font-size:13px;color:var(--muted);padding:10px 4px 4px}
+.inv-meta{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.inv-meta>div{flex:1;min-width:200px;padding:10px 12px;font-size:14px;background:var(--bg);border-radius:14px;box-shadow:inset 4px 4px 8px #C8CFDA,inset -4px -4px 8px #fff}
 .inv-meta .lbl{color:var(--muted);font-size:12.5px}
 .inv-warn{background:#FEF2F2;color:#B91C1C;font-weight:700;text-align:center;padding:9px;font-size:14px}
-.inv-table{width:100%;border-collapse:collapse;font-size:14.5px}
-.inv-table th{background:var(--dark2);color:#fff;padding:9px 6px;font-size:13.5px;border:1px solid #94A3B8}
-.inv-table td{padding:9px 6px;border:1px solid #CBD5E1;text-align:center}
+.inv-table{width:100%;border-collapse:separate;border-spacing:0;font-size:14.5px}
+.inv-table th{background:#DBEAFE;color:#1D4ED8;padding:10px 6px;font-size:13.5px;border:0}
+.inv-table th:first-child{border-radius:0 12px 12px 0}
+.inv-table th:last-child{border-radius:12px 0 0 12px}
+.inv-table td{padding:9px 6px;border:0;border-bottom:1px solid #D7DEE8;text-align:center}
 .inv-table td.nm{text-align:right}
-.inv-table tr.alt td{background:#F1F5F9}
+.inv-table tr.alt td{background:#E4E9F1}
 .inv-totals{padding:12px 14px}
 .inv-totals .kv{font-size:15.5px}
-.inv-grand{background:var(--dark);color:#fff;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;font-weight:800;font-size:17px;margin:8px 0}
-.inv-notes{font-size:13px;color:var(--muted);padding:0 14px 6px}
-.inv-foot{text-align:center;color:#94A3B8;font-size:12px;padding:10px;border-top:1px solid var(--line)}
-.inv-bottom{display:flex;gap:14px;padding:12px 14px;flex-wrap:wrap;align-items:flex-start}
-.inv-bottom .inv-notes{flex:1.15;min-width:140px;padding:0}
+.inv-grand{background:var(--grad);color:#fff;border-radius:14px;padding:11px 12px;display:flex;justify-content:space-between;font-weight:800;font-size:17px;margin:8px 0;box-shadow:0 6px 14px rgba(37,99,235,.3)}
+.inv-notes{font-size:13px;color:var(--muted);padding:10px 12px;background:var(--bg);border-radius:14px;box-shadow:inset 4px 4px 8px #C8CFDA,inset -4px -4px 8px #fff}
+.inv-foot{text-align:center;color:#94A3B8;font-size:12px;padding:8px 0 2px}
+.inv-bottom{display:flex;gap:14px;padding:12px 0 4px;flex-wrap:wrap;align-items:flex-start}
+.inv-bottom .inv-notes{flex:1.15;min-width:140px}
 .inv-bottom .inv-totals{flex:1;min-width:165px;padding:0}
 .inv-bottom .inv-totals .kv{font-size:14.5px}
 .order-row{display:flex;align-items:center;gap:8px;background:var(--card);border:0;border-radius:16px;padding:11px 12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--sh-raised)}
@@ -168,8 +170,16 @@ nav button .ic{display:block;font-size:20px;line-height:1.2}
   header,nav,.fab,#toast,#loading,#modalWrap,.no-print{display:none!important}
   body{background:#fff;padding-bottom:0}
   main{padding:0;max-width:none}
-  .invoice{border:0;border-radius:0}
+  .invoice{border:0;border-radius:0;background:#fff!important;box-shadow:none!important;padding:0}
   .inv-screen-wrap{padding:0!important}
+  .inv-title,.inv-grand{background:#fff!important;color:#111!important;box-shadow:none!important;border:1px solid #111!important}
+  .inv-company{color:#333!important}
+  .inv-meta{margin:0!important}
+  .inv-meta>div,.inv-notes{background:#fff!important;box-shadow:none!important;border:1px solid #CBD5E1!important}
+  .inv-table th{background:#fff!important;color:#111!important;border:1px solid #999!important}
+  .inv-table td{border-bottom:1px solid #999!important}
+  .inv-table tr.alt td{background:#F1F5F9!important}
+  .inv-foot{border:0!important}
 }
 @media (min-width:560px){.grid3{grid-template-columns:repeat(3,1fr)}}
 </style>
