@@ -132,6 +132,16 @@ textarea{resize:vertical;min-height:64px}
       <div style="margin-top:16px"><button class="btn btn-pri btn-block" id="submitBtn" onclick="submitOrder()">📤 ابعت الأوردر</button></div>
       <div class="hint" style="text-align:center">الدفع والتوصيل بيتأكدوا معاك بالتليفون بعد ما تبعت الطلب.</div>
     </div>
+
+    <div class="card" id="feedbackCard">
+      <h2>💬 رأيك يهمنا</h2>
+      <p class="muted">عايز تقولنا رأيك في شغلنا؟ اكتب أي اسم تحبه ورأيك — من غير رقم تليفون ولا اسمك الحقيقي.</p>
+      <label for="fbName">الاسم اللي تحب يظهر</label>
+      <input type="text" id="fbName" placeholder="اكتب اسمك أو أي اسم تحبه" autocomplete="off">
+      <label for="fbMsg">رأيك في شغلنا</label>
+      <textarea id="fbMsg" placeholder="اكتب رأيك في شغلنا..."></textarea>
+      <div style="margin-top:16px"><button class="btn btn-pri btn-block" id="fbBtn" onclick="submitFeedback()">📝 إرسال رأيك</button></div>
+    </div>
   </div>
 
   <div id="doneView" class="card" style="display:none">
@@ -151,8 +161,9 @@ textarea{resize:vertical;min-height:64px}
 <script>
 /* ===== صفحة طلب العميل — ورشة آل هاشم =====
  * صفحة عامة من غير كلمة سر: العميل بيشوف الكتالوج ويبعت أوردر.
- * بتكلم السيرفر (Apps Script) بالإجراءين العامين بس:
- * publicCatalog (قراءة الكتالوج) و publicOrder (إنشاء الأوردر).
+ * بتكلم السيرفر (Apps Script) بالإجراءات العامة بس:
+ * publicCatalog (قراءة الكتالوج) و publicOrder (إنشاء الأوردر)
+ * و publicFeedback (إرسال رأي العميل بأي اسم يعجبه).
  * السعر اللي بيظهر هو سعر البيع (سعر الزوج) — سعر الشراء مش موجود هنا. */
 var API_URL = 'https://script.google.com/macros/s/AKfycbw08Yqg1T0PLC6dzdCHkvhqdYLsjFKFjXFEo7SDaBOZIhrU8oRuSULi7VP4nAIDr6pX/exec';
 // ⚠ لو اتعمل نشر جديد للسيرفر (Deploy جديد في Apps Script)، غيّر الرابط ده للرابط الجديد.
@@ -411,6 +422,29 @@ function submitOrder() {
   }).catch(function (err) {
     btn.disabled = false;
     btn.textContent = '📤 ابعت الأوردر';
+    toast(err.message || 'حصلت مشكلة — جرّب تاني.', true);
+  });
+}
+
+/* إرسال رأي العميل — زي صراحة: أي اسم يعجبه (مش لازم اسمه الحقيقي)،
+ * من غير رقم تليفون. بيتسجل في تبويب «آراء العملاء» في الشيت. */
+function submitFeedback() {
+  var name = ($('fbName').value || '').trim();
+  var message = ($('fbMsg').value || '').trim();
+  if (!name) { toast('اكتب الاسم اللي تحب يظهر.', true); $('fbName').focus(); return; }
+  if (!message) { toast('اكتب رأيك الأول.', true); $('fbMsg').focus(); return; }
+  var btn = $('fbBtn');
+  btn.disabled = true;
+  btn.textContent = 'بيتبعت...';
+  callApi('publicFeedback', { name: name, message: message }, 30000).then(function () {
+    btn.disabled = false;
+    btn.textContent = '📝 إرسال رأيك';
+    $('fbName').value = '';
+    $('fbMsg').value = '';
+    toast('شكراً! رأيك وصلنا ✅');
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = '📝 إرسال رأيك';
     toast(err.message || 'حصلت مشكلة — جرّب تاني.', true);
   });
 }
