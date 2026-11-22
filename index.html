@@ -975,6 +975,33 @@ function wizardLineInfo(ln, it) {
   }
   return s;
 }
+/* البند كامل وجاهز يتضاف لوحده: موديل موجود في الأصناف + لون + كمية دستة صحيحة (> 0) */
+function wizardLineComplete(ln) {
+  if (!ln || !ln.item || !ln.item.trim()) return false;
+  if (!itemByName(ln.item.trim())) return false;
+  if (!ln.color) return false;
+  if (!ln.dozens || Number(ln.dozens) <= 0) return false;
+  return true;
+}
+/* لازم يفضل فيه صف مفتوح (مش كامل) في المعالج عشان الإضافة — لو كل البنود بقت كاملة، ضيف صف فاضي */
+function wizardEnsureOpenRow() {
+  var w = UI.wizard; if (!w) return;
+  var hasOpen = w.lines.some(function (ln) { return !wizardLineComplete(ln); });
+  if (!hasOpen) w.lines.push({ item: '', color: '', dozens: '', discount: '', customPrice: '' });
+}
+/* لو آخر بند في المعالج بقى كامل، ضيف صف فاضي جديد لوحده (نفس منطق زرار «إضافة بند» القديم)
+   عشان المستخدم يكمل إضافة البند اللي بعده على طول من غير ما يدوس على حاجة.
+   بترجع true لو ضافت صف جديد (وعملت render)، و false لو البند لسه مش كامل. */
+function wizardMaybeAutoAdd(i) {
+  var w = UI.wizard; if (!w || !w.lines[i]) return false;
+  if (i !== w.lines.length - 1) return false; /* بس الصف الأخير — اللي بيتملا دلوقتي */
+  if (!wizardLineComplete(w.lines[i])) return false;
+  App.wizardAddLine();
+  var rows = document.querySelectorAll('#wizardLines .line-row');
+  var last = rows[rows.length - 1];
+  if (last) last.scrollIntoView({ block: 'nearest' });
+  return true;
+}
 function updateWizardTotals() {
   var w = UI.wizard; if (!w) return;
   var t = wizardTotals(w);
@@ -1036,11 +1063,10 @@ function wizardStep1(w) {
 }
 function wizardStep2(w) {
   var t = wizardTotals(w);
-  var h = '<div class="card"><h2>بنود الأوردر</h2><p class="muted small" style="margin:0">اختار الصنف والكمية بالدستة. السعر بيتملا لوحده من سعر الصنف.</p></div>';
+  var h = '<div class="card"><h2>بنود الأوردر</h2><p class="muted small" style="margin:0">اختار الموديل واللون والكمية بالدستة، والبند هيتضاف لوحده — وبعدها اختار اللي بعده على طول. السعر بيتملا لوحده من سعر الصنف.</p></div>';
   h += '<div id="wizardLines">';
   w.lines.forEach(function (ln, i) { h += wizardLineRow(w, i); });
   h += '</div>';
-  h += '<button class="btn btn-ghost btn-block" onclick="App.wizardAddLine()">+ إضافة بند</button>';
   h += '<div class="card" style="margin-top:12px"><div class="kv"><span>المجموع الفرعي</span><b id="wzSub">' + fmtMoney(t.subtotal) + '</b></div>' +
     '<div class="kv"><span>إجمالي الأزواج</span><b id="wzPairs">' + fmtNum(t.pairs) + ' زوج</b></div></div>';
   h += '<div class="row"><button class="btn btn-ghost grow" onclick="App.wizardBack()">→ رجوع</button>' +
@@ -1059,7 +1085,7 @@ function wizardLineRow(w, i) {
     '<label>الصنف</label>' + modelPickerHtml('wzItem-' + i, 'wzPicker-' + i, ln.item, 'App.wizardLineField(' + i + ',\'item\',this.value)') +
     '<div class="hint" id="wzInfo-' + i + '">' + esc(info) + '</div>' +
     '<label>اللون</label><div id="wzColorWrap-' + i + '">' + colorTilesHtml(it, 'wzTiles-' + i, 'wzColor-' + i, ln.color || '', true) + '</div>' +
-    '<label>الكمية (دستة)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5" value="' + esc(ln.dozens) + '" oninput="App.wizardLineField(' + i + ',\'dozens\',this.value)">' +
+    '<label>الكمية (دستة)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 2.5" value="' + esc(ln.dozens) + '" oninput="App.wizardLineField(' + i + ',\'dozens\',this.value)" onchange="App.wizardDozensDone(' + i + ')">' +
     '<div class="chips">' + presets().map(function (p) { return '<button type="button" class="chip" onclick="App.wizardLinePreset(' + i + ',' + p + ')">' + fmtDoz(p) + '</button>'; }).join('') + '</div>' +
     '<label>سعر الزوج (ج.م) — سيبه فاضي عشان يتملا لوحده</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="سعر مخصوص (اختياري)" value="' + esc(ln.customPrice) + '" oninput="App.wizardLineField(' + i + ',\'customPrice\',this.value)">' +
     '<label>خصم البند (ج.م)</label><input type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(ln.discount) + '" oninput="App.wizardLineField(' + i + ',\'discount\',this.value)">' +
@@ -1137,6 +1163,7 @@ function screenInvoice() {
     '<button class="btn btn-pri btn-block" onclick="App.printInvoice()">🖨 طباعة / حفظ PDF</button>' +
     '<button class="btn btn-dark btn-block" onclick="App.shareInvoice()">مشاركة الفاتورة</button>' +
     '<button class="btn btn-ghost btn-block" onclick="App.openOrder(' + o._row + ')">تفاصيل الأوردر وإدارته</button>' +
+    (isActiveOrder(o) ? '<button class="btn btn-danger btn-block" onclick="App.cancelOrder(' + o._row + ')">✕ إلغاء الأوردر</button>' : '') +
     '<div class="row"><button class="btn btn-ghost grow" onclick="go(\'orders\')">رجوع للأوردرات</button>' +
     '<button class="btn btn-ghost grow" onclick="App.newOrder()">أوردر جديد</button></div></div>';
   return h;
@@ -1459,18 +1486,31 @@ window.App = {
         .catch(function (e) { hideLoading(); toast(e.message, true); });
     });
   },
-  changeOrderStatus: function (row) {
-    var st = fieldVal('ordStatus');
+  changeOrderStatus: function (row, forcedStatus) {
+    var st = forcedStatus || fieldVal('ordStatus');
     var o = orderByRow(row);
     function doIt() {
       showLoading('جارٍ حفظ الحالة...');
       callApi('setOrderStatus', { row: row, status: st })
         .then(function () { hideLoading(); return afterWrite('تم تغيير الحالة إلى: ' + st); })
+        .then(function () {
+          /* لو التغيير حصل من شاشة الفاتورة، حدّث نسخة الفاتورة من البيانات الجديدة عشان الحالة تظهر */
+          if (UI.screen === 'invoice' && UI.invoice && UI.invoice.order && UI.invoice.order._row === row) {
+            var fresh = orderByRow(row);
+            if (fresh) { UI.invoice.order = fresh; UI.invoice.lines = linesOf(fresh.no); render(); }
+          }
+        })
         .catch(function (e) { hideLoading(); toast(e.message, true); });
     }
     if ((st === 'مرتجع' || st === 'ملغي') && o && isActiveOrder(o)) {
       confirmBox('تأكيد: ' + st + '؟', 'الأوردر ده هيبقى «' + st + '»: البضاعة هترجع المخزون لوحدها، والأوردر مش هيتحسب في المبيعات ولا الصرف. متأكد؟', 'أيوة، ' + st, doIt);
     } else doIt();
+  },
+  /* إلغاء الأوردر من شاشة الفاتورة — نفس مسار تغيير الحالة (بيرجع المخزون زي ما هو) */
+  cancelOrder: function (row) {
+    var o = orderByRow(row);
+    if (!o || !isActiveOrder(o)) return;
+    App.changeOrderStatus(row, 'ملغي');
   },
   editOrderNotes: function (row) { var o = orderByRow(row); if (o) openModal(orderEditHtml(o)); },
   saveOrderEdit: function (row) {
@@ -1508,8 +1548,10 @@ window.App = {
   wizardLinePreset: function (i, v) {
     var w = UI.wizard; if (!w || !w.lines[i]) return;
     w.lines[i].dozens = String(v);
-    render();
+    if (!wizardMaybeAutoAdd(i)) render();
   },
+  /* خلّص كتابة الكمية في حقل الدستة (blur / Enter) — لو البند بقى كامل يتضاف لوحده */
+  wizardDozensDone: function (i) { wizardMaybeAutoAdd(i); },
   /* اختيار اللون من المربعات — زي اختيار المساحة والرام في مواقع الموبايلات */
   pickColor: function (hiddenId, color, btn) {
     var h = $(hiddenId); if (h) h.value = color;
@@ -1522,7 +1564,7 @@ window.App = {
     if (hiddenId.indexOf('wzColor-') === 0) {
       var idx = Number(hiddenId.slice(8));
       var w = UI.wizard;
-      if (w && w.lines[idx]) { w.lines[idx].color = color; updateWizardTotals(); }
+      if (w && w.lines[idx]) { w.lines[idx].color = color; updateWizardTotals(); wizardMaybeAutoAdd(idx); }
     }
   },
   /* قائمة الموديلات بالصور: ▼ بيعرض كل الموديلات، والكتابة بتفلتر */
@@ -1553,7 +1595,12 @@ window.App = {
     inp.focus();
   },
   wizardAddLine: function () { UI.wizard.lines.push({ item: '', color: '', dozens: '', discount: '', customPrice: '' }); render(); },
-  wizardRemoveLine: function (i) { UI.wizard.lines.splice(i, 1); render(); },
+  wizardRemoveLine: function (i) {
+    var w = UI.wizard; if (!w) return;
+    w.lines.splice(i, 1);
+    wizardEnsureOpenRow();
+    render();
+  },
   wizardNext: function () {
     var w = UI.wizard;
     if (w.step === 1) {
@@ -1561,6 +1608,16 @@ window.App = {
       w.step = 2; render(); return;
     }
     if (w.step === 2) {
+      /* شيل أي بند فاضي تماماً (صف الإضافة التلقائي) قبل التحقق — ميتعدّش بند */
+      w.lines = w.lines.filter(function (ln) {
+        return (ln.item && ln.item.trim()) || ln.color || ln.dozens || ln.discount || ln.customPrice;
+      });
+      if (!w.lines.length) {
+        toast('ضيف بند واحد على الأقل للأوردر.', true);
+        w.lines.push({ item: '', color: '', dozens: '', discount: '', customPrice: '' });
+        render();
+        return;
+      }
       for (var i = 0; i < w.lines.length; i++) {
         var ln = w.lines[i];
         if (!ln.item.trim()) { toast('اختار الصنف في بند ' + (i + 1) + '.', true); return; }
@@ -1572,7 +1629,12 @@ window.App = {
       w.step = 3; render(); return;
     }
   },
-  wizardBack: function () { if (UI.wizard.step > 1) { UI.wizard.step--; render(); } },
+  wizardBack: function () {
+    var w = UI.wizard; if (!w || w.step <= 1) return;
+    w.step--;
+    if (w.step === 2) wizardEnsureOpenRow(); /* رجعنا لخطوة البنود — لازم يفضل فيه صف مفتوح للإضافة */
+    render();
+  },
   confirmOrder: function () {
     var w = UI.wizard;
     if (!w) return;
