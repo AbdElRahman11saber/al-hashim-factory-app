@@ -59,6 +59,10 @@ textarea{resize:vertical;min-height:64px}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:15px}
 .kv:last-child{border-bottom:0}
 .kv b{white-space:nowrap}
+.fb-quote{background:var(--bg);border-radius:14px;padding:12px 14px;margin:10px 0;box-shadow:var(--sh-sm)}
+.fb-quote .fb-q-name{font-weight:800;font-size:15px}
+.fb-quote .fb-q-msg{margin-top:4px;font-size:14.5px;line-height:1.6}
+.fb-quote .fb-q-date{font-size:12px;color:var(--muted);font-weight:600;margin-top:4px}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:40px;z-index:70;background:var(--dark);color:#fff;border-radius:12px;padding:12px 18px;font-weight:700;font-size:14.5px;max-width:92vw;text-align:center;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 #toast.err{background:var(--red)}
 .banner{background:#FEF3C7;border:1px solid #FCD34D;border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:14.5px;box-shadow:var(--sh-sm)}
@@ -141,6 +145,11 @@ textarea{resize:vertical;min-height:64px}
       <label for="fbMsg">رأيك في شغلنا</label>
       <textarea id="fbMsg" placeholder="اكتب رأيك في شغلنا..."></textarea>
       <div style="margin-top:16px"><button class="btn btn-pri btn-block" id="fbBtn" onclick="submitFeedback()">📝 إرسال رأيك</button></div>
+    </div>
+
+    <div class="card" id="reviewsCard">
+      <h2>⭐ آراء عملائنا</h2>
+      <div id="reviewsList"></div>
     </div>
   </div>
 
@@ -442,10 +451,35 @@ function submitFeedback() {
     $('fbName').value = '';
     $('fbMsg').value = '';
     toast('شكراً! رأيك وصلنا ✅');
+    loadFeedbackList(); // يظهر رأيك فوراً مع باقي الآراء
   }).catch(function (err) {
     btn.disabled = false;
     btn.textContent = '📝 إرسال رأيك';
     toast(err.message || 'حصلت مشكلة — جرّب تاني.', true);
+  });
+}
+
+/* تحميل آراء العملاء وعرضها للكل على صفحة الطلب — زي تقييمات المتاجر:
+ * الاسم اللي العميل اختاره + رأيه + التاريخ، الأحدث أولاً. */
+function renderFeedbackList(list) {
+  var el = $('reviewsList');
+  if (!list || !list.length) {
+    el.innerHTML = '<p class="muted" style="text-align:center">لسه مفيش آراء — كن أول من يشاركنا رأيه 💬</p>';
+    return;
+  }
+  el.innerHTML = list.map(function (f) {
+    return '<div class="fb-quote"><div class="fb-q-name">' + esc(f.name) + '</div>' +
+      '<div class="fb-q-msg">' + esc(f.message) + '</div>' +
+      (f.date ? '<div class="fb-q-date">' + esc(f.date) + '</div>' : '') + '</div>';
+  }).join('');
+}
+
+function loadFeedbackList() {
+  callApi('publicFeedbackList', null, 30000).then(function (res) {
+    renderFeedbackList(res.feedback || []);
+  }).catch(function () {
+    // لو فشل التحميل، اخفي قسم الآراء خالص — أحسن من قسم فاضي أو رسالة خطأ للعميل.
+    $('reviewsCard').style.display = 'none';
   });
 }
 
@@ -479,6 +513,7 @@ document.addEventListener('DOMContentLoaded', function () {
   $('q').addEventListener('input', function () { renderCatalog(); });
   renderCart();
   loadCatalog();
+  loadFeedbackList();
 });
 </script>
 </body>
