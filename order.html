@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E6E9F0">
+<title>اطلب من ورشة آل هاشم</title>
+<style>
+:root{--dark:#1E293B;--dark2:#334155;--bg:#E6E9F0;--card:#EDF0F6;--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--green:#059669;--red:#DC2626;--amber:#D97706;--blue:#2563EB;--radius:20px;--accent:#2563EB;--accent2:#3B82F6;--grad:linear-gradient(180deg,#3B82F6,#2563EB);--sh-raised:7px 7px 14px rgba(163,177,198,.45),-7px -7px 14px rgba(255,255,255,.85);--sh-inset:inset 4px 4px 9px rgba(163,177,198,.4),inset -4px -4px 9px rgba(255,255,255,.9);--sh-sm:4px 4px 9px rgba(163,177,198,.4),-4px -4px 9px rgba(255,255,255,.8)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.55;padding-bottom:40px}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(circle at 12% 8%,rgba(255,255,255,.75),transparent 42%),radial-gradient(circle at 88% 22%,rgba(255,255,255,.55),transparent 38%),radial-gradient(circle at 82% 88%,rgba(163,177,198,.35),transparent 45%),radial-gradient(circle at 8% 78%,rgba(255,255,255,.4),transparent 40%)}
+h1,h2,h3{margin:0}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{position:sticky;top:0;z-index:40;background:var(--bg);color:var(--ink);padding:12px 14px 10px;box-shadow:0 6px 16px rgba(163,177,198,.4)}
+.hd-row{display:flex;align-items:center;gap:10px}
+.hd-title{flex:1;min-width:0;text-align:center}
+.hd-title h1{font-size:20px}
+.hd-sub{font-size:13px;color:var(--muted)}
+main{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:14px 12px 20px}
+.card{background:var(--card);border:0;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--sh-raised)}
+.card h2{font-size:17px;margin-bottom:8px}
+.muted{color:var(--muted);font-size:13.5px}
+.small{font-size:13px}
+.row{display:flex;gap:8px;align-items:center}
+.row.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:16px;padding:12px 16px;font-weight:700;font-size:15.5px;min-height:48px}
+.btn-pri{background:var(--grad);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.35)}.btn-pri:active{background:linear-gradient(180deg,#2563EB,#1D4ED8)}
+.btn-ghost{background:var(--bg);color:var(--ink);box-shadow:var(--sh-sm)}
+.btn-danger{background:#FEE2E2;color:var(--red);box-shadow:var(--sh-sm)}
+.btn-block{width:100%}
+.btn-sm{padding:8px 12px;min-height:40px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.55}
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 5px}
+label:first-child{margin-top:0}
+input[type=text],input[type=number],input[type=tel],input[type=date],input[type=url],input[type=password],select,textarea{width:100%;border:0;border-radius:16px;padding:12px 14px;background:var(--bg);color:var(--ink);min-height:48px;box-shadow:var(--sh-inset)}
+input:focus,select:focus,textarea:focus{outline:0;box-shadow:var(--sh-inset),0 0 0 2px var(--accent)}
+textarea{resize:vertical;min-height:64px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0}
+.chip{border:0;background:var(--bg);border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;min-height:40px;box-shadow:var(--sh-sm)}
+.chip.on{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.35)}
+.color-tiles{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.color-tile{border:0;background:var(--bg);border-radius:16px;padding:10px 14px;font-size:14.5px;font-weight:700;min-height:48px;min-width:64px;text-align:center;box-shadow:var(--sh-sm)}
+.color-tile .ct-stock{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.color-tile.on{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.35)}
+.color-tile.on .ct-stock{color:#DBEAFE}
+.badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.b-green{background:#D1FAE5;color:#065F46}.b-amber{background:#FEF3C7;color:#92400E}.b-red{background:#FEE2E2;color:#991B1B}
+.empty{text-align:center;padding:34px 16px;color:var(--muted)}
+.empty .big{font-size:40px;margin-bottom:6px}
+.toolbar{display:flex;gap:8px;margin-bottom:10px}
+.toolbar input{flex:1}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.kv:last-child{border-bottom:0}
+.kv b{white-space:nowrap}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:40px;z-index:70;background:var(--dark);color:#fff;border-radius:12px;padding:12px 18px;font-weight:700;font-size:14.5px;max-width:92vw;text-align:center;display:none;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#toast.err{background:var(--red)}
+.banner{background:#FEF3C7;border:1px solid #FCD34D;border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:14.5px;box-shadow:var(--sh-sm)}
+.banner.err{background:#FEE2E2;border-color:#FCA5A5}
+.spin{width:46px;height:46px;border:5px solid #B8C2D1;border-top-color:var(--accent);border-radius:50%;animation:sp 0.9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.loading-box{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:44px 16px;color:var(--muted)}
+/* ===== كتالوج الموديلات ===== */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-card{background:var(--card);border:0;border-radius:var(--radius);padding:12px;box-shadow:var(--sh-raised);cursor:pointer;text-align:right}
+.cat-card:active{box-shadow:var(--sh-inset)}
+.cat-card.on{box-shadow:var(--sh-inset),0 0 0 2px var(--accent)}
+.cat-photo{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block;background:#F8FAFC;box-shadow:3px 3px 7px rgba(163,177,198,.4)}
+.cat-noimg{width:100%;aspect-ratio:1/1;border:1px dashed #A3B1C6;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;background:var(--bg)}
+.cat-name{font-weight:800;font-size:16px;margin-top:8px}
+.cat-price{font-weight:800;font-size:15px;color:var(--accent);margin-top:2px}
+.cat-sub{font-size:12.5px;color:var(--muted)}
+/* ===== كارت اختيار اللون والكمية ===== */
+.pick-head{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+.pick-photo{width:84px;height:84px;object-fit:cover;border-radius:14px;flex:none;background:#F8FAFC;box-shadow:3px 3px 7px rgba(163,177,198,.4)}
+.pick-noimg{width:84px;height:84px;flex:none;border:1px dashed #A3B1C6;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;color:var(--muted);background:var(--bg)}
+/* ===== سطور الأوردر ===== */
+.cart-line{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.cart-line:last-child{border-bottom:0}
+.cart-thumb{width:52px;height:52px;object-fit:cover;border-radius:10px;flex:none;background:#F8FAFC;box-shadow:3px 3px 7px rgba(163,177,198,.4)}
+.cart-noimg{width:52px;height:52px;flex:none;border:1px dashed #A3B1C6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;color:var(--muted);background:var(--bg)}
+.cart-info{flex:1;min-width:0}
+.cart-info b{font-size:15px}
+.cart-info .muted{font-size:12.5px}
+.cart-total{font-weight:800;white-space:nowrap}
+.cart-x{border:0;background:#FEE2E2;color:var(--red);border-radius:50%;width:32px;height:32px;font-size:15px;flex:none;box-shadow:var(--sh-sm)}
+.done-check{font-size:52px;text-align:center;line-height:1.2}
+.done-no{text-align:center;font-size:22px;font-weight:800;margin:6px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd-row"><div class="hd-title">
+    <h1 id="factoryName">ورشة آل هاشم</h1>
+    <div class="hd-sub">اطلب أونلاين — اختار الموديل واللون والكمية وهنوصّلك طلبك</div>
+  </div></div>
+</header>
+<main>
+  <div id="errBanner" class="banner err" style="display:none"></div>
+  <div id="loading" class="loading-box"><div class="spin"></div><div>بنحمّل الموديلات...</div></div>
+
+  <div id="catalogView" style="display:none">
+    <div class="toolbar"><input type="text" id="q" placeholder="ابحث برقم الموديل..." autocomplete="off"></div>
+    <div id="catalogGrid" class="cat-grid"></div>
+    <div id="emptyCat" class="empty" style="display:none"><div class="big">👟</div><div>مفيش موديلات متاحة دلوقتي — جرّب تاني بعد شوية.</div></div>
+
+    <div id="pickCard" class="card" style="display:none"></div>
+
+    <div class="card" id="cartCard">
+      <h2>🛒 الأوردر بتاعك</h2>
+      <div id="cartLines"><div class="empty" style="padding:18px 8px">لسه مفيش بنود — اختار موديل من الكتالوج فوق.</div></div>
+      <div id="cartTotals" style="display:none">
+        <div class="kv"><span>إجمالي الأزواج</span><b id="cartPairs"></b></div>
+        <div class="kv"><span>الإجمالي</span><b id="cartTotal"></b></div>
+      </div>
+      <label for="fName">الاسم *</label>
+      <input type="text" id="fName" placeholder="اسمك" autocomplete="name">
+      <label for="fPhone">رقم التليفون *</label>
+      <input type="tel" id="fPhone" dir="ltr" style="text-align:right" placeholder="01xxxxxxxxx" autocomplete="tel">
+      <label for="fAddr">العنوان — اختياري</label>
+      <input type="text" id="fAddr" placeholder="المحافظة / المنطقة / الشارع">
+      <label for="fNotes">ملاحظات — اختياري</label>
+      <textarea id="fNotes" placeholder="أي تفاصيل زيادة عن الطلب"></textarea>
+      <div style="margin-top:16px"><button class="btn btn-pri btn-block" id="submitBtn" onclick="submitOrder()">📤 ابعت الأوردر</button></div>
+      <div class="hint" style="text-align:center">الدفع والتوصيل بيتأكدوا معاك بالتليفون بعد ما تبعت الطلب.</div>
+    </div>
+  </div>
+
+  <div id="doneView" class="card" style="display:none">
+    <div class="done-check">✅</div>
+    <h2 style="text-align:center">تم استلام طلبك!</h2>
+    <div class="done-no">رقم الأوردر: <span id="doneNo"></span></div>
+    <div id="doneLines"></div>
+    <div class="kv"><span>إجمالي الأزواج</span><b id="donePairs"></b></div>
+    <div class="kv"><span>الإجمالي</span><b id="doneTotal"></b></div>
+    <p class="muted" style="text-align:center">هنتواصل معاك على رقمك للتأكيد والدفع والتوصيل. شكراً لثقتك في ورشة آل هاشم!</p>
+    <button class="btn btn-ghost btn-block" onclick="resetOrder()">اعمل طلب جديد</button>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script>
+/* ===== صفحة طلب العميل — ورشة آل هاشم =====
+ * صفحة عامة من غير كلمة سر: العميل بيشوف الكتالوج ويبعت أوردر.
+ * بتكلم السيرفر (Apps Script) بالإجراءين العامين بس:
+ * publicCatalog (قراءة الكتالوج) و publicOrder (إنشاء الأوردر).
+ * السعر اللي بيظهر هو سعر البيع (سعر الزوج) — سعر الشراء مش موجود هنا. */
+var API_URL = 'https://script.google.com/macros/s/AKfycbw08Yqg1T0PLC6dzdCHkvhqdYLsjFKFjXFEo7SDaBOZIhrU8oRuSULi7VP4nAIDr6pX/exec';
+// ⚠ لو اتعمل نشر جديد للسيرفر (Deploy جديد في Apps Script)، غيّر الرابط ده للرابط الجديد.
+
+var PPD = 10; // عدد الأزواج في الدستة — بييجي من السيرفر (الإعدادات)
+var CATALOG = []; // [{model, name, photo, price, dozenPrice, stock, colors:[{color, stock}]}]
+var FACTORY = 'ورشة آل هاشم';
+var CART = []; // {model, name, photo, price, color, dozens}
+var SEL = null; // الموديل المختار حالياً
+var SEL_COLOR = '';
+var SEL_QTY = 1;
+var __cbSeq = 0;
+
+function num(v) { var x = Number(v); return isNaN(x) ? 0 : x; }
+function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function jsq(s) { return String(s === undefined || s === null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+function fmtMoney(v) { return num(v).toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' ج.م'; }
+function fmtNum(v) { return num(v).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function fmtDoz(v) { var x = num(v); return (Math.round(x * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function $(id) { return document.getElementById(id); }
+function toast(msg, isErr) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = isErr ? 'err' : '';
+  t.style.display = 'block';
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function () { t.style.display = 'none'; }, 3500);
+}
+/* إجمالي البند = الكمية (دستة) × عدد الأزواج في الدستة × سعر الزوج */
+function lineTotal(dozens, price) { return num(dozens) * PPD * num(price); }
+
+/* اتصال JSONP بالسيرفر — من غير كلمة سر (الإجراءات العامة بس) */
+function callApi(action, payload, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    var cb = 'pub_cb_' + (++__cbSeq) + '_' + Date.now();
+    var done = false;
+    var script = document.createElement('script');
+    var timer = setTimeout(function () { finish(new Error('الطلب اتأخر أكتر من اللازم — جرّب تاني.')); }, timeoutMs || 30000);
+    function finish(err, data) {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (err) reject(err); else resolve(data);
+    }
+    window[cb] = function (res) {
+      if (!res || res.ok !== true) finish(new Error((res && res.error) || 'رد غير متوقع من السيرفر.'));
+      else finish(null, res);
+    };
+    script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت وحاول تاني.')); };
+    var url = API_URL + '?action=' + encodeURIComponent(action) + '&callback=' + encodeURIComponent(cb);
+    if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+
+function loadCatalog() {
+  $('loading').style.display = 'flex';
+  $('errBanner').style.display = 'none';
+  $('catalogView').style.display = 'none';
+  callApi('publicCatalog', null, 30000).then(function (res) {
+    FACTORY = res.factoryName || FACTORY;
+    PPD = num(res.pairsPerDozen) || 10;
+    CATALOG = res.models || [];
+    $('factoryName').textContent = FACTORY;
+    $('loading').style.display = 'none';
+    $('catalogView').style.display = 'block';
+    renderCatalog();
+  }).catch(function (err) {
+    $('loading').style.display = 'none';
+    var b = $('errBanner');
+    b.innerHTML = 'تعذر الوصول للكتالوج — اتأكد من النت وحاول تاني. <button class="btn btn-ghost btn-sm" onclick="loadCatalog()">حاول تاني</button>';
+    b.style.display = 'block';
+  });
+}
+
+function photoHtml(url, cls, noimgCls) {
+  if (url) return '<img class="' + cls + '" src="' + esc(url) + '" alt="" loading="lazy" onerror="this.style.display=\'none\';var n=this.nextElementSibling;if(n)n.style.display=\'flex\';">';
+  return '';
+}
+function noimgHtml(cls) {
+  return '<div class="' + cls + '" style="display:none">بلا صورة</div>';
+}
+
+function renderCatalog() {
+  var q = ($('q').value || '').trim();
+  var list = CATALOG.filter(function (m) { return !q || m.name.indexOf(q) !== -1 || m.model.indexOf(q) !== -1; });
+  var g = $('catalogGrid');
+  if (!list.length) {
+    g.innerHTML = '';
+    $('emptyCat').style.display = 'block';
+    return;
+  }
+  $('emptyCat').style.display = 'none';
+  g.innerHTML = list.map(function (m) {
+    var idx = CATALOG.indexOf(m);
+    var img = m.photo
+      ? photoHtml(m.photo, 'cat-photo', 'cat-noimg') + noimgHtml('cat-noimg')
+      : '<div class="cat-noimg" style="display:flex">بلا صورة</div>';
+    return '<div class="cat-card' + (SEL === m ? ' on' : '') + '" onclick="selectModel(' + idx + ')">' + img +
+      '<div class="cat-name">' + esc(m.name) + '</div>' +
+      '<div class="cat-price">' + fmtMoney(m.price) + ' / زوج</div>' +
+      '<div class="cat-sub">الدستة (' + PPD + ' أزواج): ' + fmtMoney(m.dozenPrice) + '</div></div>';
+  }).join('');
+}
+
+function selectModel(idx) {
+  SEL = CATALOG[idx];
+  SEL_COLOR = '';
+  SEL_QTY = 1;
+  renderCatalog();
+  renderPick();
+  var pc = $('pickCard');
+  pc.style.display = 'block';
+  pc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderPick() {
+  var pc = $('pickCard');
+  if (!SEL) { pc.style.display = 'none'; pc.innerHTML = ''; return; }
+  var img = SEL.photo
+    ? photoHtml(SEL.photo, 'pick-photo', 'pick-noimg') + noimgHtml('pick-noimg')
+    : '<div class="pick-noimg" style="display:flex">بلا صورة</div>';
+  var tiles = SEL.colors.map(function (c) {
+    var st = (c.stock !== null && c.stock !== undefined) ? '<span class="ct-stock">' + fmtNum(c.stock) + ' زوج</span>' : '';
+    return '<button type="button" class="color-tile' + (SEL_COLOR === c.color ? ' on' : '') + '" onclick="setColor(\'' + jsq(c.color) + '\',this)">' + esc(c.color) + st + '</button>';
+  }).join('');
+  var chips = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12].map(function (v) {
+    return '<button type="button" class="chip' + (num(SEL_QTY) === v ? ' on' : '') + '" onclick="setQty(' + v + ')">' + fmtDoz(v) + '</button>';
+  }).join('');
+  pc.innerHTML =
+    '<div class="pick-head">' + img + '<div class="grow"><div style="font-weight:800;font-size:17px">' + esc(SEL.name) + '</div>' +
+    '<div class="cat-price">' + fmtMoney(SEL.price) + ' / زوج</div>' +
+    '<div class="cat-sub">الدستة: ' + fmtMoney(SEL.dozenPrice) + ' • متوفر: ' + fmtNum(SEL.stock) + ' زوج</div></div></div>' +
+    '<label>اللون</label><div class="color-tiles">' + (tiles || '<div class="hint">مفيش ألوان متسجلة للموديل ده.</div>') + '</div>' +
+    '<label for="pickQty">الكمية (دستة)</label><input type="number" id="pickQty" inputmode="decimal" min="0" step="any" value="' + esc(SEL_QTY) + '" oninput="qtyInput(this.value)">' +
+    '<div class="chips">' + chips + '</div>' +
+    '<div class="kv"><span>إجمالي البند</span><b id="pickTotal">' + fmtMoney(lineTotal(SEL_QTY, SEL.price)) + '</b></div>' +
+    '<div class="row" style="margin-top:12px"><button class="btn btn-ghost grow" onclick="cancelPick()">إلغاء</button>' +
+    '<button class="btn btn-pri grow" onclick="addToCart()">➕ أضف للأوردر</button></div>';
+}
+
+function setColor(color, btn) {
+  SEL_COLOR = color;
+  var tiles = btn.parentNode.querySelectorAll('.color-tile');
+  for (var i = 0; i < tiles.length; i++) tiles[i].classList.remove('on');
+  btn.classList.add('on');
+}
+
+function setQty(v) {
+  SEL_QTY = v;
+  var inp = $('pickQty');
+  if (inp) inp.value = v;
+  updatePickTotal();
+  var chips = document.querySelectorAll('#pickCard .chip');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.toggle('on', num(chips[i].textContent) === num(v));
+}
+
+function qtyInput(v) {
+  SEL_QTY = v;
+  updatePickTotal();
+  var chips = document.querySelectorAll('#pickCard .chip');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.toggle('on', num(chips[i].textContent) === num(v));
+}
+
+function updatePickTotal() {
+  var t = $('pickTotal');
+  if (t && SEL) t.textContent = fmtMoney(lineTotal(SEL_QTY, SEL.price));
+}
+
+function cancelPick() {
+  SEL = null;
+  SEL_COLOR = '';
+  renderCatalog();
+  renderPick();
+}
+
+function addToCart() {
+  if (!SEL) return;
+  if (!SEL_COLOR) { toast('اختار اللون الأول.', true); return; }
+  var q = num(SEL_QTY);
+  if (!(q > 0)) { toast('اكتب الكمية بالدستة.', true); return; }
+  var found = null;
+  CART.forEach(function (l) { if (l.model === SEL.model && l.color === SEL_COLOR) found = l; });
+  if (found) found.dozens = num(found.dozens) + q;
+  else CART.push({ model: SEL.model, name: SEL.name, photo: SEL.photo, price: SEL.price, color: SEL_COLOR, dozens: q });
+  cancelPick();
+  renderCart();
+  toast('اتضاف للأوردر ✅');
+  $('cartCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cartTotals() {
+  var pairs = 0, total = 0;
+  CART.forEach(function (l) { pairs += num(l.dozens) * PPD; total += lineTotal(l.dozens, l.price); });
+  return { pairs: pairs, total: total };
+}
+
+function renderCart() {
+  var box = $('cartLines');
+  if (!CART.length) {
+    box.innerHTML = '<div class="empty" style="padding:18px 8px">لسه مفيش بنود — اختار موديل من الكتالوج فوق.</div>';
+    $('cartTotals').style.display = 'none';
+    return;
+  }
+  box.innerHTML = CART.map(function (l, i) {
+    var img = l.photo
+      ? photoHtml(l.photo, 'cart-thumb', 'cart-noimg') + noimgHtml('cart-noimg')
+      : '<div class="cart-noimg" style="display:flex">بلا صورة</div>';
+    return '<div class="cart-line">' + img +
+      '<div class="cart-info"><b>' + esc(l.name) + ' ' + esc(l.color) + '</b>' +
+      '<div class="muted">' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(num(l.dozens) * PPD) + ' زوج) • ' + fmtMoney(l.price) + ' / زوج</div></div>' +
+      '<div class="cart-total">' + fmtMoney(lineTotal(l.dozens, l.price)) + '</div>' +
+      '<button class="cart-x" onclick="removeLine(' + i + ')" aria-label="حذف">✕</button></div>';
+  }).join('');
+  var t = cartTotals();
+  $('cartPairs').textContent = fmtNum(t.pairs) + ' زوج';
+  $('cartTotal').textContent = fmtMoney(t.total);
+  $('cartTotals').style.display = 'block';
+}
+
+function removeLine(i) {
+  CART.splice(i, 1);
+  renderCart();
+}
+
+function submitOrder() {
+  if (!CART.length) { toast('الأوردر فاضي — اختار موديل الأول.', true); return; }
+  var name = ($('fName').value || '').trim();
+  var phone = ($('fPhone').value || '').trim();
+  if (!name) { toast('اكتب اسمك.', true); $('fName').focus(); return; }
+  var digits = phone.replace(/\D/g, '');
+  if (digits.length < 9) { toast('رقم التليفون مش مظبوط.', true); $('fPhone').focus(); return; }
+  var btn = $('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'بيتبعت...';
+  var payload = {
+    customer: name,
+    phone: phone,
+    address: ($('fAddr').value || '').trim(),
+    notes: ($('fNotes').value || '').trim(),
+    lines: CART.map(function (l) { return { model: l.model, color: l.color, dozens: num(l.dozens) }; })
+  };
+  callApi('publicOrder', payload, 60000).then(function (res) {
+    btn.disabled = false;
+    btn.textContent = '📤 ابعت الأوردر';
+    showDone(res);
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = '📤 ابعت الأوردر';
+    toast(err.message || 'حصلت مشكلة — جرّب تاني.', true);
+  });
+}
+
+function showDone(res) {
+  var t = cartTotals();
+  $('doneNo').textContent = '#' + res.orderNo;
+  $('doneLines').innerHTML = CART.map(function (l) {
+    return '<div class="kv"><span>' + esc(l.name) + ' ' + esc(l.color) + ' — ' + fmtDoz(l.dozens) + ' دستة</span><b>' + fmtMoney(lineTotal(l.dozens, l.price)) + '</b></div>';
+  }).join('');
+  $('donePairs').textContent = fmtNum(res.pairs !== undefined ? res.pairs : t.pairs) + ' زوج';
+  $('doneTotal').textContent = fmtMoney(res.total !== undefined ? res.total : t.total);
+  $('catalogView').style.display = 'none';
+  $('doneView').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function resetOrder() {
+  CART = [];
+  SEL = null;
+  SEL_COLOR = '';
+  renderCart();
+  $('doneView').style.display = 'none';
+  $('catalogView').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  $('q').addEventListener('input', function () { renderCatalog(); });
+  renderCart();
+  loadCatalog();
+});
+</script>
+</body>
+</html>
