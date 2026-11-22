@@ -31,6 +31,7 @@ main{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:14px 12px
 .btn-pri{background:var(--grad);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.35)}.btn-pri:active{background:linear-gradient(180deg,#2563EB,#1D4ED8)}
 .btn-ghost{background:var(--bg);color:var(--ink);box-shadow:var(--sh-sm)}
 .btn-danger{background:#FEE2E2;color:var(--red);box-shadow:var(--sh-sm)}
+.btn-wa{background:linear-gradient(180deg,#25D366,#128C7E);color:#fff;box-shadow:0 6px 16px rgba(18,140,126,.35);text-decoration:none}
 .btn-block{width:100%}
 .btn-sm{padding:8px 12px;min-height:40px;font-size:14px;border-radius:10px}
 .btn:disabled{opacity:.55}
@@ -140,6 +141,7 @@ textarea{resize:vertical;min-height:64px}
     <div class="kv"><span>إجمالي الأزواج</span><b id="donePairs"></b></div>
     <div class="kv"><span>الإجمالي</span><b id="doneTotal"></b></div>
     <p class="muted" style="text-align:center">هنتواصل معاك على رقمك للتأكيد والدفع والتوصيل. شكراً لثقتك في ورشة آل هاشم!</p>
+    <a class="btn btn-wa btn-block" id="waBtn" href="#" target="_blank" rel="noopener" style="margin-top:12px">💬 تواصل واتساب لإرسال العربون</a>
     <button class="btn btn-ghost btn-block" onclick="resetOrder()">اعمل طلب جديد</button>
   </div>
 </main>
@@ -416,6 +418,9 @@ function showDone(res) {
   }).join('');
   $('donePairs').textContent = fmtNum(res.pairs !== undefined ? res.pairs : t.pairs) + ' زوج';
   $('doneTotal').textContent = fmtMoney(res.total !== undefined ? res.total : t.total);
+  var total = res.total !== undefined ? res.total : t.total;
+  var msg = 'السلام عليكم، أنا عملت أوردر رقم ' + res.orderNo + ' بمبلغ ' + fmtNum(total) + ' جنيه، وعايز أبعت العربون.';
+  $('waBtn').href = 'https://wa.me/201034837061?text=' + encodeURIComponent(msg);
   $('catalogView').style.display = 'none';
   $('doneView').style.display = 'block';
   window.scrollTo(0, 0);
