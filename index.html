@@ -303,6 +303,22 @@ function fmtDoz(v) {
   var x = num(v);
   return (Math.round(x * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
 }
+/* تطبيع رقم تليفون للمقارنة — شيل أي حاجة مش أرقام، وشيل كود الدولة (+20 / 0020) */
+function normPhone(s) {
+  var d = String(s || '').replace(/\D/g, '');
+  if (d.length > 11) d = d.slice(-11);
+  return d;
+}
+/* عميل مميز برقم التليفون (هاتف 1 أو هاتف 2) — بيرجع العميل أو null */
+function vipByPhone(phone) {
+  var n = normPhone(phone);
+  if (!n || !DATA || !DATA.vips) return null;
+  for (var i = 0; i < DATA.vips.length; i++) {
+    var v = DATA.vips[i];
+    if (normPhone(v.phone1) === n || normPhone(v.phone2) === n) return v;
+  }
+  return null;
+}
 function todayStr() {
   var d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -946,6 +962,21 @@ function vipFormHtml(v) {
 }
 
 /* ---------------- الأوردرات: القائمة ---------------- */
+/* إجماليات الأوردرات حسب الحالة — عدد الأوردرات + إجمالي الأجواز + إجمالي الفلوس لكل حالة */
+function statusTotalsHtml() {
+  var t = {};
+  STATUSES.forEach(function (s) { t[s] = { n: 0, pairs: 0, money: 0 }; });
+  DATA.orders.forEach(function (o) {
+    var s = statusOf(o);
+    if (!t[s]) t[s] = { n: 0, pairs: 0, money: 0 };
+    t[s].n++; t[s].pairs += num(o.pairs); t[s].money += num(o.total);
+  });
+  var rows = STATUSES.map(function (s) {
+    var x = t[s];
+    return '<div class="kv"><span>' + esc(s) + ' <span class="muted small">(' + fmtNum(x.n) + ' أوردر)</span></span><b>' + fmtNum(x.pairs) + ' زوج • ' + fmtMoney(x.money) + '</b></div>';
+  }).join('');
+  return '<div class="card"><h2>إجماليات حسب الحالة</h2>' + rows + '</div>';
+}
 function screenOrders() {
   if (!DATA) return '';
   var q = UI.orderQ.trim();
@@ -963,6 +994,7 @@ function screenOrders() {
     STATUSES.map(function (s) { return '<button class="chip' + (UI.orderFilter === s ? ' on' : '') + '" onclick="App.setOrderFilter(\'' + s + '\')">' + esc(s) + '</button>'; }).join('') + '</div>';
   if (!DATA.orders.length) return h + emptyState('▦', 'لسه مفيش أوردرات', 'اعمل أول أوردر: اختار العميل، وضيف البنود، وأكّد — والفاتورة هتتولد لوحدها.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.newOrder()">+ أوردر جديد</button></div>');
   if (!list.length) return h + emptyState('🔍', 'مفيش أوردرات بالفلتر ده', 'غيّر الحالة أو امسح البحث.');
+  h += statusTotalsHtml();
   if (UI.orderView === 'list') {
     list.forEach(function (o) {
       var ph = o.phone1 || o.phone2 || '';
@@ -1748,7 +1780,26 @@ window.App = {
     }
     render();
   },
-  wizardField: function (k, v) { if (UI.wizard) { UI.wizard[k] = v; if (UI.wizard.step === 3) updateWizardStep3(); } },
+  /* لو كتب رقم تليفون عميل مميز في الأوردر، بياناته بتتملا لوحدها (من غير ما يختاره من القايمة) */
+  wizardFillVipByPhone: function (phone) {
+    var w = UI.wizard;
+    if (!w || w.step !== 1 || w.isVip) return false;
+    var v = vipByPhone(phone);
+    if (!v) return false;
+    w.vipRow = v._row; w.isVip = true;
+    w.customer = v.name; w.phone1 = v.phone1; w.phone2 = v.phone2; w.address = v.address;
+    render();
+    toast('عميل مميز ★ — بياناته اتملت لوحدها');
+    return true;
+  },
+  wizardField: function (k, v) {
+    if (!UI.wizard) return;
+    UI.wizard[k] = v;
+    if (k === 'phone1' && UI.wizard.step === 1 && !UI.wizard.isVip && normPhone(v).length >= 11) {
+      if (App.wizardFillVipByPhone(v)) return;
+    }
+    if (UI.wizard.step === 3) updateWizardStep3();
+  },
   wizardLineField: function (i, k, v) {
     var w = UI.wizard; if (!w || !w.lines[i]) return;
     w.lines[i][k] = v;
