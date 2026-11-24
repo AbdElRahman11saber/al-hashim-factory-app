@@ -80,6 +80,15 @@ textarea{resize:vertical;min-height:64px}
 .cat-name{font-weight:800;font-size:16px;margin-top:8px}
 .cat-price{font-weight:800;font-size:15px;color:var(--accent);margin-top:2px}
 .cat-sub{font-size:12.5px;color:var(--muted)}
+/* ===== مجموعات الأسعار ===== */
+.group-card{background:var(--card);border:0;border-radius:var(--radius);padding:14px;box-shadow:var(--sh-raised);cursor:pointer;text-align:right}
+.group-card:active{box-shadow:var(--sh-inset)}
+.group-name{font-weight:800;font-size:19px}
+.group-count{font-size:13.5px;color:var(--muted);margin-top:2px}
+.group-price{font-weight:800;font-size:15px;color:var(--accent);margin-top:2px}
+.group-thumbs{display:flex;gap:6px;margin-top:10px}
+.group-thumbs img{width:48px;height:48px;object-fit:cover;border-radius:10px;background:#F8FAFC;box-shadow:3px 3px 7px rgba(163,177,198,.4)}
+.group-thumbs .gt-more{width:48px;height:48px;border-radius:10px;background:var(--bg);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--muted)}
 /* ===== كارت اختيار اللون والكمية ===== */
 .pick-head{display:flex;gap:12px;align-items:center;margin-bottom:6px}
 .pick-photo{width:84px;height:84px;object-fit:cover;border-radius:14px;flex:none;background:#F8FAFC;box-shadow:3px 3px 7px rgba(163,177,198,.4)}
@@ -126,6 +135,7 @@ body{padding-bottom:90px}
 
   <div id="catalogView" style="display:none">
     <div class="toolbar"><input type="text" id="q" placeholder="ابحث برقم الموديل..." autocomplete="off"></div>
+    <div id="groupBack" class="row" style="display:none;margin-bottom:10px"><button type="button" class="btn btn-ghost btn-sm" onclick="backToGroups()">← رجوع للمجموعات</button><b id="groupTitle" style="font-size:16px"></b></div>
     <div id="catalogGrid" class="cat-grid"></div>
     <div id="emptyCat" class="empty" style="display:none"><div class="big">👟</div><div>مفيش موديلات متاحة دلوقتي — جرّب تاني بعد شوية.</div></div>
 
@@ -204,6 +214,7 @@ var CATALOG = []; // [{model, name, photo, price, dozenPrice, stock, colors:[{co
 var FACTORY = 'ورشة آل هاشم';
 var CART = []; // {model, name, photo, price, color, dozens}
 var SEL = null; // الموديل المختار حالياً
+var SEL_GROUP = null; // مجموعة السعر المفتوحة حالياً (null = عرض كل المجموعات)
 var SEL_COLOR = '';
 var SEL_QTY = 1;
 var __cbSeq = 0;
@@ -280,30 +291,103 @@ function noimgHtml(cls) {
   return '<div class="' + cls + '" style="display:none">بلا صورة</div>';
 }
 
+/* ===== مجموعات الأسعار: الموديلات متجمعة حسب سعر البيع (ديناميكي — أي سعر جديد بيعمل مجموعته لوحده) ===== */
+function priceGroups() {
+  var map = {};
+  CATALOG.forEach(function (m) {
+    var p = num(m.price) > 0 ? num(m.price) : 0;
+    if (!map[p]) map[p] = { price: p, models: [] };
+    map[p].models.push(m);
+  });
+  var arr = Object.keys(map).map(function (k) { return map[k]; });
+  arr.sort(function (a, b) {
+    if (a.price === 0) return 1; // «بدون سعر» آخر مجموعة
+    if (b.price === 0) return -1;
+    return a.price - b.price;
+  });
+  return arr;
+}
+function groupLabel(price) {
+  return num(price) > 0 ? 'أبو ' + fmtNum(price) : 'بدون سعر';
+}
+function selectGroup(price) {
+  SEL_GROUP = num(price);
+  renderCatalog();
+  window.scrollTo(0, 0);
+}
+function backToGroups() {
+  SEL_GROUP = null;
+  renderCatalog();
+  window.scrollTo(0, 0);
+}
+
+function modelCardHtml(m) {
+  var idx = CATALOG.indexOf(m);
+  var noPrice = !(num(m.price) > 0);
+  var noStock = (m.stock !== null && m.stock !== undefined) && num(m.stock) <= 0;
+  var out = noPrice || noStock;
+  var img = m.photo
+    ? photoHtml(m.photo, 'cat-photo', 'cat-noimg') + noimgHtml('cat-noimg')
+    : '<div class="cat-noimg" style="display:flex">بلا صورة</div>';
+  return '<div class="cat-card' + (SEL === m ? ' on' : '') + '" onclick="selectModel(' + idx + ')">' + img +
+    '<div class="cat-name">' + esc(m.name) + '</div>' +
+    (out ? '<div style="margin-top:4px"><span class="badge b-red">نفذ</span></div>' : '') +
+    (noPrice ? '' : '<div class="cat-price">' + fmtMoney(m.price) + ' / زوج</div>' +
+    '<div class="cat-sub">الدستة (' + PPD + ' أزواج): ' + fmtMoney(m.dozenPrice) + '</div>') + '</div>';
+}
+
 function renderCatalog() {
   var q = ($('q').value || '').trim();
-  var list = CATALOG.filter(function (m) { return !q || m.name.indexOf(q) !== -1 || m.model.indexOf(q) !== -1; });
   var g = $('catalogGrid');
-  if (!list.length) {
-    g.innerHTML = '';
-    $('emptyCat').style.display = 'block';
+  var gb = $('groupBack');
+  // البحث بيبحث في كل الموديلات على طول من غير مجموعات (نفس سلوك قبل كده).
+  if (q) {
+    gb.style.display = 'none';
+    var list = CATALOG.filter(function (m) { return m.name.indexOf(q) !== -1 || m.model.indexOf(q) !== -1; });
+    if (!list.length) {
+      g.innerHTML = '';
+      $('emptyCat').style.display = 'block';
+      return;
+    }
+    $('emptyCat').style.display = 'none';
+    g.innerHTML = list.map(modelCardHtml).join('');
     return;
   }
+  if (SEL_GROUP === null) {
+    // مستوى المجموعات: كارت لكل سعر.
+    gb.style.display = 'none';
+    var groups = priceGroups();
+    if (!CATALOG.length) {
+      g.innerHTML = '';
+      $('emptyCat').style.display = 'block';
+      return;
+    }
+    $('emptyCat').style.display = 'none';
+    g.innerHTML = groups.map(function (gr) {
+      var priced = num(gr.price) > 0;
+      var thumbs = gr.models.filter(function (m) { return !!m.photo; }).slice(0, 4).map(function (m) {
+        return '<img src="' + esc(m.photo) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">';
+      }).join('');
+      var more = gr.models.length > 4 ? '<div class="gt-more">+' + fmtNum(gr.models.length - 4) + '</div>' : '';
+      return '<div class="group-card" onclick="selectGroup(' + gr.price + ')">' +
+        '<div class="group-name">' + esc(groupLabel(gr.price)) + '</div>' +
+        '<div class="group-count">' + fmtNum(gr.models.length) + ' موديل</div>' +
+        (priced
+          ? '<div class="group-price">' + fmtMoney(gr.price) + ' / زوج</div>'
+          : '<div style="margin-top:4px"><span class="badge b-red">نفذ — بدون سعر</span></div>') +
+        (thumbs || more ? '<div class="group-thumbs">' + thumbs + more + '</div>' : '') +
+        '</div>';
+    }).join('');
+    return;
+  }
+  // جوه مجموعة: الموديلات بتاعتها بس.
+  var gr = null;
+  priceGroups().forEach(function (x) { if (num(x.price) === num(SEL_GROUP)) gr = x; });
+  if (!gr) { SEL_GROUP = null; renderCatalog(); return; }
+  gb.style.display = 'flex';
+  $('groupTitle').textContent = groupLabel(gr.price) + ' — ' + fmtNum(gr.models.length) + ' موديل';
   $('emptyCat').style.display = 'none';
-  g.innerHTML = list.map(function (m) {
-    var idx = CATALOG.indexOf(m);
-    var noPrice = !(num(m.price) > 0);
-    var noStock = (m.stock !== null && m.stock !== undefined) && num(m.stock) <= 0;
-    var out = noPrice || noStock;
-    var img = m.photo
-      ? photoHtml(m.photo, 'cat-photo', 'cat-noimg') + noimgHtml('cat-noimg')
-      : '<div class="cat-noimg" style="display:flex">بلا صورة</div>';
-    return '<div class="cat-card' + (SEL === m ? ' on' : '') + '" onclick="selectModel(' + idx + ')">' + img +
-      '<div class="cat-name">' + esc(m.name) + '</div>' +
-      (out ? '<div style="margin-top:4px"><span class="badge b-red">نفذ</span></div>' : '') +
-      (noPrice ? '' : '<div class="cat-price">' + fmtMoney(m.price) + ' / زوج</div>' +
-      '<div class="cat-sub">الدستة (' + PPD + ' أزواج): ' + fmtMoney(m.dozenPrice) + '</div>') + '</div>';
-  }).join('');
+  g.innerHTML = gr.models.map(modelCardHtml).join('');
 }
 
 /* ===== السلة المنبثقة (bottom sheet) ===== */
@@ -554,7 +638,9 @@ function resetOrder() {
   CART = [];
   SEL = null;
   SEL_COLOR = '';
+  SEL_GROUP = null;
   renderCart();
+  renderCatalog();
   $('doneView').style.display = 'none';
   $('catalogView').style.display = 'block';
   window.scrollTo(0, 0);
