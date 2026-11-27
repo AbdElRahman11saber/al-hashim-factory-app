@@ -171,11 +171,11 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .inv-items td.num,.inv-items th.num{text-align:left;white-space:nowrap}
 .inv-bottom{display:block;margin-top:12px}
 .inv-totals{border-top:1px solid #CBD5E1}
-.inv-pay{margin-top:12px}
+.inv-pay{margin-top:6px}
 .inv-trow{display:flex;justify-content:space-between;gap:10px;padding:7px 4px;border-bottom:1px dashed #E2E8F0;font-size:14px}
 .inv-trow b{white-space:nowrap}
-.inv-trow.grand{background:#1B3A6B;color:#fff;padding:10px 22px 10px 12px;font-size:17px;font-weight:900;border-bottom:0;margin-top:8px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-trow.due{padding:9px 4px;font-size:15px;font-weight:900;color:#92400E;border-bottom:0;margin-top:8px}
+.inv-trow.grand{background:#1B3A6B;color:#fff;padding:7px 22px 7px 12px;font-size:17px;font-weight:900;border-bottom:0;margin-top:4px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-trow.due{padding:6px 4px;font-size:15px;font-weight:900;color:#92400E;border-bottom:0;margin-top:4px}
 .inv-notes{margin-top:8px;font-size:14px;color:#334155}
 .inv-spacer{flex:1}
 .inv-foot{margin-top:auto;border-top:2px solid #1B3A6B;padding:14px 2px 0;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
@@ -206,12 +206,12 @@ textarea.inv-in{resize:vertical;min-height:44px}
   .inv-paper.compact .inv-items{font-size:12px}
   .inv-paper.compact .inv-items th,.inv-paper.compact .inv-items td{padding:5px 8px}
   .inv-paper.compact .inv-trow{font-size:12px;padding:4px 2px}
-  .inv-paper.compact .inv-trow.grand{font-size:14px;padding:6px 22px 6px 8px}
-  .inv-paper.compact .inv-trow.due{font-size:13px;padding:6px 4px}
+  .inv-paper.compact .inv-trow.grand{font-size:14px;padding:5px 22px 5px 8px}
+  .inv-paper.compact .inv-trow.due{font-size:13px;padding:4px 4px}
   .inv-paper.compact .inv-boxes{gap:8px;margin-bottom:10px}
   .inv-paper.compact .inv-box-r{padding:3px 0}
   .inv-paper.compact .inv-bottom{margin-top:8px}
-  .inv-paper.compact .inv-pay{margin-top:8px}
+  .inv-paper.compact .inv-pay{margin-top:5px}
   .inv-paper.compact .inv-box-h{font-size:11px}
 }
 </style>
@@ -1385,7 +1385,7 @@ function invoiceHtml(o, editing) {
     '<div class="inv-trow"><span>المدفوع مقدماً (العربون)</span>' + depCell + '</div>' +
     '<div class="inv-trow due"><span>المتبقي</span><b id="ieRemaining">' + fmtMoney(o.remaining) + '</b></div>' +
     '</div>' +
-    '<div class="inv-box inv-pay"><div class="inv-box-h">طريقة الدفع</div>' +
+    '<div class="inv-box inv-pay">' +
     methodRow + notesRow +
     '</div>' +
     '</div>' +
