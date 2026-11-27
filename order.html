@@ -1188,17 +1188,51 @@ function newOrder() {
   window.scrollTo(0, 0);
 }
 
+/* تجميع بنود الفاتورة حسب سعر الزوج — للفاتورة المعروضة للزبون فقط
+   (بنود المخزن تفضل مفصلة كما هي، والتجميع لا يمس البيانات المحفوظة).
+   اسم السطر = أكواد الموديلات في فئة السعر مفصولة بـ " / "، وبعد كل كود
+   ألوانه بين قوسين، مثلاً: K101 (أسود، بيج، هافان) / K143 (أبيض × أسود، أبيض).
+   لا تُستخدم كلمة "موديل" مع رقم نهائياً. السطور مرتبة حسب السعر من الأصغر للأكبر. */
+function groupInvoiceLines(lines) {
+  var byPrice = {};
+  var prices = [];
+  (lines || []).forEach(function (l) {
+    var p = num(l.price);
+    if (!byPrice[p]) { byPrice[p] = { price: p, models: [], dozens: 0, pairs: 0, total: 0 }; prices.push(p); }
+    var g = byPrice[p];
+    var code = l.model || l.name || '';
+    var mi = -1;
+    for (var k = 0; k < g.models.length; k++) { if (g.models[k].code === code) { mi = k; break; } }
+    if (mi === -1) { g.models.push({ code: code, colors: [] }); mi = g.models.length - 1; }
+    var col = (l.color || '').trim();
+    if (col && g.models[mi].colors.indexOf(col) === -1) g.models[mi].colors.push(col);
+    g.dozens += num(l.dozens);
+    g.pairs += num(l.pairs) || num(l.dozens) * PPD;
+    g.total += num(l.total) || num(l.dozens) * PPD * p;
+  });
+  prices.sort(function (a, b) { return a - b; });
+  return prices.map(function (p) {
+    var g = byPrice[p];
+    var name = g.models.map(function (m) {
+      return m.code + (m.colors.length ? ' (' + m.colors.join('، ') + ')' : '');
+    }).join(' / ');
+    return { name: name, dozens: g.dozens, pairs: g.pairs, price: g.price, total: g.total };
+  });
+}
+
 /* ===== الفاتورة (A4 — صفحة واحدة) ===== */
 function invoiceHtml(o) {
-  var rows = o.lines.map(function (l, i) {
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(l.name) + ' ' + esc(l.color) + '</td>' +
+  var grouped = groupInvoiceLines(o.lines);
+  var rows = grouped.map(function (l, i) {
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(l.name) + '</td>' +
       '<td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td>' +
       '<td class="num">' + fmtMoney(l.price) + '</td><td class="num">' + fmtMoney(l.total) + '</td></tr>';
   }).join('');
   var shipTxt = o.shipping === null || o.shipping === undefined ? 'تحددها شركة الشحن' : fmtMoney(o.shipping);
-  var wsPhone = (ORDERS_DATA && ORDERS_DATA.settings && ORDERS_DATA.settings.phone1) || '01034837061';
+  var st = (ORDERS_DATA && ORDERS_DATA.settings) || {};
+  var wsPhone = (st.phone1 || '01275440919') + ' / ' + (st.phone2 || '01034837061');
   var wsAddr = (ORDERS_DATA && ORDERS_DATA.settings && ORDERS_DATA.settings.address) || '';
-  var compact = o.lines.length > 10 ? ' compact' : '';
+  var compact = grouped.length > 10 ? ' compact' : '';
   return '<div class="inv-paper' + compact + '" id="invPaperInner">' +
     '<div class="inv-accent"></div>' +
     '<div class="inv-head">' +
