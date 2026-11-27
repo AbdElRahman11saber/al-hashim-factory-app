@@ -349,6 +349,12 @@ function statusBadge(st) {
   var map = { 'جديد': 'b-slate', 'تم الشحن': 'b-blue', 'تم الاستلام': 'b-indigo', 'تم الصرف': 'b-green', 'مرتجع': 'b-amber', 'ملغي': 'b-red' };
   return '<span class="badge ' + (map[st] || 'b-slate') + '">' + esc(st) + '</span>';
 }
+/* الأوردر الخارجي: أوردر اتعمل من المكان نفسه (بيع مباشر) من غير فاتورة ولا شحن —
+   بيتعرف من ملاحظاته اللي بيبقى فيها «اوردر خارجي»، وبيتسجل بحالة «تم الصرف» على طول
+   عشان يتخصم من المخزن (معادلة «يخصم من المخزون؟» بتخصم أي حالة إلا مرتجع/ملغي). */
+var EXT_MARKER = 'اوردر خارجي';
+function isExternalOrder(o) { return !!o && (o.notes || '').indexOf(EXT_MARKER) !== -1; }
+function externalBadge() { return '<span class="badge b-indigo">خارجي</span>'; }
 function stockBadge(st) {
   var map = { 'متوفر': 'b-green', 'قرب يخلص': 'b-amber', 'خلص': 'b-red' };
   return '<span class="badge ' + (map[st] || 'b-slate') + '">' + esc(st || '—') + '</span>';
@@ -985,26 +991,31 @@ function statusTotalsHtml() {
 function screenOrders() {
   if (!DATA) return '';
   var q = UI.orderQ.trim();
+  var extCount = DATA.orders.filter(isExternalOrder).length;
   var list = DATA.orders.filter(function (o) {
-    if (UI.orderFilter !== 'all' && statusOf(o) !== UI.orderFilter) return false;
+    if (UI.orderFilter === 'external') { if (!isExternalOrder(o)) return false; }
+    else if (UI.orderFilter !== 'all' && statusOf(o) !== UI.orderFilter) return false;
     if (q && (o.customer + ' ' + phonesText(o)).indexOf(q) === -1) return false;
     return true;
   });
   list.sort(function (a, b) { return num(b.no) - num(a.no); });
-  var h = '<div class="row" style="margin-bottom:10px"><button class="btn btn-pri grow" onclick="App.newOrder()">+ أوردر جديد</button></div>';
+  /* فلتر «خارجي» بيتعرض قائمة على طول (اللوحة متقسمة حسب الحالة، والخارجي حالة تم الصرف) */
+  var view = (UI.orderFilter === 'external') ? 'list' : UI.orderView;
+  var h = '<div class="row" style="margin-bottom:10px"><button class="btn btn-pri grow" onclick="App.newOrder()">+ أوردر جديد</button><button class="btn btn-dark grow" onclick="App.newExternalOrder()">➕ اوردر خارجي</button></div>';
   h += '<div class="toolbar"><input type="text" id="orderSearch" placeholder="ابحث بالاسم أو التليفون..." value="' + esc(UI.orderQ) + '"></div>';
-  h += '<div class="tabs"><button class="tab' + (UI.orderView !== 'list' ? ' on' : '') + '" onclick="App.setOrderView(\'board\')">لوحة</button>' +
-       '<button class="tab' + (UI.orderView === 'list' ? ' on' : '') + '" onclick="App.setOrderView(\'list\')">قائمة</button></div>';
+  h += '<div class="tabs"><button class="tab' + (view !== 'list' ? ' on' : '') + '" onclick="App.setOrderView(\'board\')">لوحة</button>' +
+       '<button class="tab' + (view === 'list' ? ' on' : '') + '" onclick="App.setOrderView(\'list\')">قائمة</button></div>';
   h += '<div class="chips"><button class="chip' + (UI.orderFilter === 'all' ? ' on' : '') + '" onclick="App.setOrderFilter(\'all\')">الكل</button>' +
-    STATUSES.map(function (s) { return '<button class="chip' + (UI.orderFilter === s ? ' on' : '') + '" onclick="App.setOrderFilter(\'' + s + '\')">' + esc(s) + '</button>'; }).join('') + '</div>';
+    STATUSES.map(function (s) { return '<button class="chip' + (UI.orderFilter === s ? ' on' : '') + '" onclick="App.setOrderFilter(\'' + s + '\')">' + esc(s) + '</button>'; }).join('') +
+    '<button class="chip' + (UI.orderFilter === 'external' ? ' on' : '') + '" onclick="App.setOrderFilter(\'external\')">خارجي (' + fmtNum(extCount) + ')</button></div>';
   if (!DATA.orders.length) return h + emptyState('▦', 'لسه مفيش أوردرات', 'اعمل أول أوردر: اختار العميل، وضيف البنود، وأكّد — والفاتورة هتتولد لوحدها.', '<div style="margin-top:12px"><button class="btn btn-pri" onclick="App.newOrder()">+ أوردر جديد</button></div>');
   if (!list.length) return h + emptyState('🔍', 'مفيش أوردرات بالفلتر ده', 'غيّر الحالة أو امسح البحث.');
   h += statusTotalsHtml();
-  if (UI.orderView === 'list') {
+  if (view === 'list') {
     list.forEach(function (o) {
       var ph = o.phone1 || o.phone2 || '';
-      h += '<div class="order-row" onclick="App.showInvoice(' + o._row + ')"><span class="o-no">#' + fmtNum(o.no) + '</span>' +
-        '<span class="o-name">' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★' : '') + '</span>' +
+      h += '<div class="order-row" onclick="App.openOrderRow(' + o._row + ')"><span class="o-no">#' + fmtNum(o.no) + '</span>' +
+        '<span class="o-name">' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★' : '') + (isExternalOrder(o) ? ' ' + externalBadge() : '') + '</span>' +
         (ph ? '<span class="o-phone">' + esc(ph) + '</span>' : '') +
         '<span class="o-amt">' + fmtMoney(o.total) + '</span>' + statusBadge(statusOf(o)) + '</div>';
     });
@@ -1035,9 +1046,9 @@ function kanbanColHtml(title, orders) {
   if (!orders.length) h += '<div class="muted small" style="padding:6px 4px">مفيش أوردرات هنا.</div>';
   orders.forEach(function (o) {
     var ph = o.phone1 || o.phone2 || '';
-    h += '<div class="kanban-card" onclick="App.showInvoice(' + o._row + ')">' +
+    h += '<div class="kanban-card" onclick="App.openOrderRow(' + o._row + ')">' +
       '<div class="kc-top"><span class="kc-no">#' + fmtNum(o.no) + '</span>' +
-      '<span class="kc-name">' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★' : '') + '</span>' + statusBadge(statusOf(o)) + '</div>' +
+      '<span class="kc-name">' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★' : '') + (isExternalOrder(o) ? ' ' + externalBadge() : '') + '</span>' + statusBadge(statusOf(o)) + '</div>' +
       (ph ? '<div class="kc-phone">' + esc(ph) + '</div>' : '') +
       '<div class="kc-amt">' + fmtMoney(o.total) + '</div>' +
       '<div class="kanban-move" onclick="event.stopPropagation()"><select onchange="App.changeOrderStatus(' + o._row + ', this.value)">' +
@@ -1060,7 +1071,7 @@ function screenOrderDetail() {
   if (!o) return '<div class="card">الأوردر مش موجود. <button class="btn btn-ghost btn-sm" onclick="go(\'orders\')">رجوع للأوردرات</button></div>';
   var lines = linesOf(o.no);
   var h = '<button class="btn btn-ghost btn-sm" onclick="go(\'orders\')">← كل الأوردرات</button>';
-  h += '<div class="card" style="margin-top:10px"><div class="row between"><h2>أوردر #' + fmtNum(o.no) + '</h2>' + statusBadge(statusOf(o)) + '</div>' +
+  h += '<div class="card" style="margin-top:10px"><div class="row between"><h2>أوردر #' + fmtNum(o.no) + '</h2><span>' + statusBadge(statusOf(o)) + (isExternalOrder(o) ? ' ' + externalBadge() : '') + '</span></div>' +
     '<div class="kv"><span>العميل</span><b>' + esc(o.customer) + (o.isVip === 'نعم' ? ' ★ مميز' : '') + '</b></div>' +
     '<div class="kv"><span>التليفون</span><b>' + esc(phonesText(o) || '—') + '</b></div>' +
     '<div class="kv"><span>العنوان</span><b>' + esc(o.address || '—') + '</b></div>' +
@@ -1142,9 +1153,10 @@ function orderEditHtml(o) {
 }
 
 /* ---------------- الأوردرات: معالج الأوردر الجديد ---------------- */
-function newWizard(prefillVipRow) {
+function newWizard(prefillVipRow, isExternal) {
   var w = {
     step: 1,
+    external: !!isExternal,
     date: todayStr(),
     vipRow: 0, customer: '', phone1: '', phone2: '', address: '', isVip: false,
     lines: [{ item: '', color: '', dozens: '', discount: '', customPrice: '' }],
@@ -1239,10 +1251,10 @@ function screenOrderNew() {
   if (!DATA) return '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
   var w = UI.wizard;
   if (!w) { UI.wizard = newWizard(); w = UI.wizard; }
-  var h = '<div class="stepbar"><div class="step' + (w.step === 1 ? ' on' : '') + '">1. العميل</div><div class="step' + (w.step === 2 ? ' on' : '') + '">2. البنود</div><div class="step' + (w.step === 3 ? ' on' : '') + '">3. التأكيد</div></div>';
+  var h = '<div class="stepbar"><div class="step' + (w.step === 1 ? ' on' : '') + '">' + (w.external ? '1. العميل (اختياري)' : '1. العميل') + '</div><div class="step' + (w.step === 2 ? ' on' : '') + '">2. البنود</div><div class="step' + (w.step === 3 ? ' on' : '') + '">3. التأكيد</div></div>';
   if (w.step === 1) h += wizardStep1(w);
   else if (w.step === 2) h += wizardStep2(w);
-  else h += wizardStep3(w);
+  else h += w.external ? wizardStep3External(w) : wizardStep3(w);
   return h;
 }
 function wizardStep1(w) {
@@ -1250,11 +1262,14 @@ function wizardStep1(w) {
     return '<option value="' + v._row + '"' + (w.vipRow === v._row ? ' selected' : '') + '>' + esc(v.name) + ' ★</option>';
   }).join('');
   var ro = w.isVip ? ' readonly' : '';
-  var h = '<div class="card"><h2>بيانات العميل</h2>' +
-    '<label for="wVip">عميل مميز؟</label><select id="wVip" onchange="App.wizardPickVip(this.value)">' + vipOpts + '</select>' +
-    '<div class="hint">لو اخترت عميل مميز، بياناته هتتملا لوحدها ومش هتحتاج تكتبها.</div>' +
+  /* الأوردر الخارجي: بيع من المكان نفسه — مفيش عميل مميز، وبيانات العميل كلها اختيارية */
+  var vipPart = w.external
+    ? '<div class="hint">بيع من المكان نفسه — بيانات العميل اختيارية، ولو سبت الاسم فاضي هيتسجل «عميل خارجي».</div>'
+    : '<label for="wVip">عميل مميز؟</label><select id="wVip" onchange="App.wizardPickVip(this.value)">' + vipOpts + '</select>' +
+      '<div class="hint">لو اخترت عميل مميز، بياناته هتتملا لوحدها ومش هتحتاج تكتبها.</div>';
+  var h = '<div class="card"><h2>بيانات العميل</h2>' + vipPart +
     '<label for="wDate">التاريخ</label><input type="date" id="wDate" value="' + esc(w.date) + '" onchange="App.wizardField(\'date\',this.value)">' +
-    '<label for="wCustomer">اسم العميل</label><input type="text" id="wCustomer" value="' + esc(w.customer) + '" list="dlVipsW" placeholder="اسم العميل" oninput="App.wizardField(\'customer\',this.value)"' + (w.isVip ? ' readonly' : '') + '>' +
+    '<label for="wCustomer">' + (w.external ? 'اسم العميل — اختياري' : 'اسم العميل') + '</label><input type="text" id="wCustomer" value="' + esc(w.customer) + '" list="dlVipsW" placeholder="' + (w.external ? 'اختياري — سيبه فاضي لو مش معروف' : 'اسم العميل') + '" oninput="App.wizardField(\'customer\',this.value)"' + (w.isVip ? ' readonly' : '') + '>' +
     '<datalist id="dlVipsW">' + DATA.vips.map(function (v) { return '<option value="' + esc(v.name) + '"></option>'; }).join('') + '</datalist>' +
     '<label for="wPhone1">هاتف 1</label><input type="tel" id="wPhone1" dir="ltr" style="text-align:right" value="' + esc(w.phone1) + '" oninput="App.wizardField(\'phone1\',this.value)"' + ro + '>' +
     '<label for="wPhone2">هاتف 2 — اختياري</label><input type="tel" id="wPhone2" dir="ltr" style="text-align:right" value="' + esc(w.phone2) + '" oninput="App.wizardField(\'phone2\',this.value)"' + ro + '>' +
@@ -1322,6 +1337,37 @@ function wizardStep3(w) {
     '<div class="kv"><span>المتبقي بعد العربون</span><b id="wz3Rem">' + fmtMoney(t.remaining) + '</b></div></div>';
   h += '<div class="row"><button class="btn btn-ghost grow" onclick="App.wizardBack()">→ رجوع</button></div>' +
     '<button class="btn btn-pri btn-block" style="margin-top:10px;font-size:17px" onclick="App.confirmOrder()">تأكيد الأوردر وإنشاء الفاتورة ✓</button>';
+  return h;
+}
+/* خطوة التأكيد للأوردر الخارجي: نفس بنود وتأكيد الأوردر العادي بس من غير
+   مصاريف شحن ومن غير فاتورة — والمدفوع بيتملا بالإجمالي لوحده (البيع من
+   المكان والدفع على طول) ويقدر يعدّله لو الدفع آجل أو جزئي. */
+function wizardStep3External(w) {
+  var t = wizardTotals(w);
+  var h = '<div class="card"><h2>مراجعة وتأكيد الأوردر الخارجي</h2>' +
+    '<div class="kv"><span>العميل</span><b>' + esc(w.customer.trim() || 'عميل خارجي') + (w.isVip ? ' ★' : '') + '</b></div>' +
+    '<div class="kv"><span>التليفون</span><b>' + esc([w.phone1, w.phone2].filter(Boolean).join(' / ') || '—') + '</b></div>' +
+    '<div class="kv"><span>التاريخ</span><b>' + esc(w.date) + '</b></div>' +
+    '<div class="hint">من غير فاتورة ومن غير شحن — الأوردر هيتسجل بحالة «تم الصرف» وهيتخصم من المخزن على طول.</div></div>';
+  h += '<div class="card"><h2>البنود</h2>';
+  w.lines.forEach(function (ln, i) {
+    var it = itemByName(ln.item);
+    var price = ln.customPrice !== '' && ln.customPrice !== null ? num(ln.customPrice) : (it ? num(it.price) : 0);
+    h += '<div class="kv"><span>' + (i + 1) + '. ' + esc(lineItemLabel(ln)) + ' — ' + fmtDoz(ln.dozens) + ' دستة (' + fmtNum(num(ln.dozens) * pairsPerDozen()) + ' زوج)</span><b>' + fmtMoney(num(ln.dozens) * pairsPerDozen() * price - num(ln.discount)) + '</b></div>';
+  });
+  h += '</div>';
+  h += '<div class="card"><label for="wDisc">الخصم العام (ج.م)</label><input type="number" id="wDisc" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.discount) + '" oninput="App.wizardField(\'discount\',this.value)">' +
+    '<label for="wDep">المدفوع (ج.م)</label><input type="number" id="wDep" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.deposit) + '" oninput="App.wizardField(\'deposit\',this.value)">' +
+    '<label for="wMethod">طريقة الدفع</label><select id="wMethod" onchange="App.wizardField(\'method\',this.value)\">' + METHODS.map(function (m) { return '<option' + (w.method === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' +
+    '<label for="wNotes">ملاحظات — اختياري</label><textarea id="wNotes" oninput="App.wizardField(\'notes\',this.value)\">' + esc(w.notes) + '</textarea></div>';
+  h += '<div class="card"><div class="kv"><span>المجموع الفرعي</span><b id="wz3Sub">' + fmtMoney(t.subtotal) + '</b></div>' +
+    '<div class="kv"><span>الخصم العام</span><b id="wz3Disc">' + fmtMoney(w.discount) + '</b></div>' +
+    '<div class="kv"><span>الإجمالي المستحق</span><b id="wz3Grand">' + fmtMoney(t.grand) + '</b></div>' +
+    '<div class="kv"><span>إجمالي الأزواج</span><b id="wz3Pairs">' + fmtNum(t.pairs) + ' زوج</b></div>' +
+    '<div class="kv"><span>المدفوع</span><b id="wz3Dep">' + fmtMoney(w.deposit) + '</b></div>' +
+    '<div class="kv"><span>المتبقي</span><b id="wz3Rem">' + fmtMoney(t.remaining) + '</b></div></div>';
+  h += '<div class="row"><button class="btn btn-ghost grow" onclick="App.wizardBack()">→ رجوع</button></div>' +
+    '<button class="btn btn-pri btn-block" style="margin-top:10px;font-size:17px" onclick="App.confirmExternalOrder()">حفظ الأوردر الخارجي ✓</button>';
   return h;
 }
 
@@ -1798,12 +1844,22 @@ window.App = {
     UI.wizard = newWizard();
     go('orderNew');
   },
+  /* اوردر خارجي: بيع من المكان نفسه من غير فاتورة ولا شحن — بنفس معالج الأوردر
+     (مزيد + زر في صفحة الأوردرات)، بس بيانات العميل اختيارية والحفظ بحالة «تم الصرف». */
+  newExternalOrder: function () {
+    if (!DATA) { toast('استنى تحميل البيانات الأول.', true); return; }
+    if (!DATA.items.length) { toast('ضيف أصناف الأول عشان تعمل أوردر.', true); go('items'); return; }
+    UI.wizard = newWizard(0, true);
+    UI.wizard.customer = 'عميل خارجي';
+    go('orderNew');
+  },
   filterOrders: function (st) { UI.orderFilter = st; UI.orderQ = ''; go('orders'); },
   setOrderFilter: function (st) { UI.orderFilter = st; render(); },
   setOrderView: function (v) { UI.orderView = v; render(); },
   /* قائمة "المزيد" من الشريط السفلي: الصرف والعملاء المميزين والإعدادات */
   openMore: function () {
     openModal('<h2>المزيد</h2><div style="margin-top:12px">' +
+      '<button class="more-item" onclick="closeModal();App.newExternalOrder()"><span class="mi-ic">➕</span><span>اوردر خارجي<span class="mi-sub">بيع من المكان نفسه — من غير فاتورة ولا شحن، ويتخصم من المخزن</span></span></button>' +
       '<button class="more-item" onclick="closeModal();go(\'disb\')"><span class="mi-ic">✓</span><span>سجل الصرف<span class="mi-sub">أوردرات تم صرفها ولسه</span></span></button>' +
       '<button class="more-item" onclick="closeModal();go(\'stockCount\')"><span class="mi-ic">📋</span><span>جرد مؤقت — أرقام المخزن<span class="mi-sub">أرقام مؤقتة لحد ما تعمل الجرد</span></span></button>' +
       '<button class="more-item" onclick="closeModal();go(\'vips\')"><span class="mi-ic">★</span><span>العملاء المميزين<span class="mi-sub">عملاء VIP وحفظ بياناتهم</span></span></button>' +
@@ -1811,6 +1867,13 @@ window.App = {
       '</div>');
   },
   openOrder: function (row) { UI.orderRow = row; go('orderDetail'); },
+  /* فتح صف أوردر من القائمة: الأوردر الخارجي مفيهوش فاتورة فبيتفتح تفاصيله،
+     والأوردر العادي بيتفتح فاتورته زي ما كان. */
+  openOrderRow: function (row) {
+    var o = orderByRow(row);
+    if (o && isExternalOrder(o)) { App.openOrder(row); return; }
+    App.showInvoice(row);
+  },
   lineForm: function (orderNo) {
     openModal(lineFormHtml(orderNo));
     var inp = $('fLItem');
@@ -2028,7 +2091,8 @@ window.App = {
   wizardNext: function () {
     var w = UI.wizard;
     if (w.step === 1) {
-      if (!w.customer.trim()) { toast('اكتب اسم العميل أو اختار عميل مميز.', true); return; }
+      /* الأوردر الخارجي: اسم العميل اختياري — لو فاضي هيتسجل «عميل خارجي» عند الحفظ */
+      if (!w.external && !w.customer.trim()) { toast('اكتب اسم العميل أو اختار عميل مميز.', true); return; }
       w.step = 2; render(); return;
     }
     if (w.step === 2) {
@@ -2050,6 +2114,8 @@ window.App = {
         if (modelColors(itemByName(ln.item.trim())).indexOf(ln.color) === -1) { toast('لون بند ' + (i + 1) + ' مش من ألوان الموديل ده.', true); return; }
         if (!ln.dozens || Number(ln.dozens) <= 0) { toast('اكتب الكمية بالدستة في بند ' + (i + 1) + '.', true); return; }
       }
+      /* الأوردر الخارجي: المدفوع بيتملا بالإجمالي لوحده (البيع من المكان والدفع على طول) — ويقدر يعدّله */
+      if (w.external && (w.deposit === '' || w.deposit === null || w.deposit === undefined)) w.deposit = wizardTotals(w).grand;
       w.step = 3; render(); return;
     }
   },
@@ -2093,6 +2159,30 @@ window.App = {
         }
       }).catch(function () {});
     }).catch(function (e) { hideLoading(); toast('تعذر تأكيد الأوردر: ' + e.message, true); });
+  },
+  /* حفظ الأوردر الخارجي: نفس createOrder بتاع الأوردر العادي (البنود مفصلة موديل+لون+دستة)
+     بس بالحالة «تم الصرف» من الأول وملاحظات «اوردر خارجي» — فبيتخصم من المخزن على طول
+     (معادلة «يخصم من المخزون؟» بتخصم أي حالة إلا مرتجع/ملغي)، ومن غير فاتورة.
+     ملاحظة: إنشاء الأوردر بالحالة دي مبيضيفش العميل للعملاء المميزين —
+     الإضافة التلقائية دي بتحصل بس لما الحالة تتغير بـ setOrderStatus. */
+  confirmExternalOrder: function () {
+    var w = UI.wizard;
+    if (!w || !w.external) return;
+    var lines = w.lines.map(function (ln) {
+      return { item: ln.item.trim(), color: ln.color, dozens: Number(ln.dozens), discount: ln.discount === '' ? 0 : Number(ln.discount),
+        customPrice: (ln.customPrice === '' || ln.customPrice === null) ? '' : Number(ln.customPrice), notes: '' };
+    });
+    var customer = w.customer.trim() || 'عميل خارجي';
+    var notes = EXT_MARKER + (w.notes.trim() ? ' — ' + w.notes.trim() : '');
+    var header = { date: w.date, customer: customer, phone1: w.phone1, phone2: w.phone2, address: w.address,
+      status: 'تم الصرف', method: w.method, shipping: 0, discount: w.discount, deposit: w.deposit, notes: notes };
+    showLoading('جارٍ حفظ الأوردر الخارجي...', 'هيتخصم من المخزن على طول.');
+    callApi('createOrder', { header: header, lines: lines }, 60000).then(function (res) {
+      hideLoading();
+      UI.wizard = null;
+      toast('تم حفظ الأوردر الخارجي #' + res.orderNo + ' — اتخصم من المخزن ✓');
+      refresh({ spinner: false, toastOnError: false }).then(function () { App.openOrder(res.row); }).catch(function () { go('orders'); });
+    }).catch(function (e) { hideLoading(); toast('تعذر حفظ الأوردر الخارجي: ' + e.message, true); });
   },
   /* فاتورة */
   printInvoice: function () { window.print(); },
