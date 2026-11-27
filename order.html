@@ -546,30 +546,73 @@ function callAuth(action, payload, timeoutMs) {
   });
 }
 
-/* ===== تحميل الكتالوج ===== */
+/* ===== تحميل الكتالوج — نسخة محفوظة للفتح الفوري + تحديث في الخلفية =====
+   الصفحة كانت بتستنى السيرفر (اللي ساعات بيكون نايم) قبل ما تفتح خالص،
+   فكانت بتاخد وقت طويل وأحياناً بتفشل بعد 30 ثانية. دلوقتي: لو فيه نسخة
+   محفوظة من الكتالوج على الموبايل، الصفحة بتفتح منها على طول والبيانات
+   بتتحدث في الخلفية؛ ولو مفيش نسخة، بيستنى لحد 60 ثانية وبيعاود المحاولة
+   مرة لوحده قبل ما يطلع خطأ. الحفظ بيتأكد من السيرفر نفسه، فنسخة قديمة
+   مش ممكن تعمل أوردر بسعر غلط. */
+var CATALOG_CACHE_KEY = 'hsh_catalog_cache_v1';
+function saveCatalogCache(res) {
+  try { localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ ts: Date.now(), factoryName: res.factoryName, pairsPerDozen: res.pairsPerDozen, models: res.models })); } catch (e) {}
+}
+function loadCatalogCache() {
+  try { var c = JSON.parse(localStorage.getItem(CATALOG_CACHE_KEY) || 'null'); return (c && c.models) ? c : null; } catch (e) { return null; }
+}
+function applyCatalog(res) {
+  FACTORY = res.factoryName || FACTORY;
+  PPD = num(res.pairsPerDozen) || 10;
+  CATALOG = res.models || [];
+  $('loading').style.display = 'none';
+  $('appView').style.display = 'block';
+  $('stickyBar').style.display = 'block';
+  restoreDraftCart();
+  renderCatalog();
+  renderCart();
+  updatePayTotals();
+  if (configured()) loadOrdersData(false);
+  else { $('ordersNoCfg').style.display = 'block'; $('ordersBody').style.display = 'none'; }
+}
 function loadCatalog() {
-  $('loading').style.display = 'flex';
   $('errBanner').style.display = 'none';
+  var cached = loadCatalogCache();
+  if (cached) {
+    applyCatalog(cached);
+    refreshCatalog();
+    return;
+  }
+  $('loading').style.display = 'flex';
   $('appView').style.display = 'none';
-  callPublic('publicCatalog', null, 30000).then(function (res) {
-    FACTORY = res.factoryName || FACTORY;
-    PPD = num(res.pairsPerDozen) || 10;
-    CATALOG = res.models || [];
-    $('loading').style.display = 'none';
-    $('appView').style.display = 'block';
-    $('stickyBar').style.display = 'block';
-    restoreDraftCart();
-    renderCatalog();
-    renderCart();
-    updatePayTotals();
-    if (configured()) loadOrdersData(false);
-    else { $('ordersNoCfg').style.display = 'block'; $('ordersBody').style.display = 'none'; }
+  fetchCatalog(0);
+}
+function fetchCatalog(attempt) {
+  callPublic('publicCatalog', null, 60000).then(function (res) {
+    saveCatalogCache(res);
+    applyCatalog(res);
   }).catch(function (err) {
+    if (attempt < 1) { setTimeout(function () { fetchCatalog(attempt + 1); }, 2000); return; }
     $('loading').style.display = 'none';
     var b = $('errBanner');
     b.innerHTML = 'تعذر تحميل الموديلات — اتأكد من النت وحاول تاني. <button class="btn btn-ghost btn-sm" onclick="loadCatalog()">حاول تاني</button>';
     b.style.display = 'block';
   });
+}
+function refreshCatalog() {
+  callPublic('publicCatalog', null, 60000).then(function (res) {
+    var before = JSON.stringify(CATALOG);
+    saveCatalogCache(res);
+    FACTORY = res.factoryName || FACTORY;
+    PPD = num(res.pairsPerDozen) || 10;
+    CATALOG = res.models || [];
+    /* حدّث العرض بس لو البيانات اتغيرت فعلاً ولو مفيش تاب اختيار مفتوح —
+       عشان التحديث ميقفلش التاب اللي العميل فاتحه وبيختار منه */
+    if (JSON.stringify(CATALOG) !== before && !SEL) {
+      renderCatalog();
+      renderCart();
+      updatePayTotals();
+    }
+  }).catch(function (err) { /* النسخة المحفوظة شغالة — التحديث هييجي المرة الجاية */ });
 }
 
 function photoHtml(url, cls, noimgCls) {
