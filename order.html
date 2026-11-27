@@ -143,51 +143,63 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .sum-item{flex:1;min-width:90px;background:var(--bg);border-radius:14px;padding:10px;box-shadow:var(--sh-sm);text-align:center}
 .sum-item b{display:block;font-size:18px}
 .sum-item span{font-size:12px;color:var(--muted)}
-/* ===== الفاتورة — تصميم حديث (ورقة بيضاء A4، ألوان فاتحة بتطبع كويس) ===== */
-.inv-paper{background:#fff;color:#111;border-radius:10px;padding:20px 18px 16px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:14.5px;line-height:1.6}
-.inv-accent{height:6px;border-radius:99px;background:linear-gradient(90deg,#2563EB,#3B82F6,#60A5FA);margin-bottom:14px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:12px;border-bottom:2px solid #2563EB}
-.inv-name{font-size:25px;font-weight:900;color:#1E3A8A;line-height:1.2}
-.inv-contact{font-size:12.5px;color:#475569;margin-top:4px}
-.inv-titlebox{text-align:left;flex:none}
-.inv-pill{display:inline-block;background:#DBEAFE;color:#1D4ED8;font-weight:800;font-size:15px;border-radius:999px;padding:4px 14px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-no{font-size:19px;font-weight:900;color:#0F172A;margin-top:6px}
-.inv-date{font-size:12.5px;color:#64748B;margin-top:2px}
-.inv-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-.inv-mbox{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px 10px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-mbox span{display:block;font-size:11.5px;font-weight:700;color:#64748B}
-.inv-mbox b{font-size:14.5px;color:#0F172A}
-.inv-mbox.wide{grid-column:1 / -1}
-.inv-paper table.inv-items{width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:14px}
+/* ===== الفاتورة — شكل الفاتورة النموذجية (شريط أزرق داكن + صندوقين + جدول + عمودين) ===== */
+.inv-paper{background:#fff;color:#111;border-radius:10px;padding:0 0 16px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:14.5px;line-height:1.6;overflow:hidden}
+.inv-band{background:#1B3A6B;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 16px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-band-name{font-size:26px;font-weight:900;line-height:1.2}
+.inv-band-sub{font-size:12.5px;color:#BFDBFE;margin-top:3px}
+.inv-band-inv{text-align:left;flex:none}
+.inv-band-title{font-size:24px;font-weight:900;line-height:1.2}
+.inv-band-no{font-size:17px;font-weight:800;margin-top:6px}
+.inv-band-date{font-size:12.5px;color:#BFDBFE;margin-top:2px}
+.inv-body{padding:14px 18px 0}
+.inv-boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
+.inv-box{border:1px solid #CBD5E1;border-radius:8px;overflow:hidden;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-box-h{background:#1B3A6B;color:#fff;font-weight:800;font-size:14px;padding:6px 10px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-box-r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #E2E8F0;font-size:13.5px}
+.inv-box-r:last-child{border-bottom:0}
+.inv-box-r>span{font-weight:700;color:#64748B;flex:none}
+.inv-box-r>b{color:#0F172A;text-align:left;min-width:0}
+.inv-box-r>.inv-in{flex:1;min-width:0}
+.inv-paper table.inv-items{width:100%;border-collapse:collapse;margin:0 0 4px;font-size:14px}
 .inv-items th,.inv-items td{border:1px solid #CBD5E1;padding:6px 8px;text-align:right}
-.inv-items th{background:#EFF6FF;color:#1E3A8A;font-weight:800;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-items th{background:#1B3A6B;color:#fff;font-weight:800;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 .inv-items td.num,.inv-items th.num{text-align:left;white-space:nowrap}
-.inv-totals{margin-top:10px;border-top:2px solid #E2E8F0}
+.inv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;align-items:start}
+.inv-totals{border-top:2px solid #E2E8F0}
 .inv-trow{display:flex;justify-content:space-between;gap:10px;padding:6px 2px;border-bottom:1px dashed #E2E8F0;font-size:14.5px}
 .inv-trow b{white-space:nowrap}
-.inv-trow.grand{background:#EFF6FF;border-radius:8px;padding:9px 10px;font-size:17px;font-weight:900;color:#1E3A8A;border-bottom:0;margin-top:6px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-trow.grand{background:#1B3A6B;color:#fff;border-radius:8px;padding:9px 10px;font-size:17px;font-weight:900;border-bottom:0;margin-top:6px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 .inv-trow.due{background:#FFFBEB;border-radius:8px;padding:9px 10px;font-size:16px;font-weight:800;color:#92400E;border-bottom:0;margin-top:6px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-foot{margin-top:12px;padding-top:10px;border-top:1px solid #E2E8F0;font-size:13.5px;color:#334155;display:flex;gap:6px 18px;flex-wrap:wrap}
-.inv-foot b{color:#0F172A}
 .inv-notes{margin-top:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13.5px;color:#334155}
+.inv-in{font:inherit;font-size:13.5px;padding:4px 6px;border:1px solid #93C5FD;border-radius:6px;background:#EFF6FF;width:100%;box-sizing:border-box;color:#0F172A}
+.inv-in.num{width:90px;text-align:left;flex:none}
+select.inv-in{width:100%}
+textarea.inv-in{resize:vertical;min-height:44px}
+.inv-edit-note{font-size:12.5px;color:#64748B;margin:0 0 12px}
 @media print{
   @page{size:A4;margin:12mm}
   body{background:#fff !important;padding:0 !important}
   body::before{display:none !important}
-  header,#stickyBar,#toast,#errBanner,#loading,#appView,#doneView,.inv-actions{display:none !important}
+  header,#stickyBar,#toast,#errBanner,#loading,#appView,#doneView,.inv-actions,.inv-edit-note{display:none !important}
   main{max-width:none !important;padding:0 !important;margin:0 !important}
   #invoiceView{display:block !important}
   .inv-paper{box-shadow:none !important;border-radius:0 !important;padding:0 !important;font-size:13px}
+  .inv-paper input,.inv-paper select,.inv-paper textarea{border:0 !important;background:none !important;padding:0 !important}
   .inv-paper.compact{font-size:11.5px;line-height:1.45}
-  .inv-paper.compact .inv-name{font-size:19px}
-  .inv-paper.compact .inv-no{font-size:15px}
+  .inv-paper.compact .inv-band-name{font-size:20px}
+  .inv-paper.compact .inv-band-title{font-size:18px}
+  .inv-paper.compact .inv-band-no{font-size:14px}
+  .inv-paper.compact .inv-band{padding:12px 14px 10px}
+  .inv-paper.compact .inv-body{padding:10px 12px 0}
   .inv-paper.compact .inv-items{font-size:11.5px}
   .inv-paper.compact .inv-items th,.inv-paper.compact .inv-items td{padding:3px 6px}
   .inv-paper.compact .inv-trow{font-size:11.5px;padding:3px 2px}
   .inv-paper.compact .inv-trow.grand{font-size:13.5px;padding:5px 8px}
   .inv-paper.compact .inv-trow.due{font-size:12.5px;padding:5px 8px}
-  .inv-paper.compact .inv-meta{gap:5px;margin:8px 0}
-  .inv-paper.compact .inv-mbox{padding:5px 8px}
+  .inv-paper.compact .inv-boxes{gap:6px;margin-bottom:8px}
+  .inv-paper.compact .inv-box-r{padding:4px 8px}
+  .inv-paper.compact .inv-bottom{gap:6px;margin-top:8px}
 }
 </style>
 </head>
@@ -330,8 +342,14 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
   <div id="invoiceView" style="display:none">
     <div class="inv-actions row" style="margin-bottom:12px">
       <button class="btn btn-pri grow" onclick="printInvoice()">🖨️ اطبع الفاتورة</button>
+      <button class="btn btn-ghost" id="editInvBtn" onclick="startInvEdit()">✏️ تعديل الفاتورة</button>
       <button class="btn btn-ghost" id="dlImgBtn" onclick="downloadInvoiceImage()">⬇️ تحميل الفاتورة كصورة</button>
-      <button class="btn btn-ghost" onclick="backFromInvoice()">← رجوع</button>
+      <button class="btn btn-ghost" id="backInvBtn" onclick="backFromInvoice()">← رجوع</button>
+    </div>
+    <div class="inv-edit-note">💡 التعديل هنا للفاتورة المطبوعة فقط — الأوردر المحفوظ في المخزن مش بيتغير، ولو قفلت الفاتورة وفتحتها تاني هترجع زي ما اتحفظت.</div>
+    <div class="inv-actions row" id="invEditActions" style="display:none;margin-bottom:12px">
+      <button class="btn btn-pri grow" onclick="saveInvEdit()">💾 حفظ التعديلات</button>
+      <button class="btn btn-ghost grow" onclick="cancelInvEdit()">إلغاء</button>
     </div>
     <div class="inv-paper" id="invoicePaper"></div>
   </div>
@@ -375,6 +393,9 @@ var ORDERS_FILTER = 'today';
 var SAVED_ORDER = null; // بيانات الأوردر المحفوظ حالياً (للفاتورة والتأكيد)
 var SAVED_FROM = 'app'; // 'app' أو 'list' — الفاتورة اتفتحت منين
 var PRINT_ASKED = false;
+var INV_ORIG = null; // نسخة الأوردر المحفوظ اللي اتفتحت منه الفاتورة (الأصل — مش بيتعدل أبداً)
+var INV_VIEW = null; // نسخة العرض الحالية للفاتورة (ممكن تكون معدّلة — للطباعة بس، مش بتتحفظ)
+var INV_EDITING = false;
 var __pendingCart = null; // سلة المسودة — تتراجع بعد تحميل الكتالوج
 var __cbSeq = 0;
 
@@ -1220,47 +1241,103 @@ function groupInvoiceLines(lines) {
   });
 }
 
-/* ===== الفاتورة (A4 — صفحة واحدة) ===== */
-function invoiceHtml(o) {
-  var grouped = groupInvoiceLines(o.lines);
-  var rows = grouped.map(function (l, i) {
-    return '<tr><td>' + (i + 1) + '</td><td>' + esc(l.name) + '</td>' +
-      '<td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td>' +
-      '<td class="num">' + fmtMoney(l.price) + '</td><td class="num">' + fmtMoney(l.total) + '</td></tr>';
-  }).join('');
-  var shipTxt = o.shipping === null || o.shipping === undefined ? 'تحددها شركة الشحن' : fmtMoney(o.shipping);
+/* ===== الفاتورة (A4 — صفحة واحدة) — شكل الفاتورة النموذجية =====
+   شريط أزرق داكن فوق (اسم الورشة + العنوان + الرقمان)، صندوقين جنب بعض
+   (بيانات العميل / تفاصيل الفاتورة)، جدول البنود برأس أزرق داكن، وعمودين
+   تحت (طريقة الدفع / الإجماليات).
+   التجميع للفاتورة المعروضة للزبون فقط (groupInvoiceLines) — بنود المخزن مفصلة.
+   وضع التعديل (editing=true): حقول إدخال بدل النص — التعديل للفاتورة المطبوعة
+   فقط، ومش بيكتب أي حاجة في الشيت ولا بيغيّر المخزون ولا الأوردر المحفوظ. */
+function invoiceHtml(o, editing) {
+  var ed = !!editing;
+  var grouped = (o.grouped && o.grouped.length) ? o.grouped : groupInvoiceLines(o.lines);
   var st = (ORDERS_DATA && ORDERS_DATA.settings) || {};
   var wsPhone = (st.phone1 || '01275440919') + ' / ' + (st.phone2 || '01034837061');
-  var wsAddr = (ORDERS_DATA && ORDERS_DATA.settings && ORDERS_DATA.settings.address) || '';
+  var wsAddr = st.address || 'منشية ناصر، القاهرة، مصر';
+  var shipTxt = o.shipping === null || o.shipping === undefined ? 'تحددها شركة الشحن' : fmtMoney(o.shipping);
   var compact = grouped.length > 10 ? ' compact' : '';
+  var rows = grouped.map(function (l, i) {
+    var qtyCell, priceCell;
+    if (ed) {
+      qtyCell = '<input type="number" class="inv-in num" step="0.5" min="0" value="' + esc(fmtDoz(l.dozens)) + '" oninput="invLineEdit(' + i + ',\'dozens\',this.value)"> دستة <span id="ieLinePairs' + i + '">(' + fmtNum(l.pairs) + ' زوج)</span>';
+      priceCell = '<input type="number" class="inv-in num" step="any" min="0" value="' + esc(String(num(l.price))) + '" oninput="invLineEdit(' + i + ',\'price\',this.value)">';
+    } else {
+      qtyCell = fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)';
+      priceCell = fmtMoney(l.price);
+    }
+    return '<tr><td>' + (i + 1) + '</td><td>' + esc(l.name) + '</td>' +
+      '<td>' + qtyCell + '</td>' +
+      '<td class="num">' + priceCell + '</td><td class="num" id="ieLineTotal' + i + '">' + fmtMoney(l.total) + '</td></tr>';
+  }).join('');
+  function boxRow(label, val, field, dirLtr) {
+    if (!ed) return '<div class="inv-box-r"><span>' + label + '</span><b' + (dirLtr ? ' dir="ltr"' : '') + '>' + esc(val) + '</b></div>';
+    return '<div class="inv-box-r"><span>' + label + '</span><input class="inv-in" type="text" value="' + esc(val) + '" oninput="invField(\'' + field + '\',this.value)"' + (dirLtr ? ' dir="ltr"' : '') + '></div>';
+  }
+  var govRow;
+  if (ed) {
+    var govOpts = '<option value="">—</option>' + GOVS.map(function (g) { return '<option value="' + esc(g) + '"' + (g === o.gov ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('');
+    govRow = '<div class="inv-box-r"><span>المحافظة</span><select class="inv-in" onchange="invField(\'gov\',this.value)">' + govOpts + '</select></div>';
+  } else {
+    govRow = '<div class="inv-box-r"><span>المحافظة</span><b>' + esc(o.gov || '') + '</b></div>';
+  }
+  var methodRow;
+  if (ed) {
+    var mOpts = METHODS.map(function (m) { return '<option value="' + esc(m) + '"' + (m === o.method ? ' selected' : '') + '>' + esc(methodLabel(m)) + '</option>'; }).join('');
+    methodRow = '<div class="inv-box-r"><span>طريقة الدفع</span><select class="inv-in" onchange="invField(\'method\',this.value)">' + mOpts + '</select></div>';
+  } else {
+    methodRow = '<div class="inv-box-r"><span>طريقة الدفع</span><b>' + esc(methodLabel(o.method)) + '</b></div>';
+  }
+  var notesRow = '';
+  if (o.notes || ed) {
+    notesRow = ed
+      ? '<div class="inv-box-r"><span>ملاحظات</span><textarea class="inv-in" oninput="invField(\'notes\',this.value)">' + esc(o.notes || '') + '</textarea></div>'
+      : '<div class="inv-box-r"><span>ملاحظات</span><b>' + esc(o.notes) + '</b></div>';
+  }
+  var discCell = ed
+    ? '<input type="number" class="inv-in num" min="0" step="any" value="' + num(o.discount) + '" oninput="invField(\'discount\',this.value)">'
+    : '<b>− ' + fmtMoney(o.discount) + '</b>';
+  var depCell = ed
+    ? '<input type="number" class="inv-in num" min="0" step="any" value="' + num(o.deposit) + '" oninput="invField(\'deposit\',this.value)">'
+    : '<b>' + fmtMoney(o.deposit) + '</b>';
   return '<div class="inv-paper' + compact + '" id="invPaperInner">' +
-    '<div class="inv-accent"></div>' +
-    '<div class="inv-head">' +
-    '<div><div class="inv-name">ورشة آل هاشم</div>' +
-    '<div class="inv-contact">تليفون: <span dir="ltr">' + esc(wsPhone) + '</span>' + (wsAddr ? ' • ' + esc(wsAddr) : '') + '</div></div>' +
-    '<div class="inv-titlebox"><div class="inv-pill">فاتورة طلب</div>' +
-    '<div class="inv-no">#' + o.no + '</div>' +
-    '<div class="inv-date">' + esc(o.time || o.date) + '</div></div>' +
+    '<div class="inv-band">' +
+    '<div><div class="inv-band-name">ورشة آل هاشم</div>' +
+    '<div class="inv-band-sub">' + esc(wsAddr) + '</div>' +
+    '<div class="inv-band-sub" dir="ltr">' + esc(wsPhone) + '</div></div>' +
+    '<div class="inv-band-inv"><div class="inv-band-title">فاتورة</div>' +
+    '<div class="inv-band-no">فاتورة طلب #' + o.no + '</div>' +
+    '<div class="inv-band-date">' + esc(o.time || o.date) + '</div></div>' +
     '</div>' +
-    '<div class="inv-meta">' +
-    '<div class="inv-mbox"><span>العميل</span><b>' + esc(o.customer) + '</b></div>' +
-    '<div class="inv-mbox"><span>التليفون</span><b dir="ltr">' + esc(o.phone) + '</b></div>' +
-    (o.phone2 ? '<div class="inv-mbox"><span>تليفون تاني</span><b dir="ltr">' + esc(o.phone2) + '</b></div>' : '') +
-    '<div class="inv-mbox"><span>المحافظة</span><b>' + esc(o.gov || '') + '</b></div>' +
-    '<div class="inv-mbox wide"><span>العنوان</span><b>' + esc(o.addr || o.address || '') + '</b></div>' +
+    '<div class="inv-body">' +
+    '<div class="inv-boxes">' +
+    '<div class="inv-box"><div class="inv-box-h">بيانات العميل</div>' +
+    boxRow('الاسم', o.customer, 'customer') +
+    boxRow('التليفون', o.phone, 'phone', true) +
+    ((o.phone2 || ed) ? boxRow('تليفون تاني', o.phone2 || '', 'phone2', true) : '') +
+    govRow +
+    boxRow('العنوان', o.addr || o.address || '', 'addr') +
+    '</div>' +
+    '<div class="inv-box"><div class="inv-box-h">تفاصيل الفاتورة</div>' +
+    '<div class="inv-box-r"><span>رقم الفاتورة</span><b>#' + o.no + '</b></div>' +
+    '<div class="inv-box-r"><span>التاريخ</span><b>' + esc(o.date || '') + '</b></div>' +
+    '<div class="inv-box-r"><span>الحالة</span><b>' + esc(o.status || 'جديد') + '</b></div>' +
+    '</div>' +
     '</div>' +
     '<table class="inv-items"><tr><th>#</th><th>الموديل</th><th>الكمية</th><th class="num">سعر الزوج</th><th class="num">الإجمالي</th></tr>' + rows + '</table>' +
+    '<div class="inv-bottom">' +
     '<div class="inv-totals">' +
-    '<div class="inv-trow"><span>المجموع الفرعي</span><b>' + fmtMoney(o.subtotal) + '</b></div>' +
-    '<div class="inv-trow"><span>الخصم</span><b>− ' + fmtMoney(o.discount) + '</b></div>' +
+    '<div class="inv-trow"><span>المجموع الفرعي</span><b id="ieSubtotal">' + fmtMoney(o.subtotal) + '</b></div>' +
+    '<div class="inv-trow"><span>الخصم</span>' + discCell + '</div>' +
     '<div class="inv-trow"><span>مصاريف الشحن</span><b>' + shipTxt + '</b></div>' +
-    '<div class="inv-trow grand"><span>الإجمالي النهائي</span><b>' + fmtMoney(o.total) + '</b></div>' +
-    '<div class="inv-trow"><span>المدفوع مقدماً (العربون)</span><b>' + fmtMoney(o.deposit) + '</b></div>' +
-    '<div class="inv-trow due"><span>المتبقي</span><b>' + fmtMoney(o.remaining) + '</b></div>' +
+    '<div class="inv-trow grand"><span>الإجمالي النهائي</span><b id="ieTotal">' + fmtMoney(o.total) + '</b></div>' +
+    '<div class="inv-trow"><span>المدفوع مقدماً (العربون)</span>' + depCell + '</div>' +
+    '<div class="inv-trow due"><span>المتبقي</span><b id="ieRemaining">' + fmtMoney(o.remaining) + '</b></div>' +
     '</div>' +
-    '<div class="inv-foot"><span>طريقة الدفع: <b>' + esc(methodLabel(o.method)) + '</b></span><span>الحالة: <b>' + esc(o.status || 'جديد') + '</b></span></div>' +
-    (o.notes ? '<div class="inv-notes">ملاحظات: ' + esc(o.notes) + '</div>' : '') +
-    '</div>';
+    '<div class="inv-box"><div class="inv-box-h">طريقة الدفع</div>' +
+    methodRow + notesRow +
+    '</div>' +
+    '</div>' +
+    '</div></div>';
 }
 function showInvoiceForSaved() {
   if (!SAVED_ORDER) return;
@@ -1272,10 +1349,88 @@ function renderInvoice(o) {
   $('doneView').style.display = 'none';
   $('invoiceView').style.display = 'block';
   $('stickyBar').style.display = 'none';
-  $('invoicePaper').innerHTML = invoiceHtml(o);
+  INV_ORIG = JSON.parse(JSON.stringify(o));
+  INV_VIEW = JSON.parse(JSON.stringify(o));
+  INV_VIEW.grouped = groupInvoiceLines(INV_VIEW.lines);
+  INV_EDITING = false;
+  syncInvActions();
+  $('invoicePaper').innerHTML = invoiceHtml(INV_VIEW, false);
   var dl = $('dlImgBtn');
   if (dl) dl.style.display = '';
   window.scrollTo(0, 0);
+}
+/* ===== وضع تعديل الفاتورة — للفاتورة المطبوعة فقط =====
+   التعديل بيغيّر نسخة العرض (INV_VIEW) وبس — مش بيكتب أي حاجة في الشيت
+   ولا بيغيّر المخزون ولا الأوردر المحفوظ. لو اتقفلت الفاتورة واتفتحت تاني،
+   بترجع زي ما اتحفظت أصلاً (INV_ORIG). */
+function syncInvActions() {
+  var eb = $('editInvBtn'), ea = $('invEditActions'), dl = $('dlImgBtn'), bk = $('backInvBtn');
+  if (eb) eb.style.display = INV_EDITING ? 'none' : '';
+  if (ea) ea.style.display = INV_EDITING ? 'flex' : 'none';
+  if (dl) dl.style.display = INV_EDITING ? 'none' : '';
+  if (bk) bk.style.display = INV_EDITING ? 'none' : '';
+}
+function startInvEdit() {
+  if (!INV_VIEW) return;
+  INV_EDITING = true;
+  syncInvActions();
+  $('invoicePaper').innerHTML = invoiceHtml(INV_VIEW, true);
+}
+function saveInvEdit() {
+  if (!INV_VIEW) return;
+  INV_EDITING = false;
+  syncInvActions();
+  $('invoicePaper').innerHTML = invoiceHtml(INV_VIEW, false);
+  toast('اتحفظت التعديلات على الفاتورة ✅ — الأوردر المحفوظ في المخزن زي ما هو.');
+}
+function cancelInvEdit() {
+  if (!INV_ORIG) return;
+  INV_VIEW = JSON.parse(JSON.stringify(INV_ORIG));
+  INV_VIEW.grouped = groupInvoiceLines(INV_VIEW.lines);
+  INV_EDITING = false;
+  syncInvActions();
+  $('invoicePaper').innerHTML = invoiceHtml(INV_VIEW, false);
+  toast('اتلغت التعديلات ورجعت الفاتورة الأصلية.');
+}
+/* إعادة حساب إجماليات نسخة الفاتورة المعروضة بعد أي تعديل — نفس معادلة payCalc:
+   الإجمالي = المجموع الفرعي − الخصم + الشحن، والمتبقي = الإجمالي − العربون (مش أقل من صفر). */
+function recalcInvTotals(v) {
+  var sub = 0, pairs = 0;
+  (v.grouped || []).forEach(function (l) { sub += num(l.total); pairs += num(l.pairs); });
+  v.subtotal = sub;
+  v.pairs = pairs;
+  var total = sub - num(v.discount) + (v.shipping === null || v.shipping === undefined ? 0 : num(v.shipping));
+  if (total < 0) total = 0;
+  v.total = total;
+  var rem = total - num(v.deposit);
+  v.remaining = rem < 0 ? 0 : rem;
+  return v;
+}
+function refreshInvTotals() {
+  if (!INV_VIEW) return;
+  recalcInvTotals(INV_VIEW);
+  var s = $('ieSubtotal'), t = $('ieTotal'), r = $('ieRemaining');
+  if (s) s.textContent = fmtMoney(INV_VIEW.subtotal);
+  if (t) t.textContent = fmtMoney(INV_VIEW.total);
+  if (r) r.textContent = fmtMoney(INV_VIEW.remaining);
+}
+function invField(field, value) {
+  if (!INV_VIEW) return;
+  if (field === 'discount' || field === 'deposit') INV_VIEW[field] = Math.max(0, num(value));
+  else INV_VIEW[field] = value;
+  refreshInvTotals();
+}
+function invLineEdit(i, field, value) {
+  if (!INV_VIEW || !INV_VIEW.grouped || !INV_VIEW.grouped[i]) return;
+  var l = INV_VIEW.grouped[i];
+  if (field === 'dozens') l.dozens = Math.max(0, num(value));
+  if (field === 'price') l.price = Math.max(0, num(value));
+  l.pairs = num(l.dozens) * PPD;
+  l.total = num(l.pairs) * num(l.price);
+  var pt = $('ieLineTotal' + i), pp = $('ieLinePairs' + i);
+  if (pt) pt.textContent = fmtMoney(l.total);
+  if (pp) pp.textContent = '(' + fmtNum(l.pairs) + ' زوج)';
+  refreshInvTotals();
 }
 function backFromInvoice() {
   $('invoiceView').style.display = 'none';
@@ -1288,6 +1443,7 @@ function backFromInvoice() {
   }
 }
 function printInvoice() {
+  if (INV_EDITING) saveInvEdit();
   PRINT_ASKED = false;
   window.print();
 }
@@ -1302,6 +1458,7 @@ window.addEventListener('afterprint', function () {
 });
 var __h2cLoading = false;
 function downloadInvoiceImage() {
+  if (INV_EDITING) saveInvEdit();
   var paper = document.querySelector('#invoicePaper .inv-paper');
   if (!paper) return;
   if (window.html2canvas) { doDownloadImage(paper); return; }
