@@ -83,6 +83,8 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .cat-card:active{box-shadow:var(--sh-inset)}
 .cat-card.on{box-shadow:var(--sh-inset),0 0 0 2px var(--accent)}
 .cat-card.out{opacity:.7;cursor:not-allowed}
+.cat-item{min-width:0}
+.pick-tab{margin-top:8px;background:var(--bg);border-radius:var(--radius);padding:12px;box-shadow:var(--sh-inset);min-width:0}
 .cat-photo{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block;background:#F8FAFC;box-shadow:3px 3px 7px rgba(163,177,198,.4)}
 .cat-noimg{width:100%;aspect-ratio:1/1;border:1px dashed #A3B1C6;border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;background:var(--bg)}
 .cat-name{font-weight:800;font-size:16px;margin-top:8px}
@@ -209,7 +211,6 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
       <div id="groupBack" class="row" style="display:none;margin-bottom:10px"><button type="button" class="btn btn-ghost btn-sm" onclick="backToGroups()">← رجوع للمجموعات</button><b id="groupTitle" style="font-size:16px"></b></div>
       <div id="catalogGrid" class="cat-grid"></div>
       <div id="emptyCat" class="empty" style="display:none"><div class="big">👟</div><div>مفيش موديلات متاحة دلوقتي.</div></div>
-      <div id="pickCard" style="display:none"></div>
     </section>
 
     <!-- 2. الأوردر الحالي -->
@@ -565,12 +566,15 @@ function modelCardHtml(m) {
   if (!out && m.stock !== null && m.stock !== undefined && num(m.stock) > 0) {
     stockTxt = '<div class="cat-sub">المتبقي: ' + fmtNum(m.stock) + ' زوج</div>';
   }
-  return '<div class="cat-card' + (SEL === m ? ' on' : '') + (out ? ' out' : '') + '" onclick="selectModel(' + idx + ')">' + img +
+  var card = '<div class="cat-card' + (SEL === m ? ' on' : '') + (out ? ' out' : '') + '" onclick="selectModel(' + idx + ')">' + img +
     '<div class="cat-name">' + esc(m.name) + '</div>' +
     (out ? '<div style="margin-top:4px"><span class="badge b-red">نفذ</span></div>' : '') +
     (num(m.price) > 0
       ? '<div class="cat-price">' + fmtMoney(m.price) + ' / زوج = ' + fmtMoney(m.dozenPrice) + ' / دستة</div>' + stockTxt
       : '<div class="cat-sub">بدون سعر — مش متاح للطلب</div>') + '</div>';
+  // تاب الاختيار بيفتح تحت الكارت نفسه (أكورديون جوه الكتالوج — من غير أي سكرول).
+  var tab = (SEL === m) ? '<div class="pick-tab">' + pickTabHtml() + '</div>' : '';
+  return '<div class="cat-item">' + card + tab + '</div>';
 }
 
 function renderCatalog() {
@@ -633,19 +637,18 @@ function renderCatalog() {
   g.innerHTML = models.map(modelCardHtml).join('');
 }
 
-/* ===== اختيار الموديل (اللون + الكمية بالدستة) ===== */
+/* ===== اختيار الموديل (اللون + الكمية بالدستة) — تاب صغير تحت الكارت نفسه ===== */
 function selectModel(idx) {
   var m = CATALOG[idx];
   if (!m) return;
   if (modelOut(m)) { toast('الموديل ده نافذ — مش متاح للطلب.', true); return; }
+  // دوسة تانية على نفس الكارت بتقفل التاب.
+  if (SEL === m) { SEL = null; SEL_COLORS = []; renderCatalog(); return; }
   SEL = m;
   SEL_QTY = 1;
   var av = availColors(m);
   SEL_COLORS = av.length === 1 ? [av[0].color] : []; // لون واحد بس → يتحدد تلقائياً
-  renderCatalog();
-  renderPick();
-  var pc = $('pickCard');
-  if (pc) pc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  renderCatalog(); // التاب بيظهر تحت الكارت — من غير أي سكرول
 }
 
 /* ===== تقسيم الكمية بالتساوي على الألوان المختارة =====
@@ -700,18 +703,10 @@ function splitBoxHtml() {
   return '<div class="split-box err">⚠️ الكمية ' + fmtDoz(SEL_QTY) + ' دستة (' + fmtNum(s.totalPairs) + ' زوج) مش بتتقسم بالتساوي على ' + colorCountWord(n) + ' — كل لون هياخد عدد أزواج مش صحيح. جرّب:' +
     '<div class="split-sug">' + btns + '</div></div>';
 }
-/* بعد الإضافة: نفضل واقفين عند قايمة الموديلات (مش أول الصفحة) عشان اختيار الموديل اللي بعده على طول */
-function scrollToCatalog() {
-  var cc = $('catalogCard');
-  if (!cc) return;
-  var y = cc.getBoundingClientRect().top + window.scrollY - 64;
-  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-}
-
-function renderPick() {
-  var pc = $('pickCard');
-  if (!SEL) { pc.style.display = 'none'; pc.innerHTML = ''; return; }
-  pc.style.display = 'block';
+/* محتوى تاب الاختيار — بيتعرض تحت كارت الموديل نفسه (أكورديون جوه الكتالوج).
+ * مفيش أي سكرول برمجي هنا: التاب بيفتح في مكانه والصفحة بتفضل زي ما هي. */
+function pickTabHtml() {
+  if (!SEL) return '';
   var img = SEL.photo
     ? photoHtml(SEL.photo, 'pick-photo', 'pick-noimg') + noimgHtml('pick-noimg')
     : '<div class="pick-noimg" style="display:flex">بلا صورة</div>';
@@ -726,8 +721,7 @@ function renderPick() {
   var chips = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12].map(function (v) {
     return '<button type="button" class="chip' + (num(SEL_QTY) === v ? ' on' : '') + '" onclick="setQty(' + v + ')">' + fmtDoz(v) + ' دستة</button>';
   }).join('');
-  pc.innerHTML =
-    '<div class="pick-head">' + img + '<div class="grow"><div style="font-weight:800;font-size:17px">' + esc(SEL.name) + '</div>' +
+  return '<div class="pick-head">' + img + '<div class="grow"><div style="font-weight:800;font-size:17px">' + esc(SEL.name) + '</div>' +
     '<div class="cat-price">' + fmtMoney(SEL.price) + ' / زوج = ' + fmtMoney(SEL.dozenPrice) + ' / دستة</div>' +
     '<div class="cat-sub">المتبقي: ' + fmtNum(SEL.stock) + ' زوج</div></div></div>' +
     '<label>الألوان — اختار لون أو أكتر (دوس على اللون عشان تختاره أو تلغيه)</label><div class="color-tiles">' + (tiles || '<div class="hint">مفيش ألوان متسجلة للموديل ده.</div>') + '</div>' +
@@ -740,6 +734,10 @@ function renderPick() {
     '<div class="kv"><span>إجمالي البند</span><b id="pickTotal">' + fmtMoney(lineTotal(SEL_QTY, SEL.price)) + '</b></div>' +
     '<div class="row" style="margin-top:12px"><button class="btn btn-ghost grow" onclick="cancelPick()">إلغاء</button>' +
     '<button class="btn btn-pri grow" id="addBtn" onclick="addToCart()"' + (SEL_COLORS.length > 0 && !splitCalc(SEL_QTY, SEL_COLORS.length).ok ? ' disabled' : '') + '>➕ أضف للأوردر</button></div>';
+}
+/* التاب بقى جوه الكتالوج — إعادة رسم الكتالوج بتحدّث التاب (من غير سكرول). */
+function renderPick() {
+  renderCatalog();
   updatePickTotal();
 }
 
@@ -804,8 +802,7 @@ function addToCart() {
   saveDraft();
   var colorTxt = addedColors.length === 1 ? addedColors[0] : fmtNum(addedColors.length) + ' ألوان';
   toast('اتضاف ' + addedName + ' — ' + colorTxt + '، ' + fmtDoz(addedQty) + ' دستة ✅');
-  // نفضل واقفين عند قايمة الموديلات عشان اختيار الموديل اللي بعده على طول.
-  scrollToCatalog();
+  // التاب اتقفل والصفحة بتفضل زي ما هي بالظبط (من غير أي سكرول) عشان اختيار الموديل اللي بعده على طول.
 }
 
 /* ===== السلة — تعديل الكمية واللون جوه السطر نفسه ===== */
