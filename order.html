@@ -105,6 +105,11 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .qty-btn{border:0;background:var(--bg);border-radius:14px;width:52px;height:52px;font-size:24px;font-weight:800;box-shadow:var(--sh-sm);flex:none}
 .qty-btn:active{box-shadow:var(--sh-inset)}
 .qty-val{flex:1;min-width:0;text-align:center;font-weight:800;font-size:18px}
+/* ===== تقسيم الكمية على الألوان المختارة ===== */
+.split-box{border-radius:14px;padding:10px 12px;font-size:14px;font-weight:700;margin:8px 0;background:#EFF6FF;color:#1E3A8A;box-shadow:var(--sh-sm)}
+.split-box.err{background:#FEE2E2;color:#991B1B}
+.split-box .split-sug{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.split-box .split-sug button{border:0;background:#fff;border-radius:999px;padding:8px 12px;font-size:13.5px;font-weight:700;min-height:38px;box-shadow:var(--sh-sm);color:#1D4ED8}
 /* ===== سطور الأوردر ===== */
 .cart-line{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
 .cart-line:last-child{border-bottom:0}
@@ -136,15 +141,33 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .sum-item{flex:1;min-width:90px;background:var(--bg);border-radius:14px;padding:10px;box-shadow:var(--sh-sm);text-align:center}
 .sum-item b{display:block;font-size:18px}
 .sum-item span{font-size:12px;color:var(--muted)}
-/* ===== الفاتورة (ورقة بيضاء A4) ===== */
-.inv-paper{background:#fff;color:#111;border-radius:6px;padding:18px 16px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:14.5px;line-height:1.6}
-.inv-paper h2{font-size:20px;text-align:center}
-.inv-paper .inv-sub{text-align:center;color:#444;font-size:13px;margin-bottom:8px}
-.inv-paper table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
-.inv-paper th,.inv-paper td{border:1px solid #999;padding:6px 8px;text-align:right}
-.inv-paper th{background:#eee}
-.inv-paper .inv-tot td{font-weight:800}
-.inv-paper .inv-right{text-align:left}
+/* ===== الفاتورة — تصميم حديث (ورقة بيضاء A4، ألوان فاتحة بتطبع كويس) ===== */
+.inv-paper{background:#fff;color:#111;border-radius:10px;padding:20px 18px 16px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:14.5px;line-height:1.6}
+.inv-accent{height:6px;border-radius:99px;background:linear-gradient(90deg,#2563EB,#3B82F6,#60A5FA);margin-bottom:14px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:12px;border-bottom:2px solid #2563EB}
+.inv-name{font-size:25px;font-weight:900;color:#1E3A8A;line-height:1.2}
+.inv-contact{font-size:12.5px;color:#475569;margin-top:4px}
+.inv-titlebox{text-align:left;flex:none}
+.inv-pill{display:inline-block;background:#DBEAFE;color:#1D4ED8;font-weight:800;font-size:15px;border-radius:999px;padding:4px 14px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-no{font-size:19px;font-weight:900;color:#0F172A;margin-top:6px}
+.inv-date{font-size:12.5px;color:#64748B;margin-top:2px}
+.inv-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.inv-mbox{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px 10px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-mbox span{display:block;font-size:11.5px;font-weight:700;color:#64748B}
+.inv-mbox b{font-size:14.5px;color:#0F172A}
+.inv-mbox.wide{grid-column:1 / -1}
+.inv-paper table.inv-items{width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:14px}
+.inv-items th,.inv-items td{border:1px solid #CBD5E1;padding:6px 8px;text-align:right}
+.inv-items th{background:#EFF6FF;color:#1E3A8A;font-weight:800;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-items td.num,.inv-items th.num{text-align:left;white-space:nowrap}
+.inv-totals{margin-top:10px;border-top:2px solid #E2E8F0}
+.inv-trow{display:flex;justify-content:space-between;gap:10px;padding:6px 2px;border-bottom:1px dashed #E2E8F0;font-size:14.5px}
+.inv-trow b{white-space:nowrap}
+.inv-trow.grand{background:#EFF6FF;border-radius:8px;padding:9px 10px;font-size:17px;font-weight:900;color:#1E3A8A;border-bottom:0;margin-top:6px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-trow.due{background:#FFFBEB;border-radius:8px;padding:9px 10px;font-size:16px;font-weight:800;color:#92400E;border-bottom:0;margin-top:6px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-foot{margin-top:12px;padding-top:10px;border-top:1px solid #E2E8F0;font-size:13.5px;color:#334155;display:flex;gap:6px 18px;flex-wrap:wrap}
+.inv-foot b{color:#0F172A}
+.inv-notes{margin-top:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13.5px;color:#334155}
 @media print{
   @page{size:A4;margin:12mm}
   body{background:#fff !important;padding:0 !important}
@@ -154,8 +177,15 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
   #invoiceView{display:block !important}
   .inv-paper{box-shadow:none !important;border-radius:0 !important;padding:0 !important;font-size:13px}
   .inv-paper.compact{font-size:11.5px;line-height:1.45}
-  .inv-paper.compact table{font-size:11.5px}
-  .inv-paper.compact th,.inv-paper.compact td{padding:3px 6px}
+  .inv-paper.compact .inv-name{font-size:19px}
+  .inv-paper.compact .inv-no{font-size:15px}
+  .inv-paper.compact .inv-items{font-size:11.5px}
+  .inv-paper.compact .inv-items th,.inv-paper.compact .inv-items td{padding:3px 6px}
+  .inv-paper.compact .inv-trow{font-size:11.5px;padding:3px 2px}
+  .inv-paper.compact .inv-trow.grand{font-size:13.5px;padding:5px 8px}
+  .inv-paper.compact .inv-trow.due{font-size:12.5px;padding:5px 8px}
+  .inv-paper.compact .inv-meta{gap:5px;margin:8px 0}
+  .inv-paper.compact .inv-mbox{padding:5px 8px}
 }
 </style>
 </head>
@@ -171,30 +201,7 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
   <div id="loading" class="loading-box"><div class="spin"></div><div>بنحمّل الموديلات...</div></div>
 
   <div id="appView" style="display:none">
-    <!-- 1. بيانات العميل -->
-    <section class="card" id="customerCard">
-      <h2>👤 بيانات العميل</h2>
-      <label for="fName">اسم العميل *</label>
-      <input type="text" id="fName" placeholder="اسم العميل" autocomplete="off">
-      <div class="field-err" id="eName">اكتب اسم العميل.</div>
-      <label for="fPhone">رقم التليفون *</label>
-      <input type="tel" id="fPhone" dir="ltr" style="text-align:right" placeholder="01xxxxxxxxx" autocomplete="off">
-      <div class="field-err" id="ePhone">رقم التليفون لازم يكون 11 رقم ويبدأ بـ 01.</div>
-      <div class="hint" id="phoneLookupHint" style="display:none">🔍 بندوّر على العميل ده في الأوردرات القديمة...</div>
-      <div class="hint" id="phoneFoundHint" style="display:none;color:var(--green);font-weight:700"></div>
-      <label for="fPhone2">رقم تليفون تاني — اختياري</label>
-      <input type="tel" id="fPhone2" dir="ltr" style="text-align:right" placeholder="01xxxxxxxxx" autocomplete="off">
-      <label for="fGov">المحافظة / المدينة *</label>
-      <select id="fGov"></select>
-      <div class="field-err" id="eGov">اختار المحافظة.</div>
-      <label for="fAddr">العنوان بالتفصيل *</label>
-      <input type="text" id="fAddr" placeholder="المنطقة / الشارع / علامة مميزة" autocomplete="off">
-      <div class="field-err" id="eAddr">اكتب العنوان بالتفصيل.</div>
-      <label for="fNotes">ملاحظات الأوردر — اختياري</label>
-      <textarea id="fNotes" placeholder="أي تفاصيل زيادة عن الطلب"></textarea>
-    </section>
-
-    <!-- 2. اختيار الموديل -->
+    <!-- 1. اختيار الموديل -->
     <section class="card" id="catalogCard">
       <h2>👟 اختيار الموديل واللون والكمية</h2>
       <div class="hint" style="margin-bottom:8px">💡 1 دستة = 10 أزواج — الكمية بالدستة، والسعر بيظهر بالزوج وبالدستة.</div>
@@ -205,7 +212,7 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
       <div id="pickCard" style="display:none"></div>
     </section>
 
-    <!-- 3. الأوردر الحالي -->
+    <!-- 2. الأوردر الحالي -->
     <section class="card" id="cartCard">
       <h2>🧾 الأوردر الحالي</h2>
       <div id="cartLines"><div class="empty" style="padding:18px 8px">لسه مفيش بنود — اختار موديل من الكتالوج فوق.</div></div>
@@ -215,7 +222,7 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
       </div>
     </section>
 
-    <!-- 4. الحساب والدفع -->
+    <!-- 3. الحساب والدفع -->
     <section class="card" id="payCard">
       <h2>💰 الحساب والدفع</h2>
       <label for="fDiscount">خصم — بالجنيه (اختياري)</label>
@@ -236,6 +243,29 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
         <div class="kv"><span>المدفوع مقدماً</span><b id="payDeposit"></b></div>
         <div class="kv big"><span>المتبقي</span><b id="payRemaining"></b></div>
       </div>
+    </section>
+
+    <!-- 4. بيانات العميل — في الآخر: الموديلات والسلة والحساب الأول، وبيانات العميل قبل الحفظ -->
+    <section class="card" id="customerCard">
+      <h2>👤 بيانات العميل</h2>
+      <label for="fName">اسم العميل *</label>
+      <input type="text" id="fName" placeholder="اسم العميل" autocomplete="off">
+      <div class="field-err" id="eName">اكتب اسم العميل.</div>
+      <label for="fPhone">رقم التليفون *</label>
+      <input type="tel" id="fPhone" dir="ltr" style="text-align:right" placeholder="01xxxxxxxxx" autocomplete="off">
+      <div class="field-err" id="ePhone">رقم التليفون لازم يكون 11 رقم ويبدأ بـ 01.</div>
+      <div class="hint" id="phoneLookupHint" style="display:none">🔍 بندوّر على العميل ده في الأوردرات القديمة...</div>
+      <div class="hint" id="phoneFoundHint" style="display:none;color:var(--green);font-weight:700"></div>
+      <label for="fPhone2">رقم تليفون تاني — اختياري</label>
+      <input type="tel" id="fPhone2" dir="ltr" style="text-align:right" placeholder="01xxxxxxxxx" autocomplete="off">
+      <label for="fGov">المحافظة / المدينة *</label>
+      <select id="fGov"></select>
+      <div class="field-err" id="eGov">اختار المحافظة.</div>
+      <label for="fAddr">العنوان بالتفصيل *</label>
+      <input type="text" id="fAddr" placeholder="المنطقة / الشارع / علامة مميزة" autocomplete="off">
+      <div class="field-err" id="eAddr">اكتب العنوان بالتفصيل.</div>
+      <label for="fNotes">ملاحظات الأوردر — اختياري</label>
+      <textarea id="fNotes" placeholder="أي تفاصيل زيادة عن الطلب"></textarea>
     </section>
 
     <!-- 5. أزرار الحفظ -->
@@ -337,7 +367,7 @@ var FACTORY = 'ورشة آل هاشم';
 var CART = []; // {model, name, photo, price, dozenPrice, color, dozens}
 var SEL = null; // الموديل المختار حالياً
 var SEL_GROUP = null; // مجموعة السعر المفتوحة حالياً (null = عرض كل المجموعات)
-var SEL_COLOR = '';
+var SEL_COLORS = []; // الألوان المختارة للموديل الحالي — ممكن أكتر من لون، والكمية بتتقسم بالتساوي عليهم
 var SEL_QTY = 1; // بالدستة
 var ORDERS_DATA = null; // نتيجة read المؤمّنة {orders, lines, settings, ...}
 var ORDERS_FILTER = 'today';
@@ -611,11 +641,71 @@ function selectModel(idx) {
   SEL = m;
   SEL_QTY = 1;
   var av = availColors(m);
-  SEL_COLOR = av.length === 1 ? av[0].color : ''; // لون واحد بس → يتحدد تلقائياً
+  SEL_COLORS = av.length === 1 ? [av[0].color] : []; // لون واحد بس → يتحدد تلقائياً
   renderCatalog();
   renderPick();
   var pc = $('pickCard');
   if (pc) pc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ===== تقسيم الكمية بالتساوي على الألوان المختارة =====
+ * القاعدة (مؤكدة من عبدالرحمن): إجمالي الأزواج (دستة × 10) لازم يتقسم
+ * بالتساوي على عدد الألوان، بحيث كل لون ياخد عدد أزواج صحيح.
+ * مثال: دستة على لونين = 5 أزواج لكل لون ✅ | دستة على 3 ألوان = 3.33 ❌ */
+function splitCalc(qtyDoz, colorCount) {
+  var totalPairs = Math.round(num(qtyDoz) * PPD);
+  if (!colorCount || colorCount < 1) return { n: 0, totalPairs: totalPairs, ok: false, perColorPairs: 0, perColorDoz: 0 };
+  var ok = (totalPairs % colorCount) === 0;
+  var perColorPairs = ok ? totalPairs / colorCount : 0;
+  return { n: colorCount, totalPairs: totalPairs, ok: ok, perColorPairs: perColorPairs, perColorDoz: ok ? Math.round((perColorPairs / PPD) * 100) / 100 : 0 };
+}
+/* الكميات الصحيحة (بخطوات نص دستة لحد 12 دستة) اللي بتتقسم بالتساوي على n لون */
+function validSplitQtys(n) {
+  var out = [];
+  for (var q = 0.5; q <= 12.0001; q = Math.round((q + 0.5) * 2) / 2) {
+    if ((Math.round(q * PPD) % n) === 0) out.push(q);
+  }
+  return out;
+}
+/* أقرب كميتين صحيحتين للكمية الحالية (الأقرب من فوق الأول، ولو مفيش كفاية نكمّل من تحت) */
+function splitSuggestions(n, cur) {
+  var valid = validSplitQtys(n);
+  var above = valid.filter(function (q) { return q >= num(cur) - 0.001; });
+  var sug = above.slice(0, 2);
+  if (sug.length < 2) {
+    var below = valid.filter(function (q) { return q < num(cur) - 0.001; });
+    while (sug.length < 2 && below.length) sug.unshift(below.pop());
+  }
+  return sug;
+}
+function colorCountWord(n) {
+  if (n === 1) return 'لون واحد';
+  if (n === 2) return 'لونين';
+  return fmtNum(n) + ' ألوان';
+}
+/* صندوق التقسيم في كارت الاختيار (معاينة حية + خطأ واقتراحات لو الكمية مش بتتقسم) */
+function splitBoxHtml() {
+  if (!SEL) return '';
+  var n = SEL_COLORS.length;
+  if (n === 0) return '<div class="split-box">👆 اختار لون أو أكتر من فوق — الكمية هتتقسم بالتساوي على الألوان المختارة.</div>';
+  var s = splitCalc(SEL_QTY, n);
+  if (s.ok) {
+    return '<div class="split-box">✅ ' + fmtDoz(SEL_QTY) + ' دستة ÷ ' + colorCountWord(n) + ' = ' + fmtDoz(s.perColorDoz) + ' دستة (' + fmtNum(s.perColorPairs) + ' زوج) لكل لون</div>';
+  }
+  var sug = splitSuggestions(n, SEL_QTY);
+  var btns = sug.map(function (q) {
+    var sp = splitCalc(q, n);
+    return '<button type="button" onclick="setQty(' + q + ')">' + fmtDoz(q) + ' دستة (' + fmtNum(sp.perColorPairs) + ' زوج لكل لون)</button>';
+  }).join('');
+  return '<div class="split-box err">⚠️ الكمية ' + fmtDoz(SEL_QTY) + ' دستة (' + fmtNum(s.totalPairs) + ' زوج) مش بتتقسم بالتساوي على ' + colorCountWord(n) + ' — كل لون هياخد عدد أزواج مش صحيح. جرّب:' +
+    '<div class="split-sug">' + btns + '</div></div>';
+}
+/* بعد الإضافة: نفضل واقفين عند قايمة الموديلات (مش أول الصفحة) عشان اختيار الموديل اللي بعده على طول */
+function scrollToCatalog() {
+  var cc = $('catalogCard');
+  if (!cc) return;
+  var y = cc.getBoundingClientRect().top + window.scrollY - 64;
+  window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 }
 
 function renderPick() {
@@ -631,7 +721,7 @@ function renderPick() {
       ? (c.stock === null || c.stock === undefined ? 'متاح' : 'متبقي ' + fmtNum(c.stock) + ' زوج')
       : 'نفذ';
     if (!av) return '<button type="button" class="color-tile out" disabled>' + esc(c.color) + '<span class="ct-sub">' + sub + '</span></button>';
-    return '<button type="button" class="color-tile' + (SEL_COLOR === c.color ? ' on' : '') + '" onclick="setColor(\'' + jsq(c.color) + '\')">' + esc(c.color) + '<span class="ct-sub">' + sub + '</span></button>';
+    return '<button type="button" class="color-tile' + (SEL_COLORS.indexOf(c.color) !== -1 ? ' on' : '') + '" onclick="toggleColor(\'' + jsq(c.color) + '\')">' + esc(c.color) + '<span class="ct-sub">' + sub + '</span></button>';
   }).join('');
   var chips = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12].map(function (v) {
     return '<button type="button" class="chip' + (num(SEL_QTY) === v ? ' on' : '') + '" onclick="setQty(' + v + ')">' + fmtDoz(v) + ' دستة</button>';
@@ -640,20 +730,23 @@ function renderPick() {
     '<div class="pick-head">' + img + '<div class="grow"><div style="font-weight:800;font-size:17px">' + esc(SEL.name) + '</div>' +
     '<div class="cat-price">' + fmtMoney(SEL.price) + ' / زوج = ' + fmtMoney(SEL.dozenPrice) + ' / دستة</div>' +
     '<div class="cat-sub">المتبقي: ' + fmtNum(SEL.stock) + ' زوج</div></div></div>' +
-    '<label>اللون</label><div class="color-tiles">' + (tiles || '<div class="hint">مفيش ألوان متسجلة للموديل ده.</div>') + '</div>' +
+    '<label>الألوان — اختار لون أو أكتر (دوس على اللون عشان تختاره أو تلغيه)</label><div class="color-tiles">' + (tiles || '<div class="hint">مفيش ألوان متسجلة للموديل ده.</div>') + '</div>' +
     '<label>الكمية (بالدستة) — 1 دستة = 10 أزواج</label>' +
     '<div class="qty-box"><button type="button" class="qty-btn" onclick="stepQty(-0.5)">−</button>' +
     '<div class="qty-val"><span id="pickQtyVal">' + fmtDoz(SEL_QTY) + ' دستة</span><div class="muted" style="font-size:13px" id="pickQtyPairs">(' + fmtNum(linePairs(SEL_QTY)) + ' زوج)</div></div>' +
     '<button type="button" class="qty-btn" onclick="stepQty(0.5)">+</button></div>' +
     '<div class="chips">' + chips + '</div>' +
+    splitBoxHtml() +
     '<div class="kv"><span>إجمالي البند</span><b id="pickTotal">' + fmtMoney(lineTotal(SEL_QTY, SEL.price)) + '</b></div>' +
     '<div class="row" style="margin-top:12px"><button class="btn btn-ghost grow" onclick="cancelPick()">إلغاء</button>' +
-    '<button class="btn btn-pri grow" id="addBtn" onclick="addToCart()">➕ أضف للأوردر</button></div>';
+    '<button class="btn btn-pri grow" id="addBtn" onclick="addToCart()"' + (SEL_COLORS.length > 0 && !splitCalc(SEL_QTY, SEL_COLORS.length).ok ? ' disabled' : '') + '>➕ أضف للأوردر</button></div>';
   updatePickTotal();
 }
 
-function setColor(color) {
-  SEL_COLOR = color;
+function toggleColor(color) {
+  var i = SEL_COLORS.indexOf(color);
+  if (i === -1) SEL_COLORS.push(color);
+  else SEL_COLORS.splice(i, 1);
   renderPick();
 }
 function setQty(v) {
@@ -677,7 +770,7 @@ function updatePickTotal() {
 }
 function cancelPick() {
   SEL = null;
-  SEL_COLOR = '';
+  SEL_COLORS = [];
   renderCatalog();
   renderPick();
 }
@@ -685,21 +778,34 @@ function cancelPick() {
 function addToCart() {
   if (!SEL) return;
   if (!(num(SEL.price) > 0)) { toast('الموديل ده مش متاح دلوقتي.', true); return; }
-  if (!SEL_COLOR) { toast('اختار اللون الأول.', true); return; }
+  if (!SEL_COLORS.length) { toast('اختار اللون الأول.', true); return; }
   var q = num(SEL_QTY);
   if (!(q > 0)) { toast('اكتب الكمية بالدستة.', true); return; }
-  var found = null;
-  CART.forEach(function (l) { if (l.model === SEL.model && l.color === SEL_COLOR) found = l; });
-  if (found) found.dozens = num(found.dozens) + q;
-  else CART.push({ model: SEL.model, name: SEL.name, photo: SEL.photo, price: SEL.price, dozenPrice: SEL.dozenPrice, color: SEL_COLOR, dozens: q });
-  var addedColor = SEL_COLOR, addedQty = q;
-  SEL = null; SEL_COLOR = '';
+  // الكمية لازم تتقسم بالتساوي على الألوان (عدد أزواج صحيح لكل لون).
+  var sp = splitCalc(q, SEL_COLORS.length);
+  if (!sp.ok) {
+    toast('الكمية مش بتتقسم بالتساوي على ' + colorCountWord(sp.n) + ' — جرّب كمية من المقترحات.', true);
+    return;
+  }
+  var perDoz = sp.perColorDoz;
+  // سطر لكل لون بالكمية المقسومة (والدمج في سطر موجود لنفس الموديل واللون).
+  SEL_COLORS.forEach(function (color) {
+    var found = null;
+    CART.forEach(function (l) { if (l.model === SEL.model && l.color === color) found = l; });
+    if (found) found.dozens = Math.round((num(found.dozens) + perDoz) * 100) / 100;
+    else CART.push({ model: SEL.model, name: SEL.name, photo: SEL.photo, price: SEL.price, dozenPrice: SEL.dozenPrice, color: color, dozens: perDoz });
+  });
+  var addedName = SEL.name, addedColors = SEL_COLORS.slice(), addedQty = q;
+  SEL = null; SEL_COLORS = [];
   renderCatalog();
   renderPick();
   renderCart();
   updatePayTotals();
   saveDraft();
-  toast('اتضاف للأوردر ✅ (' + addedColor + ' — ' + fmtDoz(addedQty) + ' دستة)');
+  var colorTxt = addedColors.length === 1 ? addedColors[0] : fmtNum(addedColors.length) + ' ألوان';
+  toast('اتضاف ' + addedName + ' — ' + colorTxt + '، ' + fmtDoz(addedQty) + ' دستة ✅');
+  // نفضل واقفين عند قايمة الموديلات عشان اختيار الموديل اللي بعده على طول.
+  scrollToCatalog();
 }
 
 /* ===== السلة — تعديل الكمية واللون جوه السطر نفسه ===== */
@@ -817,7 +923,7 @@ function clearOrder() {
   $('fShipping').value = '';
   $('fDeposit').value = '';
   $('fMethod').selectedIndex = 0;
-  SEL = null; SEL_COLOR = '';
+  SEL = null; SEL_COLORS = [];
   renderCatalog();
   renderPick();
   renderCart();
@@ -1072,7 +1178,7 @@ function newOrder() {
   $('fShipping').value = '';
   $('fDeposit').value = '';
   $('fMethod').selectedIndex = 0;
-  SEL = null; SEL_COLOR = '';
+  SEL = null; SEL_COLORS = [];
   clearDraft();
   renderCatalog();
   renderPick();
@@ -1090,32 +1196,39 @@ function invoiceHtml(o) {
   var rows = o.lines.map(function (l, i) {
     return '<tr><td>' + (i + 1) + '</td><td>' + esc(l.name) + ' ' + esc(l.color) + '</td>' +
       '<td>' + fmtDoz(l.dozens) + ' دستة (' + fmtNum(l.pairs) + ' زوج)</td>' +
-      '<td>' + fmtMoney(l.price) + '</td><td>' + fmtMoney(l.total) + '</td></tr>';
+      '<td class="num">' + fmtMoney(l.price) + '</td><td class="num">' + fmtMoney(l.total) + '</td></tr>';
   }).join('');
   var shipTxt = o.shipping === null || o.shipping === undefined ? 'تحددها شركة الشحن' : fmtMoney(o.shipping);
   var wsPhone = (ORDERS_DATA && ORDERS_DATA.settings && ORDERS_DATA.settings.phone1) || '01034837061';
   var wsAddr = (ORDERS_DATA && ORDERS_DATA.settings && ORDERS_DATA.settings.address) || '';
   var compact = o.lines.length > 10 ? ' compact' : '';
   return '<div class="inv-paper' + compact + '" id="invPaperInner">' +
-    '<h2>ورشة آل هاشم</h2>' +
-    '<div class="inv-sub">تليفون: ' + esc(wsPhone) + (wsAddr ? ' • ' + esc(wsAddr) : '') + '</div>' +
-    '<div style="text-align:center;font-weight:800;font-size:17px;margin:6px 0">فاتورة طلب</div>' +
-    '<div class="row between"><span>رقم الأوردر: <b>#' + o.no + '</b></span><span>التاريخ: ' + esc(o.time || o.date) + '</span></div>' +
-    '<div class="row between"><span>العميل: <b>' + esc(o.customer) + '</b></span><span>التليفون: <b dir="ltr">' + esc(o.phone) + '</b></span></div>' +
-    (o.phone2 ? '<div>تليفون تاني: <span dir="ltr">' + esc(o.phone2) + '</span></div>' : '') +
-    '<div>المحافظة: ' + esc(o.gov || '') + '</div>' +
-    '<div>العنوان: ' + esc(o.addr || o.address || '') + '</div>' +
-    '<table><tr><th>#</th><th>الموديل</th><th>الكمية</th><th>سعر الزوج</th><th>الإجمالي</th></tr>' + rows + '</table>' +
-    '<table>' +
-    '<tr><td>المجموع الفرعي</td><td class="inv-right">' + fmtMoney(o.subtotal) + '</td></tr>' +
-    '<tr><td>الخصم</td><td class="inv-right">− ' + fmtMoney(o.discount) + '</td></tr>' +
-    '<tr><td>مصاريف الشحن</td><td class="inv-right">' + shipTxt + '</td></tr>' +
-    '<tr class="inv-tot"><td>الإجمالي النهائي</td><td class="inv-right">' + fmtMoney(o.total) + '</td></tr>' +
-    '<tr><td>المدفوع مقدماً (العربون)</td><td class="inv-right">' + fmtMoney(o.deposit) + '</td></tr>' +
-    '<tr class="inv-tot"><td>المتبقي</td><td class="inv-right">' + fmtMoney(o.remaining) + '</td></tr>' +
-    '</table>' +
-    '<div>طريقة الدفع: ' + esc(methodLabel(o.method)) + ' • الحالة: ' + esc(o.status || 'جديد') + '</div>' +
-    (o.notes ? '<div>ملاحظات: ' + esc(o.notes) + '</div>' : '') +
+    '<div class="inv-accent"></div>' +
+    '<div class="inv-head">' +
+    '<div><div class="inv-name">ورشة آل هاشم</div>' +
+    '<div class="inv-contact">تليفون: <span dir="ltr">' + esc(wsPhone) + '</span>' + (wsAddr ? ' • ' + esc(wsAddr) : '') + '</div></div>' +
+    '<div class="inv-titlebox"><div class="inv-pill">فاتورة طلب</div>' +
+    '<div class="inv-no">#' + o.no + '</div>' +
+    '<div class="inv-date">' + esc(o.time || o.date) + '</div></div>' +
+    '</div>' +
+    '<div class="inv-meta">' +
+    '<div class="inv-mbox"><span>العميل</span><b>' + esc(o.customer) + '</b></div>' +
+    '<div class="inv-mbox"><span>التليفون</span><b dir="ltr">' + esc(o.phone) + '</b></div>' +
+    (o.phone2 ? '<div class="inv-mbox"><span>تليفون تاني</span><b dir="ltr">' + esc(o.phone2) + '</b></div>' : '') +
+    '<div class="inv-mbox"><span>المحافظة</span><b>' + esc(o.gov || '') + '</b></div>' +
+    '<div class="inv-mbox wide"><span>العنوان</span><b>' + esc(o.addr || o.address || '') + '</b></div>' +
+    '</div>' +
+    '<table class="inv-items"><tr><th>#</th><th>الموديل</th><th>الكمية</th><th class="num">سعر الزوج</th><th class="num">الإجمالي</th></tr>' + rows + '</table>' +
+    '<div class="inv-totals">' +
+    '<div class="inv-trow"><span>المجموع الفرعي</span><b>' + fmtMoney(o.subtotal) + '</b></div>' +
+    '<div class="inv-trow"><span>الخصم</span><b>− ' + fmtMoney(o.discount) + '</b></div>' +
+    '<div class="inv-trow"><span>مصاريف الشحن</span><b>' + shipTxt + '</b></div>' +
+    '<div class="inv-trow grand"><span>الإجمالي النهائي</span><b>' + fmtMoney(o.total) + '</b></div>' +
+    '<div class="inv-trow"><span>المدفوع مقدماً (العربون)</span><b>' + fmtMoney(o.deposit) + '</b></div>' +
+    '<div class="inv-trow due"><span>المتبقي</span><b>' + fmtMoney(o.remaining) + '</b></div>' +
+    '</div>' +
+    '<div class="inv-foot"><span>طريقة الدفع: <b>' + esc(methodLabel(o.method)) + '</b></span><span>الحالة: <b>' + esc(o.status || 'جديد') + '</b></span></div>' +
+    (o.notes ? '<div class="inv-notes">ملاحظات: ' + esc(o.notes) + '</div>' : '') +
     '</div>';
 }
 function showInvoiceForSaved() {
