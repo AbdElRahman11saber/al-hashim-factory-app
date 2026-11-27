@@ -2,7 +2,7 @@
    بيحفظ واجهة التطبيق (App Shell) عشان تفتح بسرعة وتشتغل كتطبيق
    مثبّت. البيانات نفسها بتيجي دايماً من السيرفر (Apps Script) ومش
    بتتخزن هنا، فالتحديثات بتوصلك أول بأول. */
-var CACHE_NAME = 'hashim-factory-v1';
+var CACHE_NAME = 'hashim-factory-v2';
 var SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', function (event) {

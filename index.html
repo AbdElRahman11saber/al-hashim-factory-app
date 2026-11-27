@@ -138,6 +138,9 @@ nav button .ic{display:block;font-size:22px;line-height:1.2}
 #loading.open{display:flex}
 .spin{width:46px;height:46px;border:5px solid #D1D5DB;border-top-color:var(--accent);border-radius:50%;animation:sp 0.9s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+/* ===== Skeleton (speed): شكل هيكلي بنفس تخطيط الشاشة يظهر بدل الشاشة الفاضية أثناء التحميل ===== */
+.skel{background:#E8ECF1;border-radius:8px;animation:skp 1.2s ease-in-out infinite}
+@keyframes skp{0%,100%{opacity:1}50%{opacity:.55}}
 .banner{background:#FEF3C7;border:1px solid #FCD34D;border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:14.5px}
 .banner.err{background:#FEE2E2;border-color:#FCA5A5}
 .stepbar{display:flex;gap:6px;margin-bottom:14px}
@@ -768,7 +771,7 @@ function screenSetupLegacy() {
 
 /* ---------------- الرئيسية ---------------- */
 function screenHome() {
-  if (!DATA) return '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  if (!DATA) return '<div class="skel" style="height:118px"></div><div class="grid2" style="margin-top:10px"><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div><div class="skel" style="height:64px"></div></div><div class="skel" style="height:52px;margin-top:10px"></div><div class="skel" style="height:52px;margin-top:10px"></div><div class="skel" style="height:52px;margin-top:10px"></div>';
   var items = DATA.items, orders = DATA.orders, merchants = DATA.merchants;
   var stockPairs = 0, invValue = 0, low = 0, out = 0;
   items.forEach(function (it) { stockPairs += num(it.stock); invValue += num(it.value); if (it.status === 'خلص') out++; else if (it.status === 'قرب يخلص') low++; });
@@ -866,7 +869,7 @@ function screenItems() {
   h += '<div class="items-grid">';
   list.forEach(function (it) {
     h += '<div class="grid-card" onclick="App.showItemDetail(' + it._row + ')">' +
-      (it.photo ? '<img class="grid-photo" src="' + esc(it.photo) + '" alt="" loading="lazy">' : '<div class="grid-photo-ph">👞</div>') +
+      (it.photo ? '<img class="grid-photo" src="' + esc(it.photo) + '" alt="" loading="lazy" decoding="async">' : '<div class="grid-photo-ph">👞</div>') +
       '<button class="grid-edit" onclick="event.stopPropagation();App.itemForm(' + it._row + ')" title="تعديل">✎</button>' +
       '<div class="grid-body"><div class="grid-name">' + esc(it.name) + '</div>' +
       '<div class="grid-price">' + (num(it.price) ? fmtMoney(it.price) + ' / زوج' : 'بدون سعر') + '</div>' +
@@ -942,7 +945,7 @@ function screenMerchants() {
   return h;
 }
 function screenMerchantDetail() {
-  if (!DATA) return '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  if (!DATA) return '<div class="card"><div class="skel" style="height:22px;width:55%"></div><div class="skel" style="height:14px;margin-top:10px;width:80%"></div></div><div class="skel" style="height:48px;margin-top:10px"></div><div class="skel" style="height:48px;margin-top:10px"></div><div class="skel" style="height:48px;margin-top:10px"></div>';
   var m = null;
   DATA.merchants.forEach(function (x) { if (x._row === UI.merchRow) m = x; });
   if (!m) return '<div class="card">التاجر مش موجود. <button class="btn btn-ghost btn-sm" onclick="go(\'merchants\')">رجوع للتجار</button></div>';
@@ -1332,7 +1335,7 @@ function updateWizardStep3() {
   set('wz3Dep', fmtMoney(w.deposit)); set('wz3Rem', fmtMoney(t.remaining));
 }
 function screenOrderNew() {
-  if (!DATA) return '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  if (!DATA) return '<div class="skel" style="height:40px"></div><div class="card" style="margin-top:10px"><div class="skel" style="height:18px;width:40%"></div><div class="skel" style="height:44px;margin-top:12px"></div><div class="skel" style="height:44px;margin-top:10px"></div><div class="skel" style="height:44px;margin-top:10px"></div></div>';
   var w = UI.wizard;
   if (!w) { UI.wizard = newWizard(); w = UI.wizard; }
   var h = '<div class="stepbar"><div class="step' + (w.step === 1 ? ' on' : '') + '">' + (w.external ? '1. العميل (اختياري)' : '1. العميل') + '</div><div class="step' + (w.step === 2 ? ' on' : '') + '">2. البنود</div><div class="step' + (w.step === 3 ? ' on' : '') + '">3. التأكيد</div></div>';
@@ -1628,7 +1631,7 @@ function screenPickup() {
     var remain = avail === null ? null : avail - g.pairs;
     var short = avail !== null && g.pairs > avail;
     var it = itemByName(g.model);
-    var thumb = (it && it.photo) ? '<img class="pick-thumb" src="' + esc(it.photo) + '" alt="" loading="lazy">' : '<span class="pick-thumb pick-thumb-ph">👞</span>';
+    var thumb = (it && it.photo) ? '<img class="pick-thumb" src="' + esc(it.photo) + '" alt="" loading="lazy" decoding="async">' : '<span class="pick-thumb pick-thumb-ph">👞</span>';
     h += '<label class="pick-row' + (short ? ' short' : '') + '"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' + thumb +
       '<span class="grow"><b class="pick-name">' + esc(g.label) + '</b>' +
       '<div class="small muted">أوردرات: ' + g.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div>' +

@@ -76,6 +76,10 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .spin{width:46px;height:46px;border:5px solid #B8C2D1;border-top-color:var(--accent);border-radius:50%;animation:sp 0.9s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .loading-box{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:44px 16px;color:var(--muted)}
+/* ===== Skeleton (speed): كروت هيكلية بنفس شكل كروت الكتالوج أثناء أول تحميل ===== */
+.skel{background:#E8ECF1;border-radius:8px;animation:skp 1.2s ease-in-out infinite}
+@keyframes skp{0%,100%{opacity:1}50%{opacity:.55}}
+.cat-card.skel-card{cursor:default}
 /* ===== كتالوج الموديلات — عمود واحد على الموبايل، عمودان من 480px ===== */
 .cat-grid{display:grid;grid-template-columns:1fr;gap:10px}
 @media (min-width:480px){.cat-grid{grid-template-columns:1fr 1fr}}
@@ -574,6 +578,20 @@ function applyCatalog(res) {
   if (configured()) loadOrdersData(false);
   else { $('ordersNoCfg').style.display = 'block'; $('ordersBody').style.display = 'none'; }
 }
+/* Skeleton للكتالوج في أول تحميل من غير كاش: شاشة التطبيق بتظهر على طول بكروت هيكلية
+   بنفس شكل كروت الموديلات، والبيانات الحقيقية بتحل محلها لما توصل. */
+function showCatalogSkeleton() {
+  $('loading').style.display = 'none';
+  $('appView').style.display = 'block';
+  var h = '';
+  for (var i = 0; i < 6; i++) {
+    h += '<div class="cat-card skel-card"><div class="skel" style="aspect-ratio:1/1"></div>' +
+      '<div class="skel" style="height:16px;margin-top:8px;width:70%"></div>' +
+      '<div class="skel" style="height:13px;margin-top:6px;width:50%"></div></div>';
+  }
+  $('catalogGrid').innerHTML = h;
+  $('emptyCat').style.display = 'none';
+}
 function loadCatalog() {
   $('errBanner').style.display = 'none';
   var cached = loadCatalogCache();
@@ -582,8 +600,7 @@ function loadCatalog() {
     refreshCatalog();
     return;
   }
-  $('loading').style.display = 'flex';
-  $('appView').style.display = 'none';
+  showCatalogSkeleton();
   fetchCatalog(0);
 }
 function fetchCatalog(attempt) {
@@ -593,6 +610,7 @@ function fetchCatalog(attempt) {
   }).catch(function (err) {
     if (attempt < 1) { setTimeout(function () { fetchCatalog(attempt + 1); }, 2000); return; }
     $('loading').style.display = 'none';
+    $('catalogGrid').innerHTML = '';
     var b = $('errBanner');
     b.innerHTML = 'تعذر تحميل الموديلات — اتأكد من النت وحاول تاني. <button class="btn btn-ghost btn-sm" onclick="loadCatalog()">حاول تاني</button>';
     b.style.display = 'block';
@@ -616,7 +634,7 @@ function refreshCatalog() {
 }
 
 function photoHtml(url, cls, noimgCls) {
-  if (url) return '<img class="' + cls + '" src="' + esc(url) + '" alt="" loading="lazy" onerror="this.style.display=\'none\';var n=this.nextElementSibling;if(n)n.style.display=\'flex\';">';
+  if (url) return '<img class="' + cls + '" src="' + esc(url) + '" alt="" loading="lazy" decoding="async" onerror="this.style.display=\'none\';var n=this.nextElementSibling;if(n)n.style.display=\'flex\';">';
   return '';
 }
 function noimgHtml(cls) {
@@ -725,7 +743,7 @@ function renderCatalog() {
     g.innerHTML = groups.map(function (gr) {
       var priced = num(gr.price) > 0;
       var thumbs = gr.models.filter(function (m) { return !!m.photo; }).slice(0, 4).map(function (m) {
-        return '<img src="' + esc(m.photo) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">';
+        return '<img src="' + esc(m.photo) + '" alt="" loading="lazy" decoding="async" onerror="this.style.display=\'none\'">';
       }).join('');
       var more = gr.models.length > 4 ? '<div class="gt-more">+' + fmtNum(gr.models.length - 4) + '</div>' : '';
       var outCount = gr.models.filter(function (m) { return modelOut(m); }).length;
