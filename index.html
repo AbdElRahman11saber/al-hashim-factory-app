@@ -69,6 +69,7 @@ textarea{resize:vertical;min-height:64px}
 .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600;min-height:40px}
 .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
 .chip.warn.on{background:#D97706;border-color:#D97706;color:#fff}
+.chip-x{border:0;background:none;color:var(--red);font-weight:800;font-size:16px;line-height:1;padding:0 2px;cursor:pointer}
 /* ===== مربعات اختيار اللون ===== */
 .color-tiles{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
 .color-tile{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:700;min-height:48px;min-width:64px;text-align:center}
@@ -1711,8 +1712,8 @@ function screenSettings() {
     '<button class="btn btn-pri btn-block" style="margin-top:14px" onclick="App.saveFactorySettings()">حفظ بيانات المصنع</button></div>';
   h += '<div class="card"><h2>الكميات السريعة (دستة)</h2><div class="chips">' + presets().map(function (p) { return '<span class="chip">' + fmtDoz(p) + '</span>'; }).join('') + '</div>' +
     '<p class="muted small">الكميات دي جاية من تبويب الإعدادات في الشيت (العمود D). لو عايز تزود كمية، زودها هناك وهتظهر هنا.</p></div>';
-  h += '<div class="card"><h2>الألوان المشتركة</h2><div class="chips">' + (commonColors().length ? commonColors().map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('') : '<span class="muted small">مفيش ألوان مشتركة متسجلة.</span>') + '</div>' +
-    '<p class="muted small">الألوان دي بتظهر لكل الموديلات عند التوريد والأوردرات. بتتعدل من تبويب «الألوان» في الشيت — لون في كل صف. وأي موديل ممكن يزود ألوان خاصة بيه من تعديل الصنف.</p></div>';
+  h += '<div class="card"><h2>الألوان المشتركة</h2><div class="chips">' + (commonColors().length ? commonColors().map(function (c) { return '<span class="chip">' + esc(c) + ' <button type="button" class="chip-x" title="حذف اللون" onclick="App.deleteColor(\'' + jsq(c) + '\')">×</button></span>'; }).join('') : '<span class="muted small">مفيش ألوان مشتركة متسجلة.</span>') + '</div>' +
+    '<p class="muted small">الألوان دي بتظهر لكل الموديلات عند التوريد والأوردرات. دوس × عشان تشيل لون — هيتمسح هو ومخزونه في كل الموديلات. ولو عايز تزود لون أساسي جديد، زوده من تبويب «الألوان» في الشيت — لون في كل صف.</p></div>';
   h += '<div class="card"><h2>عن التطبيق</h2><p class="muted" style="margin:0">تطبيق مخزن ورشة آل هاشم — البيانات محفوظة سحابياً في شيت جوجل الخاص بيك، والتطبيق ده بس هو الواجهة. أي تعديل من أي موبايل بيظهر عند الطرف التاني مع التحديث التلقائي كل 25 ثانية.</p>' +
     '<button class="btn btn-danger btn-block" style="margin-top:12px" onclick="App.clearCfg()">مسح إعدادات الاتصال من المتصفح ده</button></div>';
   return h;
@@ -1866,6 +1867,13 @@ window.App = {
     confirmBox('حذف الصنف؟', 'هيتمسح الصنف «' + (it ? it.name : '') + '» من الأصناف. البنود والتوريدات القديمة اللي فيها اسمه هتفضل موجودة باسمها.', 'حذف', function () {
       showLoading('جارٍ الحذف...');
       callApi('deleteItem', { row: row }).then(function () { hideLoading(); return afterWrite('تم حذف الصنف'); })
+        .catch(function (e) { hideLoading(); toast(e.message, true); });
+    });
+  },
+  deleteColor: function (color) {
+    confirmBox('حذف اللون؟', 'هيتمسح اللون «' + color + '» من الألوان الأساسية، وهيتمسح مخزونه في كل الموديلات. الأوردرات القديمة اللي فيها اللون هتفضل زي ما هي.', 'حذف', function () {
+      showLoading('جارٍ الحذف...');
+      callApi('deleteColor', { color: color }).then(function () { hideLoading(); return afterWrite('تم حذف اللون'); })
         .catch(function (e) { hideLoading(); toast(e.message, true); });
     });
   },
