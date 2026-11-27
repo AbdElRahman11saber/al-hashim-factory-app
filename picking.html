@@ -34,6 +34,14 @@ label{display:block;font-weight:700;margin:12px 0 6px}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
 .order-row{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer}
 .row{display:flex;gap:8px;align-items:center}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{flex:1;padding:12px 8px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-weight:700;font-size:15.5px;cursor:pointer;color:var(--ink)}
+.tab.on{background:var(--grad);color:#fff;border-color:transparent}
+.pick-row.short{border-color:#DC2626;background:#FEF2F2}
+.stk{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.stk span{font-size:13.5px}
+.stk b{font-size:14px}
+.warn{color:#DC2626;font-weight:800}
 </style>
 </head>
 <body>
@@ -131,6 +139,22 @@ function orderByNo(no) {
   for (var i = 0; i < DATA.orders.length; i++) if (num(DATA.orders[i].no) === num(no)) return DATA.orders[i];
   return null;
 }
+/* شريط التبويبات: «تجهيز أوردر» و «البيك أب» */
+function tabBar(active) {
+  return '<div class="tabs">' +
+    '<button type="button" class="tab' + (active === 'order' ? ' on' : '') + '" onclick="showPicker()">🛒 تجهيز أوردر</button>' +
+    '<button type="button" class="tab' + (active === 'pickup' ? ' on' : '') + '" onclick="showPickup()">📦 البيك أب</button>' +
+    '</div>';
+}
+/* رصيد زوج الموديل واللون من «مخزون الألوان» — بيرجع null لو مفيش صف */
+function stockPairsOf(model, color) {
+  if (!DATA || !DATA.colorStock) return null;
+  for (var i = 0; i < DATA.colorStock.length; i++) {
+    var cs = DATA.colorStock[i];
+    if (cs.model === model && cs.color === color) return num(cs.stock);
+  }
+  return null;
+}
 function init() {
   if (!configured()) {
     $('app').innerHTML = '<div class="card"><h2>الصفحة مش متوصلة بعد</h2><p class="muted">صفحة التجهيز دي بتشتغل بنفس اتصال التطبيق — افتح التطبيق الأول من نفس المتصفح عشان يتوصل بالسيرفر، وبعدين ارجع افتح الصفحة دي تاني.</p><a class="btn btn-pri btn-block" href="index.html">فتح التطبيق</a></div>';
@@ -149,8 +173,7 @@ function init() {
 }
 function showPicker() {
   var active = DATA.orders.filter(isActiveOrder).sort(function (a, b) { return num(b.no) - num(a.no); });
-  var h = '<div class="card"><button class="btn btn-pri btn-block" style="font-size:17px" onclick="showPickup()">📦 قايمة البيك أب — كل الأوردرات الجديدة</button>' +
-    '<p class="muted small" style="margin:10px 0 0">بتجمع كل الموديلات المطلوبة في كل الأوردرات الجديدة في قايمة واحدة، والأوردر اللي تغيّر حالته بيطلع منها لوحده.</p></div>';
+  var h = tabBar('order');
   h += '<div class="card"><h2>اختار الأوردر اللي هتجهزه</h2>' +
     '<label for="pkNo">رقم الأوردر</label><input type="number" id="pkNo" inputmode="numeric" placeholder="مثال: 5">' +
     '<div style="margin-top:10px"><button class="btn btn-pri btn-block" onclick="showOrder($(\'pkNo\').value)">عرض قايمة التجهيز</button></div></div>';
@@ -168,7 +191,7 @@ function showPicker() {
 function showPickup() {
   var fresh = DATA.orders.filter(function (o) { return isActiveOrder(o) && statusOf(o) === 'جديد'; }).sort(function (a, b) { return num(b.no) - num(a.no); });
   if (!fresh.length) {
-    $('app').innerHTML = '<div class="card"><h2>📦 قايمة البيك أب</h2><p class="muted">مفيش أوردرات جديدة دلوقتي.</p><button class="btn btn-ghost btn-block" onclick="showPicker()">رجوع</button></div>';
+    $('app').innerHTML = tabBar('pickup') + '<div class="card"><h2>📦 قايمة البيك أب</h2><p class="muted">مفيش أوردرات جديدة دلوقتي.</p></div>';
     return;
   }
   var groups = [], byLabel = {};
@@ -176,7 +199,7 @@ function showPickup() {
     linesOf(o.no).forEach(function (l) {
       var key = lineItemLabel(l);
       if (!byLabel[key]) {
-        byLabel[key] = { label: key, dozens: 0, pairs: 0, orders: [] };
+        byLabel[key] = { label: key, model: l.item, color: l.color || '', dozens: 0, pairs: 0, orders: [] };
         groups.push(byLabel[key]);
       }
       var g = byLabel[key];
@@ -185,17 +208,31 @@ function showPickup() {
       if (g.orders.indexOf(o.no) === -1) g.orders.push(o.no);
     });
   });
-  var totDoz = 0, totPairs = 0;
-  groups.forEach(function (g) { totDoz += g.dozens; totPairs += g.pairs; });
-  var h = '<div class="card"><h2>📦 قايمة البيك أب</h2>' +
+  var totDoz = 0, totPairs = 0, shortCount = 0;
+  groups.forEach(function (g) {
+    totDoz += g.dozens; totPairs += g.pairs;
+    var av = stockPairsOf(g.model, g.color);
+    if (av !== null && g.pairs > av) shortCount++;
+  });
+  var h = tabBar('pickup') + '<div class="card"><h2>📦 قايمة البيك أب</h2>' +
     '<div class="muted">كل الأوردرات الجديدة (' + fmtNum(fresh.length) + ' أوردر): ' + fresh.map(function (o) { return '#' + fmtNum(o.no); }).join('، ') + '</div>' +
-    '<p class="muted small" style="margin:8px 0 0">الأوردر اللي تغيّر حالته بيطلع من القايمة دي لوحده — دوس «تحديث البيانات» عشان تشوف آخر حالة.</p></div>';
+    (shortCount ? '<p class="warn" style="margin:10px 0 0">⚠️ في ' + fmtNum(shortCount) + ' موديل المخزن مش كفايهم — بص على الصفوف الحمرا تحت.</p>' : '') +
+    '<p class="muted small" style="margin:8px 0 0">الأوردر اللي تغيّر حالته بيطلع من القايمة دي لوحده — دوس «تحديث البيانات» عشان تشوف آخر حالة.</p>' +
+    '<div style="margin-top:12px"><a class="btn btn-ghost btn-block" href="index.html">📋 أرقام المخزن في التطبيق</a>' +
+    '<p class="muted small" style="margin:6px 0 0">بيفتح التطبيق — ومنه: المزيد ← جرد مؤقت — أرقام المخزن.</p></div></div>';
   h += '<div class="card"><h2>المطلوب تجهيزه (' + fmtNum(groups.length) + ' موديل)</h2>';
   if (!groups.length) h += '<p class="muted">الأوردرات الجديدة مفيهاش بنود.</p>';
   groups.forEach(function (g) {
-    h += '<label class="pick-row"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' +
+    var avail = stockPairsOf(g.model, g.color);
+    var remain = avail === null ? null : avail - g.pairs;
+    var short = avail !== null && g.pairs > avail;
+    h += '<label class="pick-row' + (short ? ' short' : '') + '"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' +
       '<span class="grow"><b class="pick-name">' + esc(g.label) + '</b>' +
-      '<div class="small muted">أوردرات: ' + g.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div></span>' +
+      '<div class="small muted">أوردرات: ' + g.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div>' +
+      '<div class="stk"><span>المطلوب: <b>' + fmtNum(g.pairs) + ' زوج</b></span>' +
+      '<span>المتاح: <b>' + (avail === null ? '—' : fmtNum(avail) + ' زوج') + '</b></span>' +
+      '<span>المتبقي: <b class="' + (remain !== null && remain < 0 ? 'warn' : '') + '">' + (remain === null ? '—' : fmtNum(remain) + ' زوج') + '</b></span></div>' +
+      (short ? '<div class="warn" style="margin-top:6px">⚠️ المخزن مش كفاية — ناقص ' + fmtNum(g.pairs - avail) + ' زوج</div>' : '') + '</span>' +
       '<span style="text-align:left;white-space:nowrap"><b style="font-size:18px">' + fmtDoz(g.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(g.pairs) + ' زوج</span></span></label>';
   });
   h += '<div class="kv"><span>إجمالي التجهيز</span><b>' + fmtDoz(totDoz) + ' دستة (' + fmtNum(totPairs) + ' زوج)</b></div></div>';
@@ -214,14 +251,14 @@ function refreshPickup() {
 function showOrder(no) {
   var o = orderByNo(no);
   if (!o) {
-    $('app').innerHTML = '<div class="card"><h2>الأوردر #' + esc(no) + ' مش موجود</h2><p class="muted">اتأكد من الرقم أو اختار من القايمة.</p><button class="btn btn-ghost btn-block" onclick="showPicker()">رجوع لاختيار الأوردر</button></div>';
+    $('app').innerHTML = tabBar('order') + '<div class="card"><h2>الأوردر #' + esc(no) + ' مش موجود</h2><p class="muted">اتأكد من الرقم أو اختار من القايمة.</p><button class="btn btn-ghost btn-block" onclick="showPicker()">رجوع لاختيار الأوردر</button></div>';
     return;
   }
   var lines = linesOf(o.no);
   var groups = groupPickLines(lines);
   var totDoz = 0, totPairs = 0;
   groups.forEach(function (g) { totDoz += g.dozens; totPairs += g.pairs; });
-  var h = '<div class="card"><div class="row"><h2 style="flex:1;margin:0">أوردر #' + fmtNum(o.no) + '</h2><span class="muted small">' + esc(statusOf(o)) + '</span></div>' +
+  var h = tabBar('order') + '<div class="card"><div class="row"><h2 style="flex:1;margin:0">أوردر #' + fmtNum(o.no) + '</h2><span class="muted small">' + esc(statusOf(o)) + '</span></div>' +
     '<div class="muted">' + esc(o.customer) + ' • ' + esc(o.date || '') + '</div></div>';
   h += '<div class="card"><h2>قايمة التجهيز (' + fmtNum(groups.length) + ' موديل)</h2>' +
     '<p class="muted small" style="margin-top:0">كل موديل ولون متجمع في سطر واحد بإجمالي الكمية — خد كل سطر مرة واحدة، وعلّم ✓ لما تخلصه.</p>';
