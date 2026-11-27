@@ -141,6 +141,7 @@ function init() {
     DATA = res;
     var no = getParam('order');
     if (no) showOrder(no);
+    else if (getParam('view') === 'pickup') showPickup();
     else showPicker();
   }).catch(function (e) {
     $('app').innerHTML = '<div class="card"><h2>تعذر تحميل البيانات</h2><p class="muted">' + esc(e.message) + '</p><button class="btn btn-pri btn-block" onclick="location.reload()">إعادة المحاولة</button></div>';
@@ -148,7 +149,9 @@ function init() {
 }
 function showPicker() {
   var active = DATA.orders.filter(isActiveOrder).sort(function (a, b) { return num(b.no) - num(a.no); });
-  var h = '<div class="card"><h2>اختار الأوردر اللي هتجهزه</h2>' +
+  var h = '<div class="card"><button class="btn btn-pri btn-block" style="font-size:17px" onclick="showPickup()">📦 قايمة البيك أب — كل الأوردرات الجديدة</button>' +
+    '<p class="muted small" style="margin:10px 0 0">بتجمع كل الموديلات المطلوبة في كل الأوردرات الجديدة في قايمة واحدة، والأوردر اللي تغيّر حالته بيطلع منها لوحده.</p></div>';
+  h += '<div class="card"><h2>اختار الأوردر اللي هتجهزه</h2>' +
     '<label for="pkNo">رقم الأوردر</label><input type="number" id="pkNo" inputmode="numeric" placeholder="مثال: 5">' +
     '<div style="margin-top:10px"><button class="btn btn-pri btn-block" onclick="showOrder($(\'pkNo\').value)">عرض قايمة التجهيز</button></div></div>';
   h += '<div class="card"><h2>الأوردرات النشطة</h2>';
@@ -158,6 +161,55 @@ function showPicker() {
   });
   h += '</div>';
   $('app').innerHTML = h;
+}
+/* قايمة البيك أب: تجميع كل الموديلات المطلوبة في كل الأوردرات الجديدة
+   في قايمة واحدة. القايمة بتتقرا من البيانات لحظة فتحها، فالأوردر اللي
+   تغيّرت حالته (مبقاش «جديد») بيطلع منها لوحده. */
+function showPickup() {
+  var fresh = DATA.orders.filter(function (o) { return isActiveOrder(o) && statusOf(o) === 'جديد'; }).sort(function (a, b) { return num(b.no) - num(a.no); });
+  if (!fresh.length) {
+    $('app').innerHTML = '<div class="card"><h2>📦 قايمة البيك أب</h2><p class="muted">مفيش أوردرات جديدة دلوقتي.</p><button class="btn btn-ghost btn-block" onclick="showPicker()">رجوع</button></div>';
+    return;
+  }
+  var groups = [], byLabel = {};
+  fresh.forEach(function (o) {
+    linesOf(o.no).forEach(function (l) {
+      var key = lineItemLabel(l);
+      if (!byLabel[key]) {
+        byLabel[key] = { label: key, dozens: 0, pairs: 0, orders: [] };
+        groups.push(byLabel[key]);
+      }
+      var g = byLabel[key];
+      g.dozens += num(l.dozens);
+      g.pairs += num(l.pairs);
+      if (g.orders.indexOf(o.no) === -1) g.orders.push(o.no);
+    });
+  });
+  var totDoz = 0, totPairs = 0;
+  groups.forEach(function (g) { totDoz += g.dozens; totPairs += g.pairs; });
+  var h = '<div class="card"><h2>📦 قايمة البيك أب</h2>' +
+    '<div class="muted">كل الأوردرات الجديدة (' + fmtNum(fresh.length) + ' أوردر): ' + fresh.map(function (o) { return '#' + fmtNum(o.no); }).join('، ') + '</div>' +
+    '<p class="muted small" style="margin:8px 0 0">الأوردر اللي تغيّر حالته بيطلع من القايمة دي لوحده — دوس «تحديث البيانات» عشان تشوف آخر حالة.</p></div>';
+  h += '<div class="card"><h2>المطلوب تجهيزه (' + fmtNum(groups.length) + ' موديل)</h2>';
+  if (!groups.length) h += '<p class="muted">الأوردرات الجديدة مفيهاش بنود.</p>';
+  groups.forEach(function (g) {
+    h += '<label class="pick-row"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' +
+      '<span class="grow"><b class="pick-name">' + esc(g.label) + '</b>' +
+      '<div class="small muted">أوردرات: ' + g.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div></span>' +
+      '<span style="text-align:left;white-space:nowrap"><b style="font-size:18px">' + fmtDoz(g.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(g.pairs) + ' زوج</span></span></label>';
+  });
+  h += '<div class="kv"><span>إجمالي التجهيز</span><b>' + fmtDoz(totDoz) + ' دستة (' + fmtNum(totPairs) + ' زوج)</b></div></div>';
+  h += '<div class="row"><button class="btn btn-ghost" style="flex:1" onclick="showPicker()">رجوع</button>' +
+    '<button class="btn btn-dark" style="flex:1" onclick="refreshPickup()">تحديث البيانات</button></div>';
+  $('app').innerHTML = h;
+  window.scrollTo(0, 0);
+}
+function refreshPickup() {
+  if (!configured()) return;
+  $('app').innerHTML = '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  callApi('read', null, 45000).then(function (res) { DATA = res; showPickup(); }).catch(function (e) {
+    $('app').innerHTML = '<div class="card"><h2>تعذر تحميل البيانات</h2><p class="muted">' + esc(e.message) + '</p><button class="btn btn-pri btn-block" onclick="refreshPickup()">إعادة المحاولة</button></div>';
+  });
 }
 function showOrder(no) {
   var o = orderByNo(no);
