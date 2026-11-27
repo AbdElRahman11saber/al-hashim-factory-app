@@ -52,6 +52,10 @@ label{display:block;font-weight:700;margin:12px 0 6px}
 /* صفحة تجهيز خارجية لوحدها — بتشتغل بنفس اتصال التطبيق (نفس المتصفح
    ونفس رابط السيرفر وكلمة السر المحفوظين في التطبيق). */
 var CFG_KEY = 'hsh_factory_cfg_v1';
+/* رابط السيرفر مدمج في الصفحة — محدش بيكتبه تاني. */
+var API_URL = 'https://script.google.com/macros/s/AKfycbw08Yqg1T0PLC6dzdCHkvhqdYLsjFKFjXFEo7SDaBOZIhrU8oRuSULi7VP4nAIDr6pX/exec';
+var LOGIN_USER = 'alhashim';
+var SESSION_KEY = 'hsh_factory_session_v1';
 var cfg = loadCfg();
 var DATA = null;
 function $(id) { return document.getElementById(id); }
@@ -59,7 +63,24 @@ function loadCfg() {
   try { var c = JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); return { url: c.url || '', secret: c.secret || '' }; }
   catch (e) { return { url: '', secret: '' }; }
 }
-function configured() { return !!(cfg.url && cfg.secret); }
+/* ---- الدخول باليوزر: الجلسة (توكن) بدال رابط السيرفر وكلمة السر ---- */
+function loadSession() {
+  try {
+    var s = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+    if (s.token && s.expires && Date.now() < Date.parse(s.expires)) return s;
+  } catch (e) {}
+  return null;
+}
+var session = loadSession();
+function saveSession(s) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {} session = s; }
+function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} session = null; }
+function hasToken() { return !!(session && session.token); }
+function authParam() {
+  if (hasToken()) return '&token=' + encodeURIComponent(session.token);
+  if (cfg.secret) return '&secret=' + encodeURIComponent(cfg.secret);
+  return '';
+}
+function configured() { return hasToken() || !!(cfg.url && cfg.secret); }
 function esc(s) {
   return String(s === undefined || s === null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -117,14 +138,45 @@ function callApi(action, payload, timeoutMs) {
       if (err) reject(err); else resolve(data);
     }
     window[cb] = function (res) {
+      if (!res || res.ok !== true) {
+        var msg = (res && res.error) || 'رد غير متوقع من السيرفر.';
+        if (usedToken && String(msg).indexOf('كلمة السر غير صحيحة') !== -1) { clearSession(); finish(new Error('انتهت الجلسة — سجّل دخولك تاني.')); }
+        else finish(new Error(msg));
+      }
+      else finish(null, res);
+    };
+    script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت.')); };
+    var base = cfg.url || API_URL;
+    var usedToken = hasToken();
+    var url = base + (base.indexOf('?') === -1 ? '?' : '&') +
+      'action=' + encodeURIComponent(action) +
+      authParam() +
+      '&callback=' + encodeURIComponent(cb);
+    if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+/* طلب JSONP عام من غير إعداد مسبق — للإجراءات العامة (login/logout). */
+function callNoAuth(action, payload, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    var cb = 'pub_cb_' + (++__cbSeq) + '_' + Date.now();
+    var done = false;
+    var script = document.createElement('script');
+    var timer = setTimeout(function () { finish(new Error('الطلب اتأخر أكتر من اللازم — جرّب تاني.')); }, timeoutMs || 30000);
+    function finish(err, data) {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (err) reject(err); else resolve(data);
+    }
+    window[cb] = function (res) {
       if (!res || res.ok !== true) finish(new Error((res && res.error) || 'رد غير متوقع من السيرفر.'));
       else finish(null, res);
     };
     script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت.')); };
-    var url = cfg.url + (cfg.url.indexOf('?') === -1 ? '?' : '&') +
-      'action=' + encodeURIComponent(action) +
-      '&secret=' + encodeURIComponent(cfg.secret) +
-      '&callback=' + encodeURIComponent(cb);
+    var url = API_URL + '?action=' + encodeURIComponent(action) + '&callback=' + encodeURIComponent(cb);
     if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
     script.src = url;
     document.head.appendChild(script);
@@ -144,7 +196,8 @@ function tabBar(active) {
   return '<div class="tabs">' +
     '<button type="button" class="tab' + (active === 'order' ? ' on' : '') + '" onclick="showPicker()">🛒 تجهيز أوردر</button>' +
     '<button type="button" class="tab' + (active === 'pickup' ? ' on' : '') + '" onclick="showPickup()">📦 البيك أب</button>' +
-    '</div>';
+    '</div>' +
+    '<div style="text-align:left;margin:-6px 0 14px"><a href="javascript:void(0)" onclick="doLogout()" class="muted small">🚪 تسجيل الخروج</a></div>';
 }
 /* رصيد زوج الموديل واللون من «مخزون الألوان» — بيرجع null لو مفيش صف */
 function stockPairsOf(model, color) {
@@ -155,11 +208,41 @@ function stockPairsOf(model, color) {
   }
   return null;
 }
+function showLogin(errMsg) {
+  $('app').innerHTML = '<div class="card"><h2>تسجيل الدخول</h2><p class="muted">دخول واحد لكل الموبايلات — اليوزر <b dir="ltr">alhashim</b> ونفس الباسورد الحالي بتاع التطبيق.</p>' +
+    '<label for="loginUser">اسم المستخدم</label><input type="text" id="loginUser" dir="ltr" value="alhashim">' +
+    '<label for="loginPass">الباسورد</label><input type="password" id="loginPass" dir="ltr" placeholder="نفس الباسورد الحالي">' +
+    (errMsg ? '<div class="warn" style="margin-top:10px">' + esc(errMsg) + '</div>' : '') +
+    '<div style="margin-top:12px"><button class="btn btn-pri btn-block" onclick="doLogin()">دخول</button></div>' +
+    '<p class="muted small" style="margin:10px 0 0">أو افتح <a href="index.html">تطبيق المخزن</a> وسجّل دخولك من هناك.</p></div>';
+}
+function doLogin() {
+  var u = ($('loginUser') && $('loginUser').value || '').trim();
+  var pw = ($('loginPass') && $('loginPass').value) || '';
+  if (!u || !pw) { showLogin('اكتب اليوزر والباسورد.'); return; }
+  $('app').innerHTML = '<div class="card"><p class="muted">جارٍ تسجيل الدخول...</p></div>';
+  callNoAuth('login', { username: u, password: pw }, 35000).then(function (res) {
+    saveSession({ token: res.token, expires: res.expires, username: res.username || u });
+    init();
+  }).catch(function (err) {
+    if (String(err.message || '').indexOf('إجراء غير معروف') !== -1) {
+      $('app').innerHTML = '<div class="card"><h2>الصفحة مش متوصلة بعد</h2><p class="muted">تحديث الدخول باليوزر لسه متنشرش على السيرفر — افتح <a href="index.html">تطبيق المخزن</a> وظبط الاتصال بالرابط وكلمة السر القديمة الأول، وبعدين ارجع افتح الصفحة دي تاني.</p><a class="btn btn-pri btn-block" href="index.html">فتح التطبيق</a></div>';
+    } else {
+      showLogin(err.message || 'بيانات الدخول غير صحيحة');
+    }
+  });
+}
+function doLogout() {
+  if (!confirm('تسجيل الخروج؟ هتحتاج تدخل باليوزر والباسورد تاني.')) return;
+  var t = hasToken() ? session.token : null;
+  if (t) callNoAuth('logout', { token: t }, 20000).catch(function () {});
+  clearSession();
+  cfg = { url: '', secret: '' };
+  try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {}
+  init();
+}
 function init() {
-  if (!configured()) {
-    $('app').innerHTML = '<div class="card"><h2>الصفحة مش متوصلة بعد</h2><p class="muted">صفحة التجهيز دي بتشتغل بنفس اتصال التطبيق — افتح التطبيق الأول من نفس المتصفح عشان يتوصل بالسيرفر، وبعدين ارجع افتح الصفحة دي تاني.</p><a class="btn btn-pri btn-block" href="index.html">فتح التطبيق</a></div>';
-    return;
-  }
+  if (!configured()) { showLogin(); return; }
   $('app').innerHTML = '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
   callApi('read', null, 45000).then(function (res) {
     DATA = res;
@@ -168,6 +251,7 @@ function init() {
     else if (getParam('view') === 'pickup') showPickup();
     else showPicker();
   }).catch(function (e) {
+    if (String(e.message || '').indexOf('انتهت الجلسة') !== -1) { init(); return; }
     $('app').innerHTML = '<div class="card"><h2>تعذر تحميل البيانات</h2><p class="muted">' + esc(e.message) + '</p><button class="btn btn-pri btn-block" onclick="location.reload()">إعادة المحاولة</button></div>';
   });
 }
@@ -245,6 +329,7 @@ function refreshPickup() {
   if (!configured()) return;
   $('app').innerHTML = '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
   callApi('read', null, 45000).then(function (res) { DATA = res; showPickup(); }).catch(function (e) {
+    if (String(e.message || '').indexOf('انتهت الجلسة') !== -1) { init(); return; }
     $('app').innerHTML = '<div class="card"><h2>تعذر تحميل البيانات</h2><p class="muted">' + esc(e.message) + '</p><button class="btn btn-pri btn-block" onclick="refreshPickup()">إعادة المحاولة</button></div>';
   });
 }

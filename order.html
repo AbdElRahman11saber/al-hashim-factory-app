@@ -294,7 +294,15 @@ textarea.inv-in{resize:vertical;min-height:44px}
     <section class="card" id="ordersCard">
       <h2>📋 أوردرات اليوم</h2>
       <div id="ordersNoCfg" style="display:none">
-        <p class="muted">قائمة الأوردرات محتاجة التطبيق يكون مظبط على الموبايل ده (رابط السيرفر وكلمة السر). افتح <a href="index.html">تطبيق المخزن</a> وظبط الاتصال الأول، وبعدها ارجع هنا.</p>
+        <h3 style="margin:0 0 6px">🔐 تسجيل الدخول</h3>
+        <p class="muted">عشان تشوف قائمة الأوردرات، سجّل دخولك — اليوزر <b dir="ltr">alhashim</b> ونفس الباسورد الحالي بتاع التطبيق.</p>
+        <label for="ordLoginUser">اسم المستخدم</label>
+        <input type="text" id="ordLoginUser" dir="ltr" value="alhashim" autocomplete="username">
+        <label for="ordLoginPass">الباسورد</label>
+        <input type="password" id="ordLoginPass" dir="ltr" placeholder="نفس الباسورد الحالي" autocomplete="current-password">
+        <div id="ordLoginErr" style="display:none;margin-top:10px;color:#DC2626;font-weight:700"></div>
+        <div style="margin-top:12px"><button type="button" class="btn btn-pri btn-block" onclick="doOrderLogin()">دخول</button></div>
+        <p class="muted small" style="margin:10px 0 0">أو افتح <a href="index.html">تطبيق المخزن</a> وسجّل دخولك من هناك.</p>
       </div>
       <div id="ordersBody" style="display:none">
         <div class="sum-box">
@@ -305,6 +313,7 @@ textarea.inv-in{resize:vertical;min-height:44px}
         <div class="toolbar">
           <input type="text" id="ordQ" placeholder="ابحث برقم الأوردر أو اسم العميل أو التليفون..." autocomplete="off">
           <button type="button" class="btn btn-ghost btn-sm" onclick="loadOrdersData(true)">🔄 تحديث</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="doOrderLogout()">🚪 خروج</button>
         </div>
         <div class="row" style="margin-bottom:8px">
           <button type="button" class="btn btn-ghost btn-sm" id="ordTodayBtn" onclick="setOrdersFilter('today')">أوردرات اليوم</button>
@@ -365,11 +374,13 @@ textarea.inv-in{resize:vertical;min-height:44px}
 /* ===== صفحة الطلبات — ورشة آل هاشم (أداة داخلية لمحمد) =====
  * نفس مصدر بيانات المخزن بالظبط، من غير أي نسخة منفصلة:
  * - publicCatalog (قراءة الكتالوج) و publicOrder (إنشاء أوردر) — عامة من غير كلمة سر.
- * - لو التطبيق مظبط على الموبايل ده (localStorage hsh_factory_cfg_v1 فيه رابط
- *   السيرفر وكلمة السر — نفس مفتاح تطبيق المخزن index.html)، الحفظ بيتم
- *   بالإجراء المؤمّن createOrder فتتسجل الخصم والشحن والعربون وطريقة الدفع
- *   كحقول حقيقية في الشيت، وقراءة الأوردرات (read) وتغيير الحالة متاحين.
- * - من غير الإعداد: الحفظ بيتم عبر publicOrder، والخصم/الشحن/الدفع/العربون
+ * - الدخول بيوزر واحد (alhashim) + نفس الباسورد الحالي: بعد الدخول بيتخزن
+ *   توكن جلسة (localStorage hsh_factory_session_v1)، والحفظ بيتم بالإجراء
+ *   المؤمّن createOrder فتتسجل الخصم والشحن والعربون وطريقة الدفع كحقول
+ *   حقيقية في الشيت، وقراءة الأوردرات (read) وتغيير الحالة متاحين.
+ *   (الوضع القديم — رابط السيرفر وكلمة السر في hsh_factory_cfg_v1 —
+ *   لسه شغال كبديل لحد ما يتنشر تحديث السيرفر.)
+ * - من غير دخول: الحفظ بيتم عبر publicOrder، والخصم/الشحن/الدفع/العربون
  *   بيتكتبوا في ملاحظات الأوردر (الأوردر نفسه بيوصل المخزن عادي).
  * الكمية بالدستة دائماً. 1 دستة = 10 أزواج. السعر المعروض سعر بيع الزوج.
  * رقم الأوردر رقم مسلسل من السيرفر (رقم الصف - 1) — مش بصيغة HASH.
@@ -437,7 +448,27 @@ function getCfg() {
   try { var c = JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); return { url: c.url || '', secret: c.secret || '' }; }
   catch (e) { return { url: '', secret: '' }; }
 }
-function configured() { var c = getCfg(); return !!(c.url && c.secret); }
+/* ---- الدخول باليوزر: الجلسة (توكن) بدال رابط السيرفر وكلمة السر ---- */
+var LOGIN_USER = 'alhashim';
+var SESSION_KEY = 'hsh_factory_session_v1';
+function loadSession() {
+  try {
+    var s = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+    if (s.token && s.expires && Date.now() < Date.parse(s.expires)) return s;
+  } catch (e) {}
+  return null;
+}
+var session = loadSession();
+function saveSession(s) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {} session = s; }
+function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} session = null; }
+function hasToken() { return !!(session && session.token); }
+function authParam() {
+  if (hasToken()) return '&token=' + encodeURIComponent(session.token);
+  var c = getCfg();
+  if (c.secret) return '&secret=' + encodeURIComponent(c.secret);
+  return '';
+}
+function configured() { var c = getCfg(); return hasToken() || !!(c.url && c.secret); }
 
 /* ===== اتصال JSONP عام — من غير كلمة سر (publicCatalog / publicOrder) ===== */
 function callPublic(action, payload, timeoutMs) {
@@ -469,8 +500,9 @@ function callPublic(action, payload, timeoutMs) {
 function callAuth(action, payload, timeoutMs) {
   return new Promise(function (resolve, reject) {
     var cfg = getCfg();
-    if (!cfg.url || !cfg.secret) { reject(new Error('التطبيق مش مظبط على الموبايل ده.')); return; }
+    if (!hasToken() && (!cfg.url || !cfg.secret)) { reject(new Error('التطبيق مش مظبط على الموبايل ده.')); return; }
     var cb = 'hsh_cb_' + (++__cbSeq) + '_' + Date.now();
+    var usedToken = hasToken();
     var done = false;
     var script = document.createElement('script');
     var timer = setTimeout(function () { finish(new Error('الطلب اتأخر أكتر من اللازم — جرّب تاني.')); }, timeoutMs || 45000);
@@ -482,13 +514,18 @@ function callAuth(action, payload, timeoutMs) {
       if (err) reject(err); else resolve(data);
     }
     window[cb] = function (res) {
-      if (!res || res.ok !== true) finish(new Error((res && res.error) || 'رد غير متوقع من السيرفر.'));
+      if (!res || res.ok !== true) {
+        var msg = (res && res.error) || 'رد غير متوقع من السيرفر.';
+        if (usedToken && String(msg).indexOf('كلمة السر غير صحيحة') !== -1) { clearSession(); finish(new Error('انتهت الجلسة — سجّل دخولك تاني.')); }
+        else finish(new Error(msg));
+      }
       else finish(null, res);
     };
     script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت وحاول تاني.')); };
-    var url = cfg.url + (cfg.url.indexOf('?') === -1 ? '?' : '&') +
+    var base = cfg.url || API_URL;
+    var url = base + (base.indexOf('?') === -1 ? '?' : '&') +
       'action=' + encodeURIComponent(action) +
-      '&secret=' + encodeURIComponent(cfg.secret) +
+      authParam() +
       '&callback=' + encodeURIComponent(cb);
     if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
     script.src = url;
@@ -1490,6 +1527,34 @@ function doDownloadImage(paper) {
 }
 
 /* ===== قائمة الأوردرات (محتاجة إعداد التطبيق) ===== */
+function doOrderLogin() {
+  var u = ($('ordLoginUser') && $('ordLoginUser').value || '').trim();
+  var pw = ($('ordLoginPass') && $('ordLoginPass').value) || '';
+  var errEl = $('ordLoginErr');
+  function showErr(m) { if (errEl) { errEl.style.display = 'block'; errEl.textContent = m; } }
+  if (!u || !pw) { showErr('اكتب اليوزر والباسورد.'); return; }
+  if (errEl) errEl.style.display = 'none';
+  callPublic('login', { username: u, password: pw }, 35000).then(function (res) {
+    saveSession({ token: res.token, expires: res.expires, username: res.username || u });
+    loadOrdersData(false);
+  }).catch(function (err) {
+    if (String(err.message || '').indexOf('إجراء غير معروف') !== -1) {
+      showErr('تحديث الدخول لسه متنشرش على السيرفر — الأوردرات هتفضل بالوضع العام لحد ما يتنشر. افتح تطبيق المخزن وظبط الاتصال بالطريقة القديمة.');
+    } else {
+      showErr(err.message || 'بيانات الدخول غير صحيحة');
+    }
+  });
+}
+function doOrderLogout() {
+  if (!confirm('تسجيل الخروج؟ هتحتاج تدخل باليوزر والباسورد تاني.')) return;
+  var t = hasToken() ? session.token : null;
+  if (t) callPublic('logout', { token: t }, 20000).catch(function () {});
+  clearSession();
+  try { localStorage.setItem(CFG_KEY, JSON.stringify({ url: '', secret: '' })); } catch (e) {}
+  ORDERS_DATA = null;
+  $('ordersBody').style.display = 'none';
+  $('ordersNoCfg').style.display = 'block';
+}
 function loadOrdersData(force) {
   if (!configured()) return;
   callAuth('read', null, 45000).then(function (res) {
@@ -1500,9 +1565,11 @@ function loadOrdersData(force) {
     renderOrdersList();
     if (validPhone($('fPhone').value)) lookupPhone();
   }).catch(function (err) {
-    $('ordersNoCfg').style.display = 'block';
     $('ordersBody').style.display = 'none';
-    $('ordersNoCfg').innerHTML = '<p class="muted">تعذر تحميل الأوردرات: ' + esc(err.message || 'حصلت مشكلة') + ' — <a href="index.html">افتح تطبيق المخزن</a> واتأكد من الاتصال.</p>';
+    $('ordersNoCfg').style.display = 'block';
+    var m = err.message || 'حصلت مشكلة';
+    var errEl = $('ordLoginErr');
+    if (errEl) { errEl.style.display = 'block'; errEl.textContent = (String(m).indexOf('انتهت الجلسة') !== -1 ? m : 'تعذر تحميل الأوردرات: ' + m + ' — افتح تطبيق المخزن واتأكد من الاتصال.'); }
   });
 }
 function setOrdersFilter(f) {

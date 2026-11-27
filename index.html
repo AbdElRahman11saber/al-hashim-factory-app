@@ -269,6 +269,10 @@ nav button .ic{display:block;font-size:22px;line-height:1.2}
    لا توجد أي بيانات تجريبية هنا — كل حاجة بتيجي من الشيت.
    ================================================================ */
 var CFG_KEY = 'hsh_factory_cfg_v1';
+/* رابط السيرفر مدمج في التطبيق — محدش بيكتبه تاني (كان بيتكتب في شاشة الإعداد). */
+var API_URL = 'https://script.google.com/macros/s/AKfycbw08Yqg1T0PLC6dzdCHkvhqdYLsjFKFjXFEo7SDaBOZIhrU8oRuSULi7VP4nAIDr6pX/exec';
+var LOGIN_USER = 'alhashim';
+var SESSION_KEY = 'hsh_factory_session_v1';
 var STATUSES = ['جديد', 'تم الشحن', 'تم الاستلام', 'تم الصرف', 'مرتجع', 'ملغي'];
 var METHODS = ['كاش / نقدي', 'تحويل', 'محفظة إلكترونية', 'آجل'];
 var DEFAULT_PRESETS = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12];
@@ -284,7 +288,7 @@ var UI = {
   orderFilter: 'all', orderQ: '', orderRow: null, orderView: 'board',
   disbFilter: 'all',
   wizard: null, invoice: null,
-  merchantPreset: null, vipPrefill: null
+  merchantPreset: null, vipPrefill: null, legacySetup: false
 };
 
 /* ---------------- أدوات ---------------- */
@@ -337,7 +341,30 @@ function loadCfg() {
   catch (e) { return { url: '', secret: '' }; }
 }
 function saveCfg() { try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {} }
-function configured() { return !!(cfg.url && cfg.secret); }
+/* ---- الدخول باليوزر: الجلسة (توكن) بدال رابط السيرفر وكلمة السر ---- */
+function loadSession() {
+  try {
+    var s = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
+    if (s.token && s.expires && Date.now() < Date.parse(s.expires)) return s;
+  } catch (e) {}
+  return null;
+}
+var session = loadSession();
+function saveSession(s) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); } catch (e) {} session = s; }
+function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} session = null; }
+function hasToken() { return !!(session && session.token); }
+/* بارامتر الدخول اللي بيتبعت مع كل طلب مؤمّن: التوكن لو موجود،
+   وإلا كلمة السر القديمة (وضع انتقالي لحد ما يتنشر تحديث السيرفر). */
+function authParam() {
+  if (hasToken()) return '&token=' + encodeURIComponent(session.token);
+  if (cfg.secret) return '&secret=' + encodeURIComponent(cfg.secret);
+  return '';
+}
+function authBody() {
+  if (hasToken()) return { token: session.token };
+  return { secret: cfg.secret };
+}
+function configured() { return hasToken() || !!(cfg.url && cfg.secret); }
 function presets() { return (DATA && DATA.presets && DATA.presets.length) ? DATA.presets : DEFAULT_PRESETS; }
 function pairsPerDozen() { return (DATA && DATA.settings) ? num(DATA.settings.pairsPerDozen, 10) : 10; }
 function settings() {
@@ -542,13 +569,19 @@ function callApi(action, payload, timeoutMs) {
       if (err) reject(err); else resolve(data);
     }
     window[cb] = function (res) {
-      if (!res || res.ok !== true) finish(new Error((res && res.error) || 'رد غير متوقع من السيرفر.'));
+      if (!res || res.ok !== true) {
+        var msg = (res && res.error) || 'رد غير متوقع من السيرفر.';
+        if (usedToken && String(msg).indexOf('كلمة السر غير صحيحة') !== -1) { clearSession(); finish(new Error('انتهت الجلسة — سجّل دخولك تاني.')); }
+        else finish(new Error(msg));
+      }
       else finish(null, res);
     };
     script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت ومن رابط السيرفر.')); };
-    var url = cfg.url + (cfg.url.indexOf('?') === -1 ? '?' : '&') +
+    var base = cfg.url || API_URL;
+    var usedToken = hasToken();
+    var url = base + (base.indexOf('?') === -1 ? '?' : '&') +
       'action=' + encodeURIComponent(action) +
-      '&secret=' + encodeURIComponent(cfg.secret) +
+      authParam() +
       '&callback=' + encodeURIComponent(cb);
     if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
     script.src = url;
@@ -559,13 +592,40 @@ function callApi(action, payload, timeoutMs) {
 /* رفع صورة: POST نصي (من غير preflight) للـ Web app — doPost في Code.gs */
 function postApi(action, payload, timeoutMs) {
   return new Promise(function (resolve, reject) {
-    if (!configured()) { reject(new Error('التطبيق مش مظبط بعد — اكتب رابط السيرفر وكلمة السر.')); return; }
+    if (!configured()) { reject(new Error('التطبيق مش مظبط بعد — سجّل دخولك الأول.')); return; }
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctrl) ctrl.abort(); reject(new Error('رفع الصورة اتأخر — اتأكد من النت وجرّب تاني.')); }, timeoutMs || 60000);
-    fetch(cfg.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ secret: cfg.secret, action: action, payload: payload }), signal: ctrl ? ctrl.signal : undefined })
+    var b = authBody(); b.action = action; b.payload = payload;
+    fetch(cfg.url || API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(b), signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { return r.json(); })
-      .then(function (res) { clearTimeout(timer); if (!res || res.ok !== true) reject(new Error((res && res.error) || 'رد غير متوقع من السيرفر.')); else resolve(res); })
+      .then(function (res) { clearTimeout(timer); if (!res || res.ok !== true) { var m = (res && res.error) || 'رد غير متوقع من السيرفر.'; if (hasToken() && String(m).indexOf('كلمة السر غير صحيحة') !== -1) { clearSession(); reject(new Error('انتهت الجلسة — سجّل دخولك تاني.')); } else reject(new Error(m)); } else resolve(res); })
       .catch(function (e) { clearTimeout(timer); if (e && e.name === 'AbortError') return; reject(new Error('تعذر رفع الصورة — اتأكد من النت وجرّب تاني.')); });
+  });
+}
+
+/* طلب JSONP عام من غير إعداد مسبق — للإجراءات العامة (login/logout). */
+function callNoAuth(action, payload, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    var cb = 'pub_cb_' + (++__cbSeq) + '_' + Date.now();
+    var done = false;
+    var script = document.createElement('script');
+    var timer = setTimeout(function () { finish(new Error('الطلب اتأخر أكتر من اللازم — جرّب تاني.')); }, timeoutMs || 30000);
+    function finish(err, data) {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (err) reject(err); else resolve(data);
+    }
+    window[cb] = function (res) {
+      if (!res || res.ok !== true) finish(new Error((res && res.error) || 'رد غير متوقع من السيرفر.'));
+      else finish(null, res);
+    };
+    script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت.')); };
+    var url = API_URL + '?action=' + encodeURIComponent(action) + '&callback=' + encodeURIComponent(cb);
+    if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
+    script.src = url;
+    document.head.appendChild(script);
   });
 }
 
@@ -604,6 +664,7 @@ function refresh(opts) {
     return res;
   }).catch(function (err) {
     updateHeaderStatus(false);
+    if (err && String(err.message || '').indexOf('انتهت الجلسة') !== -1) { UI.screen = 'setup'; render(); return; }
     if (!DATA) { UI.screen = 'error'; UI.errorMsg = err.message; render(); }
     else if (opts.toastOnError !== false) toast('تعذر التحديث: ' + err.message, true);
     throw err;
@@ -625,6 +686,7 @@ function go(screen) {
 function render() {
   if (!configured() && UI.screen !== 'setup' && UI.screen !== 'settings') UI.screen = 'setup';
   var fn = SCREENS[UI.screen] || SCREENS.home;
+  if (UI.screen === 'setup' && UI.legacySetup && !hasToken()) fn = screenSetupLegacy;
   $('app').innerHTML = fn();
   var navKey = UI.screen;
   if (navKey === 'merchantDetail') navKey = 'merchants';
@@ -669,9 +731,23 @@ function presetChipsHtml(inputId, currentVal) {
 }
 function setDozens(inputId, v) { var el = $(inputId); if (el) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); } }
 
-/* ---------------- شاشة الإعداد الأولي ---------------- */
+/* ---------------- شاشة الدخول (يوزر واحد للكل) ---------------- */
 function screenSetup() {
-  return '<div class="card"><h2>إعداد التطبيق لأول مرة</h2>' +
+  return '<div class="card"><h2>تسجيل الدخول</h2>' +
+    '<p class="muted">دخول واحد لكل الموبايلات — اليوزر <b dir="ltr">alhashim</b> ونفس الباسورد الحالي بتاع التطبيق.</p>' +
+    '<label for="loginUser">اسم المستخدم</label>' +
+    '<input type="text" id="loginUser" dir="ltr" autocomplete="username" value="alhashim">' +
+    '<label for="loginPass">الباسورد</label>' +
+    '<input type="password" id="loginPass" dir="ltr" autocomplete="current-password" placeholder="نفس الباسورد الحالي">' +
+    '<div id="loginErr" class="banner err" style="display:none;margin-top:12px"></div>' +
+    '<div style="display:flex;gap:8px;margin-top:16px"><button class="btn btn-pri" style="flex:1" onclick="App.doLogin()">دخول</button></div>' +
+    '<div style="margin-top:12px;text-align:center"><a href="javascript:void(0)" onclick="UI.legacySetup=true;render()" class="muted small">عندي الرابط وكلمة السر القديمة</a></div></div>';
+}
+
+/* ---------------- شاشة الإعداد الأولي (الوضع القديم — بديل انتقالي) ---------------- */
+function screenSetupLegacy() {
+  return '<div class="card"><p class="muted">تحديث الدخول باليوزر لسه متنشرش على السيرفر — استخدم الرابط وكلمة السر القديمة لحد ما يتنشر.</p></div>' +
+    '<div class="card"><h2>إعداد التطبيق لأول مرة</h2>' +
     '<p class="muted">اكتب رابط السيرفر (Web app URL) وكلمة السر اللي اخترتها وانت بتنشر الـ Apps Script. البيانات دي بتتحفظ في المتصفح ده بس، ومش بتتشارك مع حد.</p>' +
     '<label for="setupUrl">رابط السيرفر (Web app URL)</label>' +
     '<input type="url" id="setupUrl" dir="ltr" placeholder="https://script.google.com/macros/s/.../exec" value="' + esc(cfg.url) + '">' +
@@ -1535,11 +1611,21 @@ screenStockCount.afterRender = function () {
 /* ---------------- الإعدادات وشاشة الخطأ ---------------- */
 function screenSettings() {
   var st = settings();
-  var h = '<div class="card"><h2>اتصال السيرفر</h2>' +
-    '<label for="cfgUrl">رابط السيرفر (Web app URL)</label><input type="url" id="cfgUrl" dir="ltr" value="' + esc(cfg.url) + '">' +
-    '<label for="cfgSecret">كلمة السر (SECRET)</label><input type="password" id="cfgSecret" dir="ltr" value="' + esc(cfg.secret) + '">' +
-    '<div class="row" style="margin-top:14px"><button class="btn btn-ghost grow" onclick="App.testConnectionSettings()">اختبار الاتصال</button>' +
-    '<button class="btn btn-pri grow" onclick="App.saveSettingsCfg()">حفظ الاتصال</button></div></div>';
+  var h = '';
+  if (hasToken()) {
+    h += '<div class="card"><h2>اتصال السيرفر</h2><p style="margin:0">متصل كـ <b dir="ltr">' + esc((session && session.username) || LOGIN_USER) + '</b></p>' +
+      '<p class="muted small">رابط السيرفر مدمج في التطبيق — مش محتاج تكتبه.</p>' +
+      '<button class="btn btn-danger btn-block" style="margin-top:12px" onclick="App.doLogout()">🚪 تسجيل الخروج</button></div>';
+  } else if (cfg.url && cfg.secret) {
+    h += '<div class="card"><h2>اتصال السيرفر (الوضع القديم)</h2>' +
+      '<label for="cfgUrl">رابط السيرفر (Web app URL)</label><input type="url" id="cfgUrl" dir="ltr" value="' + esc(cfg.url) + '">' +
+      '<label for="cfgSecret">كلمة السر (SECRET)</label><input type="password" id="cfgSecret" dir="ltr" value="' + esc(cfg.secret) + '">' +
+      '<div class="row" style="margin-top:14px"><button class="btn btn-ghost grow" onclick="App.testConnectionSettings()">اختبار الاتصال</button>' +
+      '<button class="btn btn-pri grow" onclick="App.saveSettingsCfg()">حفظ الاتصال</button></div></div>';
+  } else {
+    h += '<div class="card"><h2>اتصال السيرفر</h2><p class="muted" style="margin:0">مش متصل بعد.</p>' +
+      '<button class="btn btn-pri btn-block" style="margin-top:12px" onclick="go(\'setup\')">تسجيل الدخول</button></div>';
+  }
   h += '<div class="card"><h2>بيانات المصنع (بتظهر في الفاتورة)</h2>' +
     '<label for="setName">اسم المصنع</label><input type="text" id="setName" value="' + esc(st.factoryName) + '">' +
     '<label for="setAddr">العنوان</label><input type="text" id="setAddr" value="' + esc(st.address) + '">' +
@@ -1592,6 +1678,36 @@ window.App = {
     cfg.url = url; cfg.secret = secret; saveCfg();
     refresh({ loadingText: 'جارٍ تحميل بيانات المصنع...' }).then(function () { go('home'); }).catch(function () {});
   },
+  /* الدخول باليوزر — بيبعت اليوزر والباسورد للسيرفر، وبيحفظ التوكن. */
+  doLogin: function () {
+    var u = fieldVal('loginUser'), pw = $('loginPass') ? $('loginPass').value : '';
+    var errEl = $('loginErr');
+    function showErr(m) { if (errEl) { errEl.style.display = 'block'; errEl.textContent = m; } }
+    if (!u || !pw) { showErr('اكتب اليوزر والباسورد.'); return; }
+    if (errEl) errEl.style.display = 'none';
+    showLoading('جارٍ تسجيل الدخول...');
+    callNoAuth('login', { username: u, password: pw }, 35000).then(function (res) {
+      hideLoading();
+      saveSession({ token: res.token, expires: res.expires, username: res.username || u });
+      UI.legacySetup = false;
+      toast('تم الدخول ✓');
+      refresh({ loadingText: 'جارٍ تحميل بيانات المصنع...' }).then(function () { go('home'); }).catch(function () {});
+    }).catch(function (err) {
+      hideLoading();
+      if (String(err.message || '').indexOf('إجراء غير معروف') !== -1) {
+        UI.legacySetup = true; render();
+        toast('تحديث الدخول لسه متنشرش على السيرفر — استخدم الرابط وكلمة السر القديمة.', true);
+      } else showErr(err.message || 'بيانات الدخول غير صحيحة');
+    });
+  },
+  doLogout: function () {
+    confirmBox('تسجيل الخروج؟', 'هتخرج من التطبيق على الموبايل ده، وهتحتاج تدخل باليوزر والباسورد تاني عشان تستخدمه.', 'خروج', function () {
+      var t = hasToken() ? session.token : null;
+      if (t) callNoAuth('logout', { token: t }, 20000).catch(function () {});
+      clearSession();
+      cfg = { url: '', secret: '' }; saveCfg(); DATA = null; UI.legacySetup = false; go('setup');
+    });
+  },
   testConnectionSettings: function () {
     var url = fieldVal('cfgUrl'), secret = fieldVal('cfgSecret');
     if (!url || !secret) { toast('اكتب الرابط وكلمة السر الأول.', true); return; }
@@ -1610,7 +1726,7 @@ window.App = {
   },
   clearCfg: function () {
     confirmBox('مسح إعدادات الاتصال؟', 'هتمسح الرابط وكلمة السر من المتصفح ده بس، والبيانات في الشيت مش هتتأثر. هتحتاج تكتبهم تاني عشان تستخدم التطبيق.', 'مسح', function () {
-      cfg = { url: '', secret: '' }; saveCfg(); DATA = null; go('setup');
+      clearSession(); cfg = { url: '', secret: '' }; saveCfg(); DATA = null; go('setup');
     });
   },
   saveFactorySettings: function () {
@@ -1863,7 +1979,7 @@ window.App = {
       '<button class="more-item" onclick="closeModal();go(\'disb\')"><span class="mi-ic">✓</span><span>سجل الصرف<span class="mi-sub">أوردرات تم صرفها ولسه</span></span></button>' +
       '<button class="more-item" onclick="closeModal();go(\'stockCount\')"><span class="mi-ic">📋</span><span>جرد مؤقت — أرقام المخزن<span class="mi-sub">أرقام مؤقتة لحد ما تعمل الجرد</span></span></button>' +
       '<button class="more-item" onclick="closeModal();go(\'vips\')"><span class="mi-ic">★</span><span>العملاء المميزين<span class="mi-sub">عملاء VIP وحفظ بياناتهم</span></span></button>' +
-      '<button class="more-item" onclick="closeModal();go(\'settings\')"><span class="mi-ic">⚙</span><span>الإعدادات<span class="mi-sub">رابط السيرفر وكلمة السر</span></span></button>' +
+      '<button class="more-item" onclick="closeModal();go(\'settings\')"><span class="mi-ic">⚙</span><span>الإعدادات<span class="mi-sub">تسجيل الدخول والاتصال</span></span></button>' +
       '</div>');
   },
   openOrder: function (row) { UI.orderRow = row; go('orderDetail'); },
