@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4F46E5">
+<title>تجهيز أوردر — ورشة آل هاشم</title>
+<style>
+:root{--bg:#F3F4F6;--card:#FFFFFF;--ink:#111827;--muted:#6B7280;--line:#E5E7EB;--accent:#4F46E5;--grad:linear-gradient(135deg,#4F46E5,#7C3AED);--radius:16px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:system-ui,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.55}
+header{position:sticky;top:0;z-index:40;background:var(--grad);color:#fff;padding:14px 16px;box-shadow:0 2px 12px rgba(79,70,229,.35)}
+header h1{font-size:20px;margin:0}
+header .sub{font-size:13px;color:rgba(255,255,255,.85)}
+main{max-width:720px;margin:0 auto;padding:14px 12px 30px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(17,24,39,.07)}
+.card h2{font-size:18px;margin:0 0 8px}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:15.5px;min-height:48px;cursor:pointer;text-decoration:none}
+.btn-pri{background:var(--grad);color:#fff}
+.btn-dark{background:#111827;color:#fff}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn-block{width:100%}
+input{font:inherit;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+label{display:block;font-weight:700;margin:12px 0 6px}
+.pick-row{display:flex;align-items:center;gap:10px;padding:13px 12px;border:1px solid var(--line);border-radius:14px;margin-bottom:8px;background:#fff}
+.pick-row input[type=checkbox]{width:24px;height:24px;flex:none;accent-color:var(--accent)}
+.pick-row.picked{opacity:.45}
+.pick-row.picked .pick-name{text-decoration:line-through}
+.pick-name{font-size:18px}
+.grow{flex:1;min-width:0}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.order-row{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer}
+.row{display:flex;gap:8px;align-items:center}
+</style>
+</head>
+<body>
+<header><h1>📦 تجهيز أوردر من المخزن</h1><div class="sub">ورشة آل هاشم — قايمة التجهيز</div></header>
+<main id="app"><div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div></main>
+<script>
+'use strict';
+/* صفحة تجهيز خارجية لوحدها — بتشتغل بنفس اتصال التطبيق (نفس المتصفح
+   ونفس رابط السيرفر وكلمة السر المحفوظين في التطبيق). */
+var CFG_KEY = 'hsh_factory_cfg_v1';
+var cfg = loadCfg();
+var DATA = null;
+function $(id) { return document.getElementById(id); }
+function loadCfg() {
+  try { var c = JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); return { url: c.url || '', secret: c.secret || '' }; }
+  catch (e) { return { url: '', secret: '' }; }
+}
+function configured() { return !!(cfg.url && cfg.secret); }
+function esc(s) {
+  return String(s === undefined || s === null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function num(v, def) {
+  if (v === '' || v === null || v === undefined) return (def === undefined ? 0 : def);
+  var x = Number(String(v).replace(/,/g, ''));
+  return isNaN(x) ? (def === undefined ? 0 : def) : x;
+}
+function fmtNum(v) { return num(v).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+function fmtDoz(v) {
+  var x = num(v);
+  return (Math.round(x * 100) / 100).toLocaleString('en-US', { maximumFractionDigits: 2 });
+}
+function lineItemLabel(l) {
+  if (!l) return '';
+  return (l.item || '') + (l.color ? ' ' + l.color : '');
+}
+function statusOf(o) { return o.status || 'جديد'; }
+function isActiveOrder(o) { return o.counts !== 'لا' && statusOf(o) !== 'مرتجع' && statusOf(o) !== 'ملغي'; }
+function linesOf(orderNo) {
+  if (!DATA) return [];
+  return DATA.lines.filter(function (l) { return num(l.orderNo) === num(orderNo); });
+}
+/* تجميع بنود الأوردر للتجهيز — نفس الموديل ونفس اللون في سطر واحد */
+function groupPickLines(lines) {
+  var groups = [], byLabel = {};
+  lines.forEach(function (l) {
+    var key = lineItemLabel(l);
+    if (!byLabel[key]) {
+      byLabel[key] = { label: key, dozens: 0, pairs: 0, lines: 0 };
+      groups.push(byLabel[key]);
+    }
+    var g = byLabel[key];
+    g.dozens += num(l.dozens);
+    g.pairs += num(l.pairs);
+    g.lines += 1;
+  });
+  return groups;
+}
+var __cbSeq = 0;
+function callApi(action, payload, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    if (!configured()) { reject(new Error('الصفحة مش متوصلة بعد.')); return; }
+    var cb = 'hsh_cb_' + (++__cbSeq) + '_' + Date.now();
+    var done = false;
+    var script = document.createElement('script');
+    var timer = setTimeout(function () { finish(new Error('الطلب اتأخر أكتر من اللازم — جرّب تاني.')); }, timeoutMs || 30000);
+    function finish(err, data) {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (err) reject(err); else resolve(data);
+    }
+    window[cb] = function (res) {
+      if (!res || res.ok !== true) finish(new Error((res && res.error) || 'رد غير متوقع من السيرفر.'));
+      else finish(null, res);
+    };
+    script.onerror = function () { finish(new Error('تعذر الوصول للسيرفر — اتأكد من النت.')); };
+    var url = cfg.url + (cfg.url.indexOf('?') === -1 ? '?' : '&') +
+      'action=' + encodeURIComponent(action) +
+      '&secret=' + encodeURIComponent(cfg.secret) +
+      '&callback=' + encodeURIComponent(cb);
+    if (payload !== undefined && payload !== null) url += '&payload=' + encodeURIComponent(JSON.stringify(payload));
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+function getParam(name) {
+  var m = new RegExp('[?&]' + name + '=([^&]*)').exec(location.search);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+function orderByNo(no) {
+  if (!DATA) return null;
+  for (var i = 0; i < DATA.orders.length; i++) if (num(DATA.orders[i].no) === num(no)) return DATA.orders[i];
+  return null;
+}
+function init() {
+  if (!configured()) {
+    $('app').innerHTML = '<div class="card"><h2>الصفحة مش متوصلة بعد</h2><p class="muted">صفحة التجهيز دي بتشتغل بنفس اتصال التطبيق — افتح التطبيق الأول من نفس المتصفح عشان يتوصل بالسيرفر، وبعدين ارجع افتح الصفحة دي تاني.</p><a class="btn btn-pri btn-block" href="index.html">فتح التطبيق</a></div>';
+    return;
+  }
+  $('app').innerHTML = '<div class="card"><p class="muted">جارٍ تحميل البيانات...</p></div>';
+  callApi('read', null, 45000).then(function (res) {
+    DATA = res;
+    var no = getParam('order');
+    if (no) showOrder(no);
+    else showPicker();
+  }).catch(function (e) {
+    $('app').innerHTML = '<div class="card"><h2>تعذر تحميل البيانات</h2><p class="muted">' + esc(e.message) + '</p><button class="btn btn-pri btn-block" onclick="location.reload()">إعادة المحاولة</button></div>';
+  });
+}
+function showPicker() {
+  var active = DATA.orders.filter(isActiveOrder).sort(function (a, b) { return num(b.no) - num(a.no); });
+  var h = '<div class="card"><h2>اختار الأوردر اللي هتجهزه</h2>' +
+    '<label for="pkNo">رقم الأوردر</label><input type="number" id="pkNo" inputmode="numeric" placeholder="مثال: 5">' +
+    '<div style="margin-top:10px"><button class="btn btn-pri btn-block" onclick="showOrder($(\'pkNo\').value)">عرض قايمة التجهيز</button></div></div>';
+  h += '<div class="card"><h2>الأوردرات النشطة</h2>';
+  if (!active.length) h += '<p class="muted">مفيش أوردرات نشطة.</p>';
+  active.forEach(function (o) {
+    h += '<div class="order-row" onclick="showOrder(' + num(o.no) + ')"><span class="grow"><b>#' + fmtNum(o.no) + ' — ' + esc(o.customer) + '</b><div class="small muted">' + esc(statusOf(o)) + ' • ' + esc(o.date || '') + '</div></span><b>' + fmtNum(o.pairs) + ' زوج</b></div>';
+  });
+  h += '</div>';
+  $('app').innerHTML = h;
+}
+function showOrder(no) {
+  var o = orderByNo(no);
+  if (!o) {
+    $('app').innerHTML = '<div class="card"><h2>الأوردر #' + esc(no) + ' مش موجود</h2><p class="muted">اتأكد من الرقم أو اختار من القايمة.</p><button class="btn btn-ghost btn-block" onclick="showPicker()">رجوع لاختيار الأوردر</button></div>';
+    return;
+  }
+  var lines = linesOf(o.no);
+  var groups = groupPickLines(lines);
+  var totDoz = 0, totPairs = 0;
+  groups.forEach(function (g) { totDoz += g.dozens; totPairs += g.pairs; });
+  var h = '<div class="card"><div class="row"><h2 style="flex:1;margin:0">أوردر #' + fmtNum(o.no) + '</h2><span class="muted small">' + esc(statusOf(o)) + '</span></div>' +
+    '<div class="muted">' + esc(o.customer) + ' • ' + esc(o.date || '') + '</div></div>';
+  h += '<div class="card"><h2>قايمة التجهيز (' + fmtNum(groups.length) + ' موديل)</h2>' +
+    '<p class="muted small" style="margin-top:0">كل موديل ولون متجمع في سطر واحد بإجمالي الكمية — خد كل سطر مرة واحدة، وعلّم ✓ لما تخلصه.</p>';
+  if (!groups.length) h += '<p class="muted">الأوردر ده مفيهوش بنود.</p>';
+  groups.forEach(function (g) {
+    h += '<label class="pick-row"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' +
+      '<span class="grow"><b class="pick-name">' + esc(g.label) + '</b>' +
+      (g.lines > 1 ? '<div class="small muted">من ' + fmtNum(g.lines) + ' بنود في الأوردر</div>' : '') + '</span>' +
+      '<span style="text-align:left;white-space:nowrap"><b style="font-size:18px">' + fmtDoz(g.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(g.pairs) + ' زوج</span></span></label>';
+  });
+  h += '<div class="kv"><span>إجمالي التجهيز</span><b>' + fmtDoz(totDoz) + ' دستة (' + fmtNum(totPairs) + ' زوج)</b></div></div>';
+  h += '<div class="row"><button class="btn btn-ghost" style="flex:1" onclick="showPicker()">أوردر تاني</button>' +
+    '<button class="btn btn-dark" style="flex:1" onclick="init()">تحديث البيانات</button></div>';
+  $('app').innerHTML = h;
+  window.scrollTo(0, 0);
+}
+init();
+</script>
+</body>
+</html>

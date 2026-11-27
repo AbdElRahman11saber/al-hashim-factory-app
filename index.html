@@ -623,7 +623,7 @@ function render() {
   var navKey = UI.screen;
   if (navKey === 'merchantDetail') navKey = 'merchants';
   if (navKey === 'orderDetail' || navKey === 'orderNew' || navKey === 'invoice') navKey = 'orders';
-  if (navKey === 'disb' || navKey === 'vips' || navKey === 'settings') navKey = 'more';
+  if (navKey === 'disb' || navKey === 'vips' || navKey === 'settings' || navKey === 'stockCount') navKey = 'more';
   document.querySelectorAll('#bottomNav button').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-nav') === navKey);
   });
@@ -1091,7 +1091,8 @@ function screenOrderDetail() {
         (g.lines > 1 ? '<div class="small muted">من ' + fmtNum(g.lines) + ' بنود في الأوردر</div>' : '') + '</span>' +
         '<span style="text-align:left;white-space:nowrap"><b>' + fmtDoz(g.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(g.pairs) + ' زوج</span></span></label>';
     });
-    h += '<div class="kv" style="margin-top:6px"><span>إجمالي التجهيز</span><b>' + fmtDoz(pickDoz) + ' دستة (' + fmtNum(pickPairs) + ' زوج)</b></div></div>';
+    h += '<div class="kv" style="margin-top:6px"><span>إجمالي التجهيز</span><b>' + fmtDoz(pickDoz) + ' دستة (' + fmtNum(pickPairs) + ' زوج)</b></div>' +
+      '<button class="btn btn-dark btn-block" style="margin-top:10px" onclick="window.open(\'picking.html?order=\' + o.no, \'_blank\')">فتح قائمة التجهيز في صفحة لوحدها ↗</button></div>';
   }
   h += '<div class="card"><div class="kv"><span>المجموع الفرعي</span><b>' + fmtMoney(o.subtotal) + '</b></div>' +
     '<div class="kv"><span>مصاريف الشحن</span><b>' + fmtMoney(o.shipping) + '</b></div>' +
@@ -1446,6 +1447,44 @@ function screenDisb() {
   return h;
 }
 
+/* ---------------- جرد مؤقت — أرقام المخزون ---------------- */
+/* أرقام مؤقتة للمخزون قبل الجرد الحقيقي: كل موديل وألوانه بحقول دستة،
+   واللي يتكتب هو الرصيد الحالي للون. زرار واحد بيحفظ كل اللي اتغير،
+   وبعد الجرد الحقيقي يرجع يعدل نفس الأرقام من هنا. */
+function screenStockCount() {
+  if (!DATA) return '';
+  var items = DATA.items.slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'ar'); });
+  var h = '<button class="btn btn-ghost btn-sm" onclick="go(\'home\')">← الرئيسية</button>';
+  h += '<div class="card" style="margin-top:10px"><h2>📋 جرد مؤقت — أرقام المخزن</h2>' +
+    '<p class="muted" style="margin:6px 0 0">الأرقام دي <b>مؤقتة</b> لحد ما تعمل الجرد الحقيقي، وتقدر تعدلها في أي وقت من هنا أو من تفاصيل الصنف. اللي تكتبه هو الرصيد الحالي للون بالدستة.</p>' +
+    '<label for="scSearch" style="margin-top:12px">ابحث عن موديل</label><input type="text" id="scSearch" placeholder="اكتب اسم أو رقم الموديل..." autocomplete="off"></div>';
+  h += '<div id="scList">';
+  items.forEach(function (it) {
+    var colors = modelColors(it);
+    if (!colors.length) return;
+    h += '<div class="card sc-model" data-name="' + esc(it.name) + '"><div class="row between"><h2 style="margin:0">' + esc(it.name) + '</h2><span class="muted small">' + fmtNum(it.stock) + ' زوج حالياً</span></div>';
+    colors.forEach(function (c) {
+      var cs = colorStockOf(it.model, c);
+      var doz = cs ? (cs.stockDoz || 0) : 0;
+      h += '<div class="kv"><span>' + esc(c) + ' <span class="muted small">(' + fmtNum(doz * 10) + ' زوج)</span></span>' +
+        '<input type="number" class="sc-input" inputmode="decimal" min="0" step="any" value="' + doz + '" data-model="' + esc(it.model) + '" data-color="' + esc(c) + '" data-current="' + doz + '" style="width:96px;text-align:center" placeholder="دستة"></div>';
+    });
+    h += '</div>';
+  });
+  h += '</div>';
+  h += '<button class="btn btn-pri btn-block" style="font-size:17px" onclick="App.saveStockCount(this)">💾 حفظ الأرقام المؤقتة</button>';
+  return h;
+}
+screenStockCount.afterRender = function () {
+  var s = $('scSearch');
+  if (s) s.addEventListener('input', function () {
+    var q = s.value.trim();
+    document.querySelectorAll('.sc-model').forEach(function (card) {
+      card.style.display = (!q || card.getAttribute('data-name').indexOf(q) !== -1) ? '' : 'none';
+    });
+  });
+};
+
 /* ---------------- الإعدادات وشاشة الخطأ ---------------- */
 function screenSettings() {
   var st = settings();
@@ -1483,7 +1522,7 @@ function screenError() {
 var SCREENS = {
   setup: screenSetup, home: screenHome, items: screenItems, merchants: screenMerchants,
   merchantDetail: screenMerchantDetail, orders: screenOrders, orderDetail: screenOrderDetail,
-  orderNew: screenOrderNew, invoice: screenInvoice, disb: screenDisb, vips: screenVips,
+  orderNew: screenOrderNew, invoice: screenInvoice, disb: screenDisb, vips: screenVips, stockCount: screenStockCount,
   settings: screenSettings, error: screenError
 };
 
@@ -1626,6 +1665,36 @@ window.App = {
     }).then(function () { App.showItemDetail(row); })
     .catch(function (e) { hideLoading(); toast(e.message, true); });
   },
+  /* حفظ الأرقام المؤقتة للجرد: كل الحقول اللي اتغيرت بتتحفظ ورا بعض */
+  saveStockCount: function (btn) {
+    var changed = [];
+    document.querySelectorAll('.sc-input').forEach(function (inp) {
+      var v = Number(inp.value);
+      if (isNaN(v) || v < 0) return;
+      if (v !== Number(inp.getAttribute('data-current'))) {
+        changed.push({ model: inp.getAttribute('data-model'), color: inp.getAttribute('data-color'), dozens: v });
+      }
+    });
+    if (!changed.length) { toast('مفيش أرقام اتغيرت — مفيش حاجة تتحفظ.'); return; }
+    if (btn) btn.disabled = true;
+    showLoading('جارٍ حفظ الأرقام المؤقتة...', '0 من ' + changed.length);
+    var i = 0, done = 0;
+    function next() {
+      if (i >= changed.length) {
+        hideLoading();
+        if (btn) btn.disabled = false;
+        return afterWrite('تم حفظ ' + done + ' رقم مؤقت ✓ — عدّلهم تاني بعد الجرد').then(function () { go('stockCount'); });
+      }
+      var c = changed[i++];
+      $('loadingHint').textContent = done + ' من ' + changed.length;
+      callApi('setColorStock', c).then(function () { done++; next(); }).catch(function (e) {
+        hideLoading();
+        if (btn) btn.disabled = false;
+        toast('وقف الحفظ عند ' + c.model + ' ' + c.color + ': ' + e.message + ' — اللي اتحفظ قبلها ' + done + ' رقم.', true);
+      });
+    }
+    next();
+  },
   /* تجار */
   openMerchant: function (row) { UI.merchRow = row; UI.merchTab = 'all'; go('merchantDetail'); },
   setMerchTab: function (t) { UI.merchTab = t; render(); },
@@ -1735,6 +1804,7 @@ window.App = {
   openMore: function () {
     openModal('<h2>المزيد</h2><div style="margin-top:12px">' +
       '<button class="more-item" onclick="closeModal();go(\'disb\')"><span class="mi-ic">✓</span><span>سجل الصرف<span class="mi-sub">أوردرات تم صرفها ولسه</span></span></button>' +
+      '<button class="more-item" onclick="closeModal();go(\'stockCount\')"><span class="mi-ic">📋</span><span>جرد مؤقت — أرقام المخزن<span class="mi-sub">أرقام مؤقتة لحد ما تعمل الجرد</span></span></button>' +
       '<button class="more-item" onclick="closeModal();go(\'vips\')"><span class="mi-ic">★</span><span>العملاء المميزين<span class="mi-sub">عملاء VIP وحفظ بياناتهم</span></span></button>' +
       '<button class="more-item" onclick="closeModal();go(\'settings\')"><span class="mi-ic">⚙</span><span>الإعدادات<span class="mi-sub">رابط السيرفر وكلمة السر</span></span></button>' +
       '</div>');
