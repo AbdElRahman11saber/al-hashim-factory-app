@@ -93,6 +93,11 @@ textarea{resize:vertical;min-height:64px}
 /* ===== Lists ===== */
 .item-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;margin-bottom:10px;box-shadow:var(--sh-sm)}
 .item-card:active{background:#F9FAFB}
+/* قائمة تجهيز الأوردر من المخزن — صف يُعلَّم لما يتجهز */
+.pick-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:14px;margin-bottom:8px;background:#fff}
+.pick-row input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--accent)}
+.pick-row.picked{opacity:.45}
+.pick-row.picked .pick-name{text-decoration:line-through}
 .item-name{font-weight:800;font-size:16.5px}
 .badge{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
 .b-green{background:#D1FAE5;color:#065F46}.b-amber{background:#FEF3C7;color:#92400E}.b-red{background:#FEE2E2;color:#991B1B}
@@ -1071,6 +1076,23 @@ function screenOrderDetail() {
       '<div style="text-align:left"><b>' + fmtMoney(l.total) + '</b><div><button class="btn btn-danger btn-sm" style="margin-top:6px" onclick="App.deleteLine(' + l._row + ')">حذف البند</button></div></div></div></div>';
   });
   h += '<button class="btn btn-ghost btn-block" onclick="App.lineForm(' + o.no + ')">+ إضافة بند للأوردر ده</button></div>';
+  /* قائمة تجهيز الأوردر من المخزن: كل موديل ولون متجمع في سطر واحد
+     بإجمالي الدست والأزواج، عشان ياخد كل موديل مرة واحدة وهو في المخزن.
+     علامة ✓ بتعلّم السطر كمجهَّز — للمتابعة بس، ومبتتخزنش. */
+  var pickGroups = groupPickLines(lines);
+  if (pickGroups.length) {
+    var pickDoz = 0, pickPairs = 0;
+    pickGroups.forEach(function (g) { pickDoz += g.dozens; pickPairs += g.pairs; });
+    h += '<div class="card"><h2>📦 تجهيز الأوردر من المخزن (' + fmtNum(pickGroups.length) + ' موديل)</h2>' +
+      '<p class="muted small" style="margin-bottom:10px">كل موديل ولون متجمع في سطر واحد بإجمالي الكمية — خد كل سطر مرة واحدة، وعلّم ✓ لما تخلصه.</p>';
+    pickGroups.forEach(function (g, i) {
+      h += '<label class="pick-row"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' +
+        '<span class="grow"><b class="pick-name">' + esc(g.label) + '</b>' +
+        (g.lines > 1 ? '<div class="small muted">من ' + fmtNum(g.lines) + ' بنود في الأوردر</div>' : '') + '</span>' +
+        '<span style="text-align:left;white-space:nowrap"><b>' + fmtDoz(g.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(g.pairs) + ' زوج</span></span></label>';
+    });
+    h += '<div class="kv" style="margin-top:6px"><span>إجمالي التجهيز</span><b>' + fmtDoz(pickDoz) + ' دستة (' + fmtNum(pickPairs) + ' زوج)</b></div></div>';
+  }
   h += '<div class="card"><div class="kv"><span>المجموع الفرعي</span><b>' + fmtMoney(o.subtotal) + '</b></div>' +
     '<div class="kv"><span>مصاريف الشحن</span><b>' + fmtMoney(o.shipping) + '</b></div>' +
     '<div class="kv"><span>الخصم العام</span><b>' + fmtMoney(o.discount) + '</b></div>' +
@@ -1302,6 +1324,25 @@ function wizardStep3(w) {
 }
 
 /* ---------------- الفاتورة ---------------- */
+/* تجميع بنود الأوردر للتجهيز من المخزن — بنود نفس الموديل ونفس اللون
+   بتتجمع في سطر واحد بإجمالي الدست والأزواج، عشان لما يدخل المخزن
+   ياخد كل موديل مرة واحدة بدل ما يلف على البنود سطر سطر.
+   التجميع للعرض بس (البنود في الأوردر بتفضل منفصلة عشان المخزون). */
+function groupPickLines(lines) {
+  var groups = [], byLabel = {};
+  lines.forEach(function (l) {
+    var key = lineItemLabel(l);
+    if (!byLabel[key]) {
+      byLabel[key] = { label: key, dozens: 0, pairs: 0, lines: 0 };
+      groups.push(byLabel[key]);
+    }
+    var g = byLabel[key];
+    g.dozens += num(l.dozens);
+    g.pairs += num(l.pairs);
+    g.lines += 1;
+  });
+  return groups;
+}
 /* تجميع بنود الفاتورة حسب سعر الزوج — البنود اللي سعر الجوز بتاعها واحد
    بتتجمع في سطر واحد، والبيان فيه «موديل لون» لكل بند وبينهم « / ».
    التجميع للعرض بس (البنود في الأوردر بتفضل منفصلة عشان المخزون). */
