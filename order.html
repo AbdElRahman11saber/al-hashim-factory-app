@@ -143,36 +143,44 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .sum-item{flex:1;min-width:90px;background:var(--bg);border-radius:14px;padding:10px;box-shadow:var(--sh-sm);text-align:center}
 .sum-item b{display:block;font-size:18px}
 .sum-item span{font-size:12px;color:var(--muted)}
-/* ===== الفاتورة — شكل قالب intelart (شريط أزرق داكن + شريط فاتورة + علامة مائية + جدول + إجمالي نهائي شريط + شكر) ===== */
-.inv-paper{background:#fff;color:#111;border-radius:10px;padding:0 0 16px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:14.5px;line-height:1.6;overflow:hidden}
-.inv-band{background:#1B3A6B;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 26px;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-band-name{font-size:26px;font-weight:900;line-height:1.2}
-.inv-band-sub{font-size:12.5px;color:#BFDBFE;margin-top:3px}
-.inv-ribbon{position:absolute;left:0;bottom:-16px;background:#0B2447;color:#fff;font-size:20px;font-weight:900;padding:8px 36px 8px 22px;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 50%,calc(100% - 18px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact;z-index:2}
-.inv-body{padding:24px 18px 0;position:relative}
-.inv-wm{position:absolute;top:10px;left:0;right:0;text-align:center;font-size:28px;font-weight:900;letter-spacing:6px;color:rgba(27,58,107,.07);pointer-events:none;z-index:0;white-space:nowrap;overflow:hidden}
-.inv-boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px;position:relative;z-index:1}
-.inv-box{border:1px solid #CBD5E1;border-radius:8px;overflow:hidden;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-box-h{background:#1B3A6B;color:#fff;font-weight:800;font-size:14px;padding:6px 10px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-box-r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #E2E8F0;font-size:13.5px}
-.inv-box-r:last-child{border-bottom:0}
+/* ===== الفاتورة — شكل قالب intelart بدون مربعات (نص عادي + قواعد رفيعة) =====
+   شريط أزرق داكن فوق + شريط «فاتورة» بارز، علامة مائية «تفاصيل الفاتورة»،
+   بلوكات نص عادي (فاتورة إلى / تفاصيل الفاتورة / طريقة الدفع) من غير أي
+   حدود أو خلفيات، جدول برأس أزرق داكن + خطوط فاصلة + تظليل متناوب،
+   إجماليات نص عادي + الإجمالي النهائي شريط أزرق، وسطر شكر في الآخر.
+   الورقة flex بطول صفحة A4 كاملة في الطباعة، والفوتر مثبت في أسفل الصفحة. */
+.inv-paper{background:#fff;color:#111;border-radius:10px;padding:0 0 14px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:15px;line-height:1.65;overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box}
+.inv-band{background:#1B3A6B;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:26px 24px 42px;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-band-name{font-size:34px;font-weight:900;line-height:1.2}
+.inv-band-sub{font-size:14px;color:#BFDBFE;margin-top:4px}
+.inv-ribbon{position:absolute;left:0;bottom:-22px;background:#0B2447;color:#fff;font-size:26px;font-weight:900;padding:12px 52px 12px 30px;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact;z-index:2}
+.inv-body{padding:32px 18px 0;position:relative;flex:1;display:flex;flex-direction:column}
+.inv-wm{position:absolute;top:14px;left:0;right:0;text-align:center;font-size:38px;font-weight:900;letter-spacing:8px;color:rgba(27,58,107,.11);pointer-events:none;z-index:0;white-space:nowrap;overflow:hidden}
+.inv-boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 16px;position:relative;z-index:1}
+.inv-box{border:0;background:none;overflow:visible}
+.inv-box-h{color:#1B3A6B;font-weight:900;font-size:13px;letter-spacing:1px;padding:0 0 6px;margin-bottom:2px}
+.inv-box-r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;font-size:14px}
 .inv-box-r>span{font-weight:700;color:#64748B;flex:none}
 .inv-box-r>b{color:#0F172A;text-align:left;min-width:0}
 .inv-box-r>.inv-in{flex:1;min-width:0}
-.inv-paper table.inv-items{width:100%;border-collapse:collapse;margin:0 0 4px;font-size:14px}
-.inv-items th,.inv-items td{border:1px solid #CBD5E1;padding:6px 8px;text-align:right}
+.inv-paper table.inv-items{width:100%;border-collapse:collapse;margin:0 0 4px;font-size:15px}
+.inv-items th,.inv-items td{padding:10px 10px;text-align:right;border:0}
 .inv-items th{background:#1B3A6B;color:#fff;font-weight:800;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-items td{border-bottom:1px solid #E2E8F0}
+.inv-items tr:nth-child(even) td{background:#F1F5F9;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 .inv-items td.num,.inv-items th.num{text-align:left;white-space:nowrap}
-.inv-bottom{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;align-items:start}
-.inv-totals{border-top:2px solid #E2E8F0}
-.inv-trow{display:flex;justify-content:space-between;gap:10px;padding:6px 2px;border-bottom:1px dashed #E2E8F0;font-size:14.5px}
+.inv-bottom{display:block;margin-top:12px}
+.inv-totals{border-top:1px solid #CBD5E1}
+.inv-pay{margin-top:12px}
+.inv-trow{display:flex;justify-content:space-between;gap:10px;padding:7px 4px;border-bottom:1px dashed #E2E8F0;font-size:14px}
 .inv-trow b{white-space:nowrap}
-.inv-trow.grand{background:#1B3A6B;color:#fff;padding:9px 24px 9px 12px;font-size:17px;font-weight:900;border-bottom:0;margin-top:6px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-trow.due{background:#FFFBEB;border-radius:8px;padding:9px 10px;font-size:16px;font-weight:800;color:#92400E;border-bottom:0;margin-top:6px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-notes{margin-top:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 10px;font-size:13.5px;color:#334155}
-.inv-foot{margin-top:14px;border-top:2px solid #1B3A6B;padding:10px 2px 0;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-.inv-foot-thanks{font-size:16px;font-weight:900;color:#1B3A6B}
-.inv-foot-ws{font-size:13px;color:#64748B;font-weight:700}
+.inv-trow.grand{background:#1B3A6B;color:#fff;padding:10px 22px 10px 12px;font-size:17px;font-weight:900;border-bottom:0;margin-top:8px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-trow.due{padding:9px 4px;font-size:15px;font-weight:900;color:#92400E;border-bottom:0;margin-top:8px}
+.inv-notes{margin-top:8px;font-size:14px;color:#334155}
+.inv-spacer{flex:1}
+.inv-foot{margin-top:auto;border-top:2px solid #1B3A6B;padding:14px 2px 0;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.inv-foot-thanks{font-size:18px;font-weight:900;color:#1B3A6B}
+.inv-foot-ws{font-size:14px;color:#64748B;font-weight:700}
 .inv-in{font:inherit;font-size:13.5px;padding:4px 6px;border:1px solid #93C5FD;border-radius:6px;background:#EFF6FF;width:100%;box-sizing:border-box;color:#0F172A}
 .inv-in.num{width:90px;text-align:left;flex:none}
 select.inv-in{width:100%}
@@ -185,24 +193,26 @@ textarea.inv-in{resize:vertical;min-height:44px}
   header,#stickyBar,#toast,#errBanner,#loading,#appView,#doneView,.inv-actions,.inv-edit-note{display:none !important}
   main{max-width:none !important;padding:0 !important;margin:0 !important}
   #invoiceView{display:block !important}
-  .inv-paper{box-shadow:none !important;border-radius:0 !important;padding:0 !important;font-size:13px}
+  .inv-paper{box-shadow:none !important;border-radius:0 !important;padding:0 !important;font-size:14px;min-height:272mm;overflow:visible !important}
   .inv-paper input,.inv-paper select,.inv-paper textarea{border:0 !important;background:none !important;padding:0 !important}
-  .inv-paper.compact{font-size:11.5px;line-height:1.45}
-  .inv-paper.compact .inv-band-name{font-size:20px}
-  .inv-paper.compact .inv-ribbon{font-size:15px;padding:5px 28px 5px 16px;bottom:-12px}
-  .inv-paper.compact .inv-band{padding:12px 14px 10px}
-  .inv-paper.compact .inv-body{padding:16px 12px 0}
-  .inv-paper.compact .inv-wm{font-size:20px;letter-spacing:4px}
-  .inv-paper.compact .inv-foot{margin-top:8px;padding-top:6px}
-  .inv-paper.compact .inv-foot-thanks{font-size:13px}
-  .inv-paper.compact .inv-items{font-size:11.5px}
-  .inv-paper.compact .inv-items th,.inv-paper.compact .inv-items td{padding:3px 6px}
-  .inv-paper.compact .inv-trow{font-size:11.5px;padding:3px 2px}
-  .inv-paper.compact .inv-trow.grand{font-size:13.5px;padding:5px 22px 5px 8px}
-  .inv-paper.compact .inv-trow.due{font-size:12.5px;padding:5px 8px}
-  .inv-paper.compact .inv-boxes{gap:6px;margin-bottom:8px}
-  .inv-paper.compact .inv-box-r{padding:4px 8px}
-  .inv-paper.compact .inv-bottom{gap:6px;margin-top:8px}
+  .inv-paper.compact{font-size:12px;line-height:1.5}
+  .inv-paper.compact .inv-band-name{font-size:24px}
+  .inv-paper.compact .inv-ribbon{font-size:18px;padding:7px 34px 7px 20px;bottom:-14px}
+  .inv-paper.compact .inv-band{padding:14px 16px 18px}
+  .inv-paper.compact .inv-body{padding:20px 14px 0}
+  .inv-paper.compact .inv-wm{font-size:26px;letter-spacing:5px}
+  .inv-paper.compact .inv-foot{padding-top:8px}
+  .inv-paper.compact .inv-foot-thanks{font-size:14px}
+  .inv-paper.compact .inv-items{font-size:12px}
+  .inv-paper.compact .inv-items th,.inv-paper.compact .inv-items td{padding:5px 8px}
+  .inv-paper.compact .inv-trow{font-size:12px;padding:4px 2px}
+  .inv-paper.compact .inv-trow.grand{font-size:14px;padding:6px 22px 6px 8px}
+  .inv-paper.compact .inv-trow.due{font-size:13px;padding:6px 4px}
+  .inv-paper.compact .inv-boxes{gap:8px;margin-bottom:10px}
+  .inv-paper.compact .inv-box-r{padding:3px 0}
+  .inv-paper.compact .inv-bottom{margin-top:8px}
+  .inv-paper.compact .inv-pay{margin-top:8px}
+  .inv-paper.compact .inv-box-h{font-size:11px}
 }
 </style>
 </head>
@@ -1281,12 +1291,13 @@ function groupInvoiceLines(lines) {
   });
 }
 
-/* ===== الفاتورة (A4 — صفحة واحدة) — شكل قالب intelart =====
+/* ===== الفاتورة (A4 — صفحة واحدة) — شكل قالب intelart بدون مربعات =====
    شريط أزرق داكن فوق (اسم الورشة + العنوان + الرقمان) مع شريط «فاتورة»
-   بارز على الطرف، علامة مائية «تفاصيل الفاتورة» خلف الصندوقين، صندوقين
-   جنب بعض (فاتورة إلى / تفاصيل الفاتورة)، جدول البنود برأس أزرق داكن،
-   وعمودين تحت (طريقة الدفع / الإجماليات) مع الإجمالي النهائي شريط أزرق
-   مدبب، وسطر شكر في الآخر.
+   بارز على الطرف، علامة مائية «تفاصيل الفاتورة» خلف البلوكات، بلوكات نص
+   عادي (فاتورة إلى / تفاصيل الفاتورة / طريقة الدفع) من غير أي حدود أو
+   خلفيات، جدول البنود برأس أزرق داكن + تظليل متناوب، وتحته الإجماليات
+   (نص عادي مدمج) وفوقها طريقة الدفع تحتها مباشرة، مع الإجمالي النهائي
+   شريط أزرق مدبب، والورقة بطول صفحة A4 كاملة والفوتر مثبت في أسفل الصفحة.
    التجميع للفاتورة المعروضة للزبون فقط (groupInvoiceLines) — بنود المخزن مفصلة.
    وضع التعديل (editing=true): حقول إدخال بدل النص — التعديل للفاتورة المطبوعة
    فقط، ومش بيكتب أي حاجة في الشيت ولا بيغيّر المخزون ولا الأوردر المحفوظ. */
@@ -1297,7 +1308,7 @@ function invoiceHtml(o, editing) {
   var wsPhone = (st.phone1 || '01275440919') + ' / ' + (st.phone2 || '01034837061');
   var wsAddr = st.address || 'منشية ناصر، القاهرة، مصر';
   var shipTxt = o.shipping === null || o.shipping === undefined ? 'تحددها شركة الشحن' : fmtMoney(o.shipping);
-  var compact = grouped.length > 10 ? ' compact' : '';
+  var compact = grouped.length > 7 ? ' compact' : '';
   var rows = grouped.map(function (l, i) {
     var qtyCell, priceCell;
     if (ed) {
@@ -1374,10 +1385,11 @@ function invoiceHtml(o, editing) {
     '<div class="inv-trow"><span>المدفوع مقدماً (العربون)</span>' + depCell + '</div>' +
     '<div class="inv-trow due"><span>المتبقي</span><b id="ieRemaining">' + fmtMoney(o.remaining) + '</b></div>' +
     '</div>' +
-    '<div class="inv-box"><div class="inv-box-h">طريقة الدفع</div>' +
+    '<div class="inv-box inv-pay"><div class="inv-box-h">طريقة الدفع</div>' +
     methodRow + notesRow +
     '</div>' +
     '</div>' +
+    '<div class="inv-spacer"></div>' +
     '<div class="inv-foot"><span class="inv-foot-thanks">شكراً لتعاملكم معنا</span><span class="inv-foot-ws">ورشة آل هاشم</span></div>' +
     '</div></div>';
 }
