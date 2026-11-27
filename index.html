@@ -99,6 +99,8 @@ textarea{resize:vertical;min-height:64px}
 .pick-row.picked{opacity:.45}
 .pick-row.picked .pick-name{text-decoration:line-through}
 .pick-row.short{border-color:#DC2626;background:#FEF2F2}
+.pick-thumb{width:56px;height:56px;flex:none;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.pick-thumb-ph{display:flex;align-items:center;justify-content:center;font-size:26px;background:#F1F5F9}
 .stk{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .stk span{font-size:13.5px}
 .stk b{font-size:14px}
@@ -1625,7 +1627,9 @@ function screenPickup() {
     var avail = cs ? num(cs.stock) : null;
     var remain = avail === null ? null : avail - g.pairs;
     var short = avail !== null && g.pairs > avail;
-    h += '<label class="pick-row' + (short ? ' short' : '') + '"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' +
+    var it = itemByName(g.model);
+    var thumb = (it && it.photo) ? '<img class="pick-thumb" src="' + esc(it.photo) + '" alt="" loading="lazy">' : '<span class="pick-thumb pick-thumb-ph">👞</span>';
+    h += '<label class="pick-row' + (short ? ' short' : '') + '"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' + thumb +
       '<span class="grow"><b class="pick-name">' + esc(g.label) + '</b>' +
       '<div class="small muted">أوردرات: ' + g.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div>' +
       '<div class="stk"><span>المطلوب: <b>' + fmtNum(g.pairs) + ' زوج</b></span>' +
