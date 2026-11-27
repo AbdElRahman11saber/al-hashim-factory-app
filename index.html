@@ -1352,12 +1352,12 @@ function wizardStep1(w) {
     : '<label for="wVip">عميل مميز؟</label><select id="wVip" onchange="App.wizardPickVip(this.value)">' + vipOpts + '</select>' +
       '<div class="hint">لو اخترت عميل مميز، بياناته هتتملا لوحدها ومش هتحتاج تكتبها.</div>';
   var h = '<div class="card"><h2>بيانات العميل</h2>' + vipPart +
-    '<label for="wDate">التاريخ</label><input type="date" id="wDate" value="' + esc(w.date) + '" onchange="App.wizardField(\'date\',this.value)">' +
+    '<label for="wDate">' + (w.external ? 'التاريخ — اختياري' : 'التاريخ') + '</label><input type="date" id="wDate" value="' + esc(w.date) + '" onchange="App.wizardField(\'date\',this.value)">' +
     '<label for="wCustomer">' + (w.external ? 'اسم العميل — اختياري' : 'اسم العميل') + '</label><input type="text" id="wCustomer" value="' + esc(w.customer) + '" list="dlVipsW" placeholder="' + (w.external ? 'اختياري — سيبه فاضي لو مش معروف' : 'اسم العميل') + '" oninput="App.wizardField(\'customer\',this.value)"' + (w.isVip ? ' readonly' : '') + '>' +
     '<datalist id="dlVipsW">' + DATA.vips.map(function (v) { return '<option value="' + esc(v.name) + '"></option>'; }).join('') + '</datalist>' +
-    '<label for="wPhone1">هاتف 1</label><input type="tel" id="wPhone1" dir="ltr" style="text-align:right" value="' + esc(w.phone1) + '" oninput="App.wizardField(\'phone1\',this.value)"' + ro + '>' +
+    '<label for="wPhone1">' + (w.external ? 'هاتف 1 — اختياري' : 'هاتف 1') + '</label><input type="tel" id="wPhone1" dir="ltr" style="text-align:right" value="' + esc(w.phone1) + '" oninput="App.wizardField(\'phone1\',this.value)"' + ro + '>' +
     '<label for="wPhone2">هاتف 2 — اختياري</label><input type="tel" id="wPhone2" dir="ltr" style="text-align:right" value="' + esc(w.phone2) + '" oninput="App.wizardField(\'phone2\',this.value)"' + ro + '>' +
-    '<label for="wAddr">العنوان</label><input type="text" id="wAddr" value="' + esc(w.address) + '" oninput="App.wizardField(\'address\',this.value)"' + ro + '>' +
+    '<label for="wAddr">' + (w.external ? 'العنوان — اختياري' : 'العنوان') + '</label><input type="text" id="wAddr" value="' + esc(w.address) + '" oninput="App.wizardField(\'address\',this.value)"' + ro + '>' +
     (w.isVip ? '<div class="banner" style="margin-top:12px">عميل مميز ★ — بياناته هتتملا تلقائياً من سجل العملاء المميزين.</div>' : '') + '</div>' +
     '<div class="row"><button class="btn btn-ghost grow" onclick="go(\'orders\')">إلغاء</button>' +
     '<button class="btn btn-pri grow" onclick="App.wizardNext()">التالي: البنود ←</button></div>';
@@ -1424,8 +1424,8 @@ function wizardStep3(w) {
   return h;
 }
 /* خطوة التأكيد للأوردر الخارجي: نفس بنود وتأكيد الأوردر العادي بس من غير
-   مصاريف شحن ومن غير فاتورة — والمدفوع بيتملا بالإجمالي لوحده (البيع من
-   المكان والدفع على طول) ويقدر يعدّله لو الدفع آجل أو جزئي. */
+   مصاريف شحن ومن غير فاتورة — والخصم والمدفوع وطريقة الدفع كلها اختيارية
+   (لو سابها فاضية هتتسجل فاضية). */
 function wizardStep3External(w) {
   var t = wizardTotals(w);
   var h = '<div class="card"><h2>مراجعة وتأكيد الأوردر الخارجي</h2>' +
@@ -1440,9 +1440,9 @@ function wizardStep3External(w) {
     h += '<div class="kv"><span>' + (i + 1) + '. ' + esc(lineItemLabel(ln)) + ' — ' + fmtDoz(ln.dozens) + ' دستة (' + fmtNum(num(ln.dozens) * pairsPerDozen()) + ' زوج)</span><b>' + fmtMoney(num(ln.dozens) * pairsPerDozen() * price - num(ln.discount)) + '</b></div>';
   });
   h += '</div>';
-  h += '<div class="card"><label for="wDisc">الخصم العام (ج.م)</label><input type="number" id="wDisc" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.discount) + '" oninput="App.wizardField(\'discount\',this.value)">' +
-    '<label for="wDep">المدفوع (ج.م)</label><input type="number" id="wDep" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.deposit) + '" oninput="App.wizardField(\'deposit\',this.value)">' +
-    '<label for="wMethod">طريقة الدفع</label><select id="wMethod" onchange="App.wizardField(\'method\',this.value)\">' + METHODS.map(function (m) { return '<option' + (w.method === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' +
+  h += '<div class="card"><label for="wDisc">الخصم العام (ج.م) — اختياري</label><input type="number" id="wDisc" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.discount) + '" oninput="App.wizardField(\'discount\',this.value)">' +
+    '<label for="wDep">المدفوع (ج.م) — اختياري</label><input type="number" id="wDep" inputmode="decimal" min="0" step="any" placeholder="0" value="' + esc(w.deposit) + '" oninput="App.wizardField(\'deposit\',this.value)">' +
+    '<label for="wMethod">طريقة الدفع — اختياري</label><select id="wMethod" onchange="App.wizardField(\'method\',this.value)\">' + [''].concat(METHODS).map(function (m) { return '<option value="' + esc(m) + '"' + (w.method === m ? ' selected' : '') + '>' + (m || '— بدون تحديد —') + '</option>'; }).join('') + '</select>' +
     '<label for="wNotes">ملاحظات — اختياري</label><textarea id="wNotes" oninput="App.wizardField(\'notes\',this.value)\">' + esc(w.notes) + '</textarea></div>';
   h += '<div class="card"><div class="kv"><span>المجموع الفرعي</span><b id="wz3Sub">' + fmtMoney(t.subtotal) + '</b></div>' +
     '<div class="kv"><span>الخصم العام</span><b id="wz3Disc">' + fmtMoney(w.discount) + '</b></div>' +
@@ -2036,6 +2036,7 @@ window.App = {
     if (!DATA.items.length) { toast('ضيف أصناف الأول عشان تعمل أوردر.', true); go('items'); return; }
     UI.wizard = newWizard(0, true);
     UI.wizard.customer = 'عميل خارجي';
+    UI.wizard.method = ''; /* كل بيانات الأوردر الخارجي اختيارية — طريقة الدفع بتبدأ فاضية */
     go('orderNew');
   },
   filterOrders: function (st) { UI.orderFilter = st; UI.orderQ = ''; go('orders'); },
@@ -2300,8 +2301,7 @@ window.App = {
         if (modelColors(itemByName(ln.item.trim())).indexOf(ln.color) === -1) { toast('لون بند ' + (i + 1) + ' مش من ألوان الموديل ده.', true); return; }
         if (!ln.dozens || Number(ln.dozens) <= 0) { toast('اكتب الكمية بالدستة في بند ' + (i + 1) + '.', true); return; }
       }
-      /* الأوردر الخارجي: المدفوع بيتملا بالإجمالي لوحده (البيع من المكان والدفع على طول) — ويقدر يعدّله */
-      if (w.external && (w.deposit === '' || w.deposit === null || w.deposit === undefined)) w.deposit = wizardTotals(w).grand;
+      /* الأوردر الخارجي: المدفوع اختياري — بيفضل فاضي لحد ما يكتبه (مش بيتملا بالإجمالي لوحده) */
       w.step = 3; render(); return;
     }
   },
