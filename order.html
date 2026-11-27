@@ -149,21 +149,21 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
    حدود أو خلفيات، جدول برأس أزرق داكن + خطوط فاصلة + تظليل متناوب،
    إجماليات نص عادي + الإجمالي النهائي شريط أزرق، وسطر شكر في الآخر.
    الورقة flex بطول صفحة A4 كاملة في الطباعة، والفوتر مثبت في أسفل الصفحة. */
-.inv-paper{background:#fff;color:#111;border-radius:10px;padding:0 0 14px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:15px;line-height:1.65;overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box}
-.inv-band{background:#1B3A6B;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:26px 24px 42px;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-band-name{font-size:34px;font-weight:900;line-height:1.2}
-.inv-band-sub{font-size:14px;color:#BFDBFE;margin-top:4px}
-.inv-ribbon{position:absolute;left:0;bottom:-22px;background:#0B2447;color:#fff;font-size:26px;font-weight:900;padding:12px 52px 12px 30px;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact;z-index:2}
-.inv-body{padding:32px 18px 0;position:relative;flex:1;display:flex;flex-direction:column}
+.inv-paper{background:#fff;color:#111;border-radius:10px;padding:0 0 14px;box-shadow:0 4px 18px rgba(0,0,0,.18);font-size:16px;line-height:1.6;overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box}
+.inv-band{background:#1B3A6B;color:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 24px 30px;position:relative;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-band-name{font-size:28px;font-weight:900;line-height:1.2}
+.inv-band-sub{font-size:13px;color:#BFDBFE;margin-top:4px}
+.inv-ribbon{position:absolute;left:0;bottom:-18px;background:#0B2447;color:#fff;font-size:22px;font-weight:900;padding:9px 44px 9px 26px;clip-path:polygon(0 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact;z-index:2}
+.inv-body{padding:26px 18px 0;position:relative;flex:1;display:flex;flex-direction:column}
 .inv-wm{position:absolute;top:14px;left:0;right:0;text-align:center;font-size:38px;font-weight:900;letter-spacing:8px;color:rgba(27,58,107,.11);pointer-events:none;z-index:0;white-space:nowrap;overflow:hidden}
-.inv-boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 16px;position:relative;z-index:1}
+.inv-boxes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 12px;position:relative;z-index:1}
 .inv-box{border:0;background:none;overflow:visible}
-.inv-box-h{color:#1B3A6B;font-weight:900;font-size:13px;letter-spacing:1px;padding:0 0 6px;margin-bottom:2px}
-.inv-box-r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;font-size:14px}
+.inv-box-h{color:#1B3A6B;font-weight:900;font-size:14px;letter-spacing:1px;padding:0 0 4px;margin-bottom:2px}
+.inv-box-r{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;font-size:15px}
 .inv-box-r>span{font-weight:700;color:#64748B;flex:none}
 .inv-box-r>b{color:#0F172A;text-align:left;min-width:0}
 .inv-box-r>.inv-in{flex:1;min-width:0}
-.inv-paper table.inv-items{width:100%;border-collapse:collapse;margin:0 0 4px;font-size:15px}
+.inv-paper table.inv-items{width:100%;border-collapse:collapse;margin:0 0 4px;font-size:16px}
 .inv-items th,.inv-items td{padding:10px 10px;text-align:right;border:0}
 .inv-items th{background:#1B3A6B;color:#fff;font-weight:800;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 .inv-items td{border-bottom:1px solid #E2E8F0}
@@ -172,11 +172,11 @@ input.err,select.err{box-shadow:var(--sh-inset),0 0 0 2px var(--red)}
 .inv-bottom{display:block;margin-top:12px}
 .inv-totals{border-top:1px solid #CBD5E1}
 .inv-pay{margin-top:6px}
-.inv-trow{display:flex;justify-content:space-between;gap:10px;padding:7px 4px;border-bottom:1px dashed #E2E8F0;font-size:14px}
+.inv-trow{display:flex;justify-content:space-between;gap:10px;padding:6px 4px;border-bottom:1px dashed #E2E8F0;font-size:15px}
 .inv-trow b{white-space:nowrap}
-.inv-trow.grand{background:#1B3A6B;color:#fff;padding:7px 22px 7px 12px;font-size:17px;font-weight:900;border-bottom:0;margin-top:4px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact}
-.inv-trow.due{padding:6px 4px;font-size:15px;font-weight:900;color:#92400E;border-bottom:0;margin-top:4px}
-.inv-notes{margin-top:8px;font-size:14px;color:#334155}
+.inv-trow.grand{background:#1B3A6B;color:#fff;padding:6px 22px 6px 12px;font-size:18px;font-weight:900;border-bottom:0;margin-top:4px;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,0 100%);print-color-adjust:exact;-webkit-print-color-adjust:exact}
+.inv-trow.due{padding:5px 4px;font-size:16px;font-weight:900;color:#92400E;border-bottom:0;margin-top:4px}
+.inv-notes{margin-top:8px;font-size:15px;color:#334155}
 .inv-spacer{flex:1}
 .inv-foot{margin-top:auto;border-top:2px solid #1B3A6B;padding:14px 2px 0;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .inv-foot-thanks{font-size:18px;font-weight:900;color:#1B3A6B}
@@ -193,13 +193,13 @@ textarea.inv-in{resize:vertical;min-height:44px}
   header,#stickyBar,#toast,#errBanner,#loading,#appView,#doneView,.inv-actions,.inv-edit-note{display:none !important}
   main{max-width:none !important;padding:0 !important;margin:0 !important}
   #invoiceView{display:block !important}
-  .inv-paper{box-shadow:none !important;border-radius:0 !important;padding:0 !important;font-size:14px;min-height:272mm;overflow:visible !important}
+  .inv-paper{box-shadow:none !important;border-radius:0 !important;padding:0 !important;font-size:15px;min-height:272mm;overflow:visible !important}
   .inv-paper input,.inv-paper select,.inv-paper textarea{border:0 !important;background:none !important;padding:0 !important}
   .inv-paper.compact{font-size:12px;line-height:1.5}
-  .inv-paper.compact .inv-band-name{font-size:24px}
-  .inv-paper.compact .inv-ribbon{font-size:18px;padding:7px 34px 7px 20px;bottom:-14px}
-  .inv-paper.compact .inv-band{padding:14px 16px 18px}
-  .inv-paper.compact .inv-body{padding:20px 14px 0}
+  .inv-paper.compact .inv-band-name{font-size:22px}
+  .inv-paper.compact .inv-ribbon{font-size:16px;padding:6px 30px 6px 18px;bottom:-12px}
+  .inv-paper.compact .inv-band{padding:12px 16px 16px}
+  .inv-paper.compact .inv-body{padding:18px 14px 0}
   .inv-paper.compact .inv-wm{font-size:26px;letter-spacing:5px}
   .inv-paper.compact .inv-foot{padding-top:8px}
   .inv-paper.compact .inv-foot-thanks{font-size:14px}
@@ -1295,9 +1295,11 @@ function groupInvoiceLines(lines) {
    شريط أزرق داكن فوق (اسم الورشة + العنوان + الرقمان) مع شريط «فاتورة»
    بارز على الطرف، علامة مائية «تفاصيل الفاتورة» خلف البلوكات، بلوكات نص
    عادي (فاتورة إلى / تفاصيل الفاتورة / طريقة الدفع) من غير أي حدود أو
-   خلفيات، جدول البنود برأس أزرق داكن + تظليل متناوب، وتحته الإجماليات
-   (نص عادي مدمج) وفوقها طريقة الدفع تحتها مباشرة، مع الإجمالي النهائي
-   شريط أزرق مدبب، والورقة بطول صفحة A4 كاملة والفوتر مثبت في أسفل الصفحة.
+   خلفيات، جدول البنود برأس أزرق داكن + تظليل متناوب، وتحته الإجماليات:
+   المجموع الفرعي بس قبل الإجمالي النهائي (شريط أزرق مدبب)، وتحته إجمالي
+   الأزواج والخصم والشحن والمدفوع والمتبقي وطريقة الدفع، والورقة بطول
+   صفحة A4 كاملة والفوتر مثبت في أسفل الصفحة.
+   العنوان والمحافظة في خانة واحدة («المحافظة — العنوان»).
    التجميع للفاتورة المعروضة للزبون فقط (groupInvoiceLines) — بنود المخزن مفصلة.
    وضع التعديل (editing=true): حقول إدخال بدل النص — التعديل للفاتورة المطبوعة
    فقط، ومش بيكتب أي حاجة في الشيت ولا بيغيّر المخزون ولا الأوردر المحفوظ. */
@@ -1309,6 +1311,8 @@ function invoiceHtml(o, editing) {
   var wsAddr = st.address || 'منشية ناصر، القاهرة، مصر';
   var shipTxt = o.shipping === null || o.shipping === undefined ? 'تحددها شركة الشحن' : fmtMoney(o.shipping);
   var compact = grouped.length > 7 ? ' compact' : '';
+  var totPairs = 0;
+  grouped.forEach(function (l) { totPairs += num(l.pairs); });
   var rows = grouped.map(function (l, i) {
     var qtyCell, priceCell;
     if (ed) {
@@ -1326,12 +1330,15 @@ function invoiceHtml(o, editing) {
     if (!ed) return '<div class="inv-box-r"><span>' + label + '</span><b' + (dirLtr ? ' dir="ltr"' : '') + '>' + esc(val) + '</b></div>';
     return '<div class="inv-box-r"><span>' + label + '</span><input class="inv-in" type="text" value="' + esc(val) + '" oninput="invField(\'' + field + '\',this.value)"' + (dirLtr ? ' dir="ltr"' : '') + '></div>';
   }
-  var govRow;
+  /* العنوان والمحافظة في خانة واحدة: «المحافظة — العنوان التفصيلي»؛
+     في وضع التعديل: قائمة المحافظة + حقل العنوان جنب بعض في نفس السطر */
+  var addrVal = [o.gov, o.addr || o.address].filter(function (x) { return x; }).join(' — ');
+  var addrRow;
   if (ed) {
     var govOpts = '<option value="">—</option>' + GOVS.map(function (g) { return '<option value="' + esc(g) + '"' + (g === o.gov ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('');
-    govRow = '<div class="inv-box-r"><span>المحافظة</span><select class="inv-in" onchange="invField(\'gov\',this.value)">' + govOpts + '</select></div>';
+    addrRow = '<div class="inv-box-r"><span>العنوان</span><select class="inv-in" style="flex:none;width:130px" onchange="invField(\'gov\',this.value)">' + govOpts + '</select><input class="inv-in" type="text" value="' + esc(o.addr || o.address || '') + '" oninput="invField(\'addr\',this.value)"></div>';
   } else {
-    govRow = '<div class="inv-box-r"><span>المحافظة</span><b>' + esc(o.gov || '') + '</b></div>';
+    addrRow = '<div class="inv-box-r"><span>العنوان</span><b>' + esc(addrVal) + '</b></div>';
   }
   var methodRow;
   if (ed) {
@@ -1366,8 +1373,7 @@ function invoiceHtml(o, editing) {
     boxRow('الاسم', o.customer, 'customer') +
     boxRow('التليفون', o.phone, 'phone', true) +
     ((o.phone2 || ed) ? boxRow('تليفون تاني', o.phone2 || '', 'phone2', true) : '') +
-    govRow +
-    boxRow('العنوان', o.addr || o.address || '', 'addr') +
+    addrRow +
     '</div>' +
     '<div class="inv-box"><div class="inv-box-h">تفاصيل الفاتورة</div>' +
     '<div class="inv-box-r"><span>رقم الفاتورة</span><b>#' + o.no + '</b></div>' +
@@ -1379,9 +1385,10 @@ function invoiceHtml(o, editing) {
     '<div class="inv-bottom">' +
     '<div class="inv-totals">' +
     '<div class="inv-trow"><span>المجموع الفرعي</span><b id="ieSubtotal">' + fmtMoney(o.subtotal) + '</b></div>' +
+    '<div class="inv-trow grand"><span>الإجمالي النهائي</span><b id="ieTotal">' + fmtMoney(o.total) + '</b></div>' +
+    '<div class="inv-trow"><span>إجمالي الأزواج</span><b id="iePairs">' + fmtNum(totPairs) + ' زوج</b></div>' +
     '<div class="inv-trow"><span>الخصم</span>' + discCell + '</div>' +
     '<div class="inv-trow"><span>مصاريف الشحن</span><b>' + shipTxt + '</b></div>' +
-    '<div class="inv-trow grand"><span>الإجمالي النهائي</span><b id="ieTotal">' + fmtMoney(o.total) + '</b></div>' +
     '<div class="inv-trow"><span>المدفوع مقدماً (العربون)</span>' + depCell + '</div>' +
     '<div class="inv-trow due"><span>المتبقي</span><b id="ieRemaining">' + fmtMoney(o.remaining) + '</b></div>' +
     '</div>' +
@@ -1463,10 +1470,11 @@ function recalcInvTotals(v) {
 function refreshInvTotals() {
   if (!INV_VIEW) return;
   recalcInvTotals(INV_VIEW);
-  var s = $('ieSubtotal'), t = $('ieTotal'), r = $('ieRemaining');
+  var s = $('ieSubtotal'), t = $('ieTotal'), r = $('ieRemaining'), pr = $('iePairs');
   if (s) s.textContent = fmtMoney(INV_VIEW.subtotal);
   if (t) t.textContent = fmtMoney(INV_VIEW.total);
   if (r) r.textContent = fmtMoney(INV_VIEW.remaining);
+  if (pr) pr.textContent = fmtNum(INV_VIEW.pairs) + ' زوج';
 }
 function invField(field, value) {
   if (!INV_VIEW) return;
