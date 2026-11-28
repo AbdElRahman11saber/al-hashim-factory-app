@@ -102,6 +102,14 @@ textarea{resize:vertical;min-height:64px}
 .pick-row.short{border-color:#DC2626;background:#FEF2F2}
 .pick-thumb{width:56px;height:56px;flex:none;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
 .pick-thumb-ph{display:flex;align-items:center;justify-content:center;font-size:26px;background:#F1F5F9}
+/* ===== كارت الموديل في البيك أب: كارت واحد لكل موديل والألوان جواه ===== */
+.pick-card{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:#fff;overflow:hidden}
+.pick-card-head{display:flex;align-items:center;gap:10px;padding:11px 12px;cursor:pointer}
+.pick-card-head input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--accent)}
+.pick-card.picked{opacity:.45}
+.pick-card.picked .pick-name{text-decoration:line-through}
+.pick-color{display:flex;gap:10px;padding:11px 12px;border-top:1px solid var(--line);background:#FAFAFA}
+.pick-color.short{background:#FEF2F2}
 .stk{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .stk span{font-size:13.5px}
 .stk b{font-size:14px}
@@ -1586,10 +1594,91 @@ function screenDisb() {
 /* أرقام مؤقتة للمخزون قبل الجرد الحقيقي: كل موديل وألوانه بحقول دستة،
    واللي يتكتب هو الرصيد الحالي للون. زرار واحد بيحفظ كل اللي اتغير،
    وبعد الجرد الحقيقي يرجع يعدل نفس الأرقام من هنا. */
-/* قايمة البيك أب جوه التطبيق: تجميع كل الموديلات المطلوبة في كل الأوردرات
-   الجديدة في قايمة واحدة — نفس منطق picking.html (showPickup).
-   القايمة بتتقرا من البيانات لحظة فتحها، فالأوردر اللي تغيّرت حالته
-   (مبقاش «جديد») بيطلع منها لوحده. */
+/* ---- حالة البيك أب المحفوظة (بتيجي من السيرفر مع القراءة) ---- */
+function pickPrep() { return (DATA && DATA.pickPrep) ? DATA.pickPrep : { selected: [], picked: [] }; }
+/* الكارت معلّم ✓ لما الموديل ده يكون مجهز في كل الأوردرات المحددة اللي فيها الموديل */
+function isModelPicked(orderNos, model) {
+  if (!orderNos.length) return false;
+  var pk = pickPrep().picked;
+  return orderNos.every(function (no) {
+    return pk.some(function (p) { return num(p.orderNo) === num(no) && p.model === model; });
+  });
+}
+/* ترتيب الموديلات برقم الموديل (K101 قبل K102، وK99 قبل K101) */
+function sortModelNo(a, b) { return String(a).localeCompare(String(b), 'ar', { numeric: true }); }
+/* صف أوردر في قايمة الاختيار — علامة صح = الأوردر ده هيتجهز */
+function orderPickRow(o, checked) {
+  return '<label class="pick-row"><input type="checkbox"' + (checked ? ' checked' : '') + ' onchange="App.togglePickupOrder(' + num(o.no) + ', this.checked)">' +
+    '<span class="grow"><b class="pick-name">#' + fmtNum(o.no) + ' — ' + esc(o.customer) + '</b>' +
+    '<div class="small muted">' + esc(statusOf(o)) + ' • ' + esc(o.date || '') + '</div></span>' +
+    '<span style="text-align:left;white-space:nowrap"><b style="font-size:16px">' + fmtNum(o.pairs) + ' زوج</b></span></label>';
+}
+/* قايمة التجهيز المجمعة لأوردرات محددة: كارت واحد لكل موديل (مترتب برقم
+   الموديل)، وجواه الألوان تحت بعض — كل لون بالمطلوب والمتاح والمتبقي. */
+function pickupModelsCard(sel) {
+  var byModel = {}, modelOrder = [];
+  sel.forEach(function (no) {
+    linesOf(no).forEach(function (l) {
+      var m = l.item;
+      if (!byModel[m]) { byModel[m] = { model: m, colors: {}, colorList: [], dozens: 0, pairs: 0, orders: [] }; modelOrder.push(m); }
+      var g = byModel[m];
+      var c = l.color || '';
+      if (!g.colors[c]) { g.colors[c] = { color: c, dozens: 0, pairs: 0, orders: [] }; g.colorList.push(c); }
+      var cc = g.colors[c];
+      cc.dozens += num(l.dozens); cc.pairs += num(l.pairs);
+      if (cc.orders.indexOf(no) === -1) cc.orders.push(no);
+      g.dozens += num(l.dozens); g.pairs += num(l.pairs);
+      if (g.orders.indexOf(no) === -1) g.orders.push(no);
+    });
+  });
+  modelOrder.sort(sortModelNo);
+  var totDoz = 0, totPairs = 0, shortCount = 0;
+  modelOrder.forEach(function (m) {
+    var g = byModel[m];
+    totDoz += g.dozens; totPairs += g.pairs;
+    g.colorList.forEach(function (c) {
+      var cs = colorStockOf(m, c);
+      var av = cs ? num(cs.stock) : null;
+      if (av !== null && g.colors[c].pairs > av) shortCount++;
+    });
+  });
+  var h = '<div class="card"><h2>المطلوب تجهيزه (' + modelOrder.length + ' موديل)</h2>' +
+    '<div class="muted">من الأوردرات: ' + sel.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div>' +
+    (shortCount ? '<p class="warn" style="margin:10px 0 0">⚠️ في ' + shortCount + ' لون المخزن مش كفايه — بص على الصفوف الحمرا تحت.</p>' : '');
+  if (!modelOrder.length) h += '<p class="muted">الأوردرات المحددة مفيهاش بنود.</p>';
+  modelOrder.forEach(function (m) {
+    var g = byModel[m];
+    var picked = isModelPicked(g.orders, m);
+    var it = itemByName(m);
+    var thumb = (it && it.photo) ? '<img class="pick-thumb" src="' + esc(it.photo) + '" alt="" loading="lazy" decoding="async">' : '<span class="pick-thumb pick-thumb-ph">👞</span>';
+    h += '<div class="pick-card' + (picked ? ' picked' : '') + '">' +
+      '<label class="pick-card-head"><input type="checkbox" data-model="' + esc(m) + '" data-orders="' + g.orders.join(',') + '"' + (picked ? ' checked' : '') + ' onchange="App.toggleModelPicked(this)">' + thumb +
+      '<span class="grow"><b class="pick-name">' + esc(m) + '</b>' +
+      '<div class="small muted">أوردرات: ' + g.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div></span>' +
+      '<span style="text-align:left;white-space:nowrap"><b style="font-size:18px">' + fmtDoz(g.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(g.pairs) + ' زوج</span></span></label>';
+    g.colorList.forEach(function (c) {
+      var cc = g.colors[c];
+      var cs = colorStockOf(m, c);
+      var avail = cs ? num(cs.stock) : null;
+      var remain = avail === null ? null : avail - cc.pairs;
+      var short = avail !== null && cc.pairs > avail;
+      h += '<div class="pick-color' + (short ? ' short' : '') + '"><span class="grow"><b>' + esc(c || 'بدون لون') + '</b>' +
+        '<div class="small muted">أوردرات: ' + cc.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div>' +
+        '<div class="stk"><span>المطلوب: <b>' + fmtNum(cc.pairs) + ' زوج</b></span>' +
+        '<span>المتاح: <b>' + (avail === null ? '—' : fmtNum(avail) + ' زوج') + '</b></span>' +
+        '<span>المتبقي: <b class="' + (remain !== null && remain < 0 ? 'warn' : '') + '">' + (remain === null ? '—' : fmtNum(remain) + ' زوج') + '</b></span></div>' +
+        (short ? '<div class="warn" style="margin-top:6px">⚠️ المخزن مش كفاية — ناقص ' + fmtNum(cc.pairs - avail) + ' زوج</div>' : '') + '</span>' +
+        '<span style="text-align:left;white-space:nowrap"><b>' + fmtDoz(cc.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(cc.pairs) + ' زوج</span></span></div>';
+    });
+    h += '</div>';
+  });
+  h += '<div class="kv"><span>إجمالي التجهيز</span><b>' + fmtDoz(totDoz) + ' دستة (' + fmtNum(totPairs) + ' زوج)</b></div></div>';
+  return h;
+}
+/* قايمة البيك أب جوه التطبيق: الأول بتختار الأوردرات اللي هتجهزها
+   (الاختيار بيتحفظ)، وبعدين قايمة التجهيز بتتجمع من المحدد بس — كارت
+   واحد لكل موديل مترتب برقم الموديل، والألوان جواه تحت بعض.
+   نفس منطق picking.html (showPickup). */
 function screenPickup() {
   if (!DATA) return '';
   var fresh = DATA.orders.filter(function (o) { return isActiveOrder(o) && statusOf(o) === 'جديد'; }).sort(function (a, b) { return num(b.no) - num(a.no); });
@@ -1598,51 +1687,23 @@ function screenPickup() {
     h += '<div class="card" style="margin-top:10px"><h2>📦 قايمة البيك أب</h2><p class="muted">مفيش أوردرات جديدة دلوقتي.</p></div>';
     return h;
   }
-  var groups = [], byLabel = {};
-  fresh.forEach(function (o) {
-    linesOf(o.no).forEach(function (l) {
-      var key = lineItemLabel(l);
-      if (!byLabel[key]) {
-        byLabel[key] = { label: key, model: l.item, color: l.color || '', dozens: 0, pairs: 0, orders: [] };
-        groups.push(byLabel[key]);
-      }
-      var g = byLabel[key];
-      g.dozens += num(l.dozens);
-      g.pairs += num(l.pairs);
-      if (g.orders.indexOf(o.no) === -1) g.orders.push(o.no);
-    });
-  });
-  var totDoz = 0, totPairs = 0, shortCount = 0;
-  groups.forEach(function (g) {
-    totDoz += g.dozens; totPairs += g.pairs;
-    var cs = colorStockOf(g.model, g.color);
-    var av = cs ? num(cs.stock) : null;
-    if (av !== null && g.pairs > av) shortCount++;
-  });
-  h += '<div class="card" style="margin-top:10px"><h2>📦 قايمة البيك أب</h2>' +
-    '<div class="muted">كل الأوردرات الجديدة (' + fmtNum(fresh.length) + ' أوردر): ' + fresh.map(function (o) { return '#' + fmtNum(o.no); }).join('، ') + '</div>' +
-    (shortCount ? '<p class="warn" style="margin:10px 0 0">⚠️ في ' + fmtNum(shortCount) + ' موديل المخزن مش كفايهم — بص على الصفوف الحمرا تحت.</p>' : '') +
-    '<p class="muted small" style="margin:8px 0 0">الأوردر اللي تغيّر حالته بيطلع من القايمة دي لوحده — دوس «تحديث البيانات» عشان تشوف آخر حالة.</p>' +
+  var sel = pickPrep().selected.filter(function (no) { return fresh.some(function (o) { return num(o.no) === num(no); }); });
+  var unsel = fresh.filter(function (o) { return sel.indexOf(num(o.no)) === -1; });
+  h += '<div class="card" style="margin-top:10px"><h2>📦 اختار الأوردرات اللي هتجهزها</h2>' +
+    '<p class="muted small" style="margin:6px 0 0">علّم على الأوردرات اللي هتجهزها دلوقتي — القايمة اللي تحت بتتجمع من المحدد بس. الاختيار بيتحفظ، فلو قفلت التطبيق ورجعت هتلاقيه زي ما هو. والأوردر اللي تغيّر حالته بيطلع من هنا لوحده.</p>' +
+    '<div class="small" style="font-weight:800;margin-top:12px">هتجهز (' + sel.length + ')</div>';
+  if (!sel.length) h += '<p class="muted small" style="margin:6px 0">لسه مختارتش ولا أوردر.</p>';
+  sel.forEach(function (no) { var o = null; fresh.forEach(function (x) { if (num(x.no) === num(no)) o = x; }); if (o) h += orderPickRow(o, true); });
+  h += '<div class="small" style="font-weight:800;margin-top:12px">لسه (' + unsel.length + ')</div>';
+  unsel.forEach(function (o) { h += orderPickRow(o, false); });
+  h += '<div class="row" style="margin-top:12px"><button class="btn btn-ghost" style="flex:1" onclick="App.selectAllPickup(true)">تحديد الكل</button>' +
+    '<button class="btn btn-ghost" style="flex:1" onclick="App.selectAllPickup(false)">إلغاء الكل</button></div>' +
     '<div style="margin-top:12px"><button class="btn btn-ghost btn-block" onclick="go(\'stockCount\')">📋 أرقام المخزن</button></div></div>';
-  h += '<div class="card"><h2>المطلوب تجهيزه (' + fmtNum(groups.length) + ' موديل)</h2>';
-  if (!groups.length) h += '<p class="muted">الأوردرات الجديدة مفيهاش بنود.</p>';
-  groups.forEach(function (g) {
-    var cs = colorStockOf(g.model, g.color);
-    var avail = cs ? num(cs.stock) : null;
-    var remain = avail === null ? null : avail - g.pairs;
-    var short = avail !== null && g.pairs > avail;
-    var it = itemByName(g.model);
-    var thumb = (it && it.photo) ? '<img class="pick-thumb" src="' + esc(it.photo) + '" alt="" loading="lazy" decoding="async">' : '<span class="pick-thumb pick-thumb-ph">👞</span>';
-    h += '<label class="pick-row' + (short ? ' short' : '') + '"><input type="checkbox" onchange="this.parentNode.classList.toggle(\'picked\', this.checked)">' + thumb +
-      '<span class="grow"><b class="pick-name">' + esc(g.label) + '</b>' +
-      '<div class="small muted">أوردرات: ' + g.orders.map(function (n) { return '#' + fmtNum(n); }).join('، ') + '</div>' +
-      '<div class="stk"><span>المطلوب: <b>' + fmtNum(g.pairs) + ' زوج</b></span>' +
-      '<span>المتاح: <b>' + (avail === null ? '—' : fmtNum(avail) + ' زوج') + '</b></span>' +
-      '<span>المتبقي: <b class="' + (remain !== null && remain < 0 ? 'warn' : '') + '">' + (remain === null ? '—' : fmtNum(remain) + ' زوج') + '</b></span></div>' +
-      (short ? '<div class="warn" style="margin-top:6px">⚠️ المخزن مش كفاية — ناقص ' + fmtNum(g.pairs - avail) + ' زوج</div>' : '') + '</span>' +
-      '<span style="text-align:left;white-space:nowrap"><b style="font-size:18px">' + fmtDoz(g.dozens) + ' دستة</b><br><span class="small muted">' + fmtNum(g.pairs) + ' زوج</span></span></label>';
-  });
-  h += '<div class="kv"><span>إجمالي التجهيز</span><b>' + fmtDoz(totDoz) + ' دستة (' + fmtNum(totPairs) + ' زوج)</b></div></div>';
+  if (!sel.length) {
+    h += '<div class="card"><h2>المطلوب تجهيزه</h2><p class="muted">اختار أوردر أو أكتر من فوق عشان تظهر قايمة التجهيز بتاعتهم.</p></div>';
+  } else {
+    h += pickupModelsCard(sel);
+  }
   h += '<div class="row"><button class="btn btn-ghost" style="flex:1" onclick="go(\'home\')">رجوع</button>' +
     '<button class="btn btn-dark" style="flex:1" onclick="refresh({})">تحديث البيانات</button></div>';
   return h;
@@ -1876,6 +1937,28 @@ window.App = {
       callApi('deleteColor', { color: color }).then(function () { hideLoading(); return afterWrite('تم حذف اللون'); })
         .catch(function (e) { hideLoading(); toast(e.message, true); });
     });
+  },
+  togglePickupOrder: function (no, on) {
+    var sel = pickPrep().selected.slice();
+    var i = sel.indexOf(num(no));
+    if (on && i === -1) sel.push(num(no));
+    if (!on && i !== -1) sel.splice(i, 1);
+    showLoading('جارٍ الحفظ...');
+    callApi('savePickupSelection', { orders: sel }).then(function () { hideLoading(); return afterWrite('تم حفظ الاختيار'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  selectAllPickup: function (all) {
+    var fresh = DATA.orders.filter(function (o) { return isActiveOrder(o) && statusOf(o) === 'جديد'; });
+    showLoading('جارٍ الحفظ...');
+    callApi('savePickupSelection', { orders: all ? fresh.map(function (o) { return num(o.no); }) : [] }).then(function () { hideLoading(); return afterWrite('تم حفظ الاختيار'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); });
+  },
+  toggleModelPicked: function (cb) {
+    var model = cb.getAttribute('data-model');
+    var orderNos = (cb.getAttribute('data-orders') || '').split(',').map(function (x) { return num(x); }).filter(function (x) { return x > 0; });
+    showLoading('جارٍ الحفظ...');
+    callApi('setModelPicked', { orderNos: orderNos, model: model, picked: cb.checked }).then(function () { hideLoading(); return afterWrite(cb.checked ? 'تم تعليم الموديل كمجهز' : 'تم إلغاء العلامة'); })
+      .catch(function (e) { hideLoading(); toast(e.message, true); refresh({ spinner: false }); });
   },
   /* تفاصيل الصنف: صورته وسعره وألوانه والمخزون لكل لون */
   showItemDetail: function (row) {
